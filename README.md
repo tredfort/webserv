@@ -1,2 +1,2 @@
 # webserv
-Simple webserver 
+Implementation of webserv
