@@ -13,12 +13,12 @@
 #include "../model/WebClient.hpp"
 #include "../model/Request.hpp"
 #include "../config/Config.hpp"
+#include "FileReader.hpp"
 
 
 class RequestHandler : public IRequestHandler {
-
 private:
-    WebClient* client;
+    WebClient *client;
     std::map<std::string, std::string> types;
     Request::Method _method;
     std::string _uri;
@@ -33,24 +33,23 @@ private:
     std::string body;
     std::string filepath;
 
-    std::string &getFilePath();
-
 private:
-    const std::string& mimeType(const std::string& uri);
+    const std::string &mimeType(const std::string &uri);
 
     void readfile(const std::string &);
 
-    Config* _config;
-
 public:
-    void formResponse(WebClient *);
-	void doPost(WebClient*);
-	void doGet(WebClient*);
-	void doPut(WebClient*);
-	void doDelete(WebClient*);
+    RequestHandler();
 
-    //    RequestHandler();
-    RequestHandler(Config* config);
-    //    RequestHandler(Request &request, IConfig *conf);
     ~RequestHandler();
+
+    void formResponse(WebClient *);
+
+    void doPost(WebClient *);
+
+    void doGet(WebClient *);
+
+    void doPut(WebClient *);
+
+    void doDelete(WebClient *);
 };

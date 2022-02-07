@@ -10,11 +10,14 @@ SRC = srcs/main.cpp \
 	srcs/server/Socket.cpp \
 	srcs/config/Config.cpp \
 	srcs/config/Configurator.cpp \
-	srcs/model/Request.cpp \
-	srcs/model/Response.cpp \
+	srcs/utils/utils.cpp \
 	srcs/repository/Repository.cpp \
 	srcs/model/WebClient.cpp \
-	srcs/utils/utils.cpp \
+	srcs/model/Request.cpp \
+	srcs/model/Response.cpp \
+	srcs/requestParser/RequestParser.cpp \
+	srcs/requestHandler/RequestHandler.cpp \
+	srcs/requestHandler/FileReader.cpp \
 
 OBJ=$(SRC:.cpp=.o)
 
@@ -23,11 +26,17 @@ HEADERS = \
 	srcs/server/Socket.hpp \
 	srcs/config/Config.hpp \
 	srcs/config/Configurator.hpp \
+	srcs/utils/utils.hpp \
+	srcs/repository/Repository.hpp \
+	srcs/interfaces/ICrudRepository.hpp \
+	srcs/model/WebClient.hpp \
+	srcs/interfaces/IEntity.hpp \
 	srcs/model/Request.hpp \
     srcs/model/Response.hpp \
-    srcs/repository/Repository.hpp \
-    srcs/model/WebClient.hpp \
-	srcs/utils/utils.hpp \
+    srcs/requestParser/RequestParser.hpp \
+    srcs/requestHandler/RequestHandler.hpp \
+    srcs/requestHandler/FileReader.hpp \
+
 
 srcs/%.o: srcs/%.cpp $(HEADERS)
 	$(CC) -c -o $@ $< $(CFLAGS)

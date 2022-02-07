@@ -1,27 +1,24 @@
-#include "Server/Server.hpp"
-#include "Config/Configurator.hpp"
+#include "server/Server.hpp"
+#include "config/Configurator.hpp"
 
 /**
  * Parse args, if they are okay to execute server
  * @return
  */
-int main(int argc, char** argv)
-{
+int main(int argc, char **argv) {
     Configurator configurator;
-    Config* config;
-	string hint = "./webserv config.conf\n";
+    string configPath = "config.conf";;
 
-	if (argc > 2) {
-		cout << hint;
-		return 0;
-	} else if (argc == 2)
-        config = configurator.createConfig(argv[1]);
-	else
-        config = configurator.createConfig("config.conf");
+    if (argc > 2) {
+        cout << "./webserv config.conf" << endl;
+        return 0;
+    } else if (argc == 2)
+        configPath = argv[1];
 
-	Server* app(config);
+    Config *config = configurator.createConfig(configPath);
+    Server *app = new Server(config);
 
-	app->start();
-	delete app;
-	return (0);
+    app->start();
+    delete app;
+    return 0;
 }

@@ -6,7 +6,6 @@
 #define WEBSERV_ENTITY_HPP
 
 class IEntity {
-
 };
 
 #endif //WEBSERV_ENTITY_HPP

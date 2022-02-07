@@ -9,24 +9,25 @@
 
 class Request : public IHeader {
 public:
-	enum Method {
-		UNKNOWN,
-		POST,
-		GET,
-		PUT,
-		DELETE
-	};
+    enum Method {
+        UNKNOWN,
+        POST,
+        GET,
+        PUT,
+        DELETE
+    };
 
-	enum Protocol {
-		ANOTHER,
-		HTTP1_1
-		};
+    enum Protocol {
+        ANOTHER,
+        HTTP1_1
+    };
 
 private:
-	Method method;
-	std::string uri;
-	Protocol protocol;
-    std::string buffer;
+    Method _method;
+    std::string _uri;
+    Protocol _protocol;
+    std::string _buffer;
+
 public:
     const std::string &getBuffer() const;
 
@@ -34,26 +35,36 @@ public:
 
 private:
     std::map<std::string, std::string> headers;
-	std::vector<std::string> headersVector;
+    std::vector<std::string> headersVector;
 
 public:
-	Request();
-	~Request();
+    Request();
 
-	bool isBadRequest();
-	const Method &getMethod();
-	const std::string &getUri();
-	const Protocol &getProtocol();
+    ~Request();
 
-	void setMethod(const std::string &);
-	void setUri(const std::string &);
-	void setProtocol(const std::string &);
+    bool isBadRequest();
 
-	std::string getHeader(const std::string&) const;
-	void setHeader(std::string key, std::string value);
-	void setHeadersVector(std::vector<std::string>);
-	std::vector<std::string>& getHeadersVector();
-	bool emptyHeader() const;
+    const Method &getMethod();
+
+    const std::string &getUri();
+
+    const Protocol &getProtocol();
+
+    void setMethod(const std::string &);
+
+    void setUri(const std::string &);
+
+    void setProtocol(const std::string &);
+
+    std::string getHeader(const std::string &) const;
+
+    void setHeader(std::string key, std::string value);
+
+    void setHeadersVector(std::vector<std::string>);
+
+    std::vector<std::string> &getHeadersVector();
+
+    bool emptyHeader() const;
 
 };
 

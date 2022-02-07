@@ -1,7 +1,7 @@
 #ifndef CONSTANTS_HPP
 #define CONSTANTS_HPP
 
-#define IRC_MSG_LEN 512
+#define BUFFER_SIZE 1024 * 1024
 
 #define DELIMITER "\r\n"
 

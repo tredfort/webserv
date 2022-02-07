@@ -4,10 +4,25 @@
 
 #include "Repository.hpp"
 
-void Repository::save(IEntity *entity) {
+Repository::Repository() {}
 
+Repository::~Repository() {}
+
+void Repository::save(int id, IEntity *entity) {
+    entities[id] = entity;
+}
+
+IEntity *Repository::findById(int id) {
+    map<int, IEntity *>::iterator it = entities.find(id);
+    if (it != entities.end())
+        return it->second;
+    return NULL;
 }
 
 void Repository::deleteById(int id) {
-
+    map<int, IEntity *>::iterator it = entities.find(id);
+    if (it != entities.end()) {
+        delete it->second;
+        entities.erase(it);
+    }
 }

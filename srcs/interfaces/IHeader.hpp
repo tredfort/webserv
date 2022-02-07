@@ -10,7 +10,6 @@ public:
 
 	virtual std::string getHeader(const std::string&) const = 0;
 	virtual bool emptyHeader() const = 0;
-
 };
 
 #endif

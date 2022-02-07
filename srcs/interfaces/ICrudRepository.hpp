@@ -9,9 +9,13 @@
 
 class ICrudRepository {
 public:
-    virtual void save(IEntity* entity) = 0;
-    virtual IEntity* findById(int id) = 0;
+    virtual void save(int id, IEntity *entity) = 0;
+
+    virtual IEntity *findById(int id) = 0;
+
     virtual void deleteById(int id) = 0;
+
+    virtual ~ICrudRepository() {};
 };
 
 #endif
