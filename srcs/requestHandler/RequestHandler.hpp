@@ -20,7 +20,7 @@ class RequestHandler : public IRequestHandler {
 private:
     WebClient *client;
     std::map<std::string, std::string> types;
-    Request::Method _method;
+    Method _method;
     std::string _uri;
     std::vector<std::string> _index;
     std::map<std::string, std::string> _header_fields;
@@ -43,13 +43,13 @@ public:
 
     ~RequestHandler();
 
-    void formResponse(WebClient *);
+    void formResponse(WebClient *client);
 
-    void doPost(WebClient *);
+    void doPost(WebClient *client);
 
-    void doGet(WebClient *);
+    void doGet(WebClient *client);
 
-    void doPut(WebClient *);
+    void doPut(WebClient *client);
 
-    void doDelete(WebClient *);
+    void doDelete(WebClient *client);
 };

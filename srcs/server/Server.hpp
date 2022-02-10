@@ -57,7 +57,7 @@ public:
     bool sendResponse(WebClient *client);
 
 private:
-    void operator=(Server const &); // Don't implement.
+    Server &operator=(Server const &); // Don't implement.
     Server(Server const &); // Don't Implement.
 };
 

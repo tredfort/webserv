@@ -6,36 +6,29 @@
 #include <vector>
 #include "../interfaces/IRequest.hpp"
 #include "../interfaces/IHeader.hpp"
+#include "Method.hpp"
+#include "Protocol.hpp"
+
+using std::string;
+using std::map;
+using std::vector;
+using std::make_pair;
 
 class Request : public IHeader {
-public:
-    enum Method {
-        UNKNOWN,
-        POST,
-        GET,
-        PUT,
-        DELETE
-    };
-
-    enum Protocol {
-        ANOTHER,
-        HTTP1_1
-    };
-
 private:
     Method _method;
-    std::string _uri;
+    string _uri;
     Protocol _protocol;
-    std::string _buffer;
+    string _buffer;
 
 public:
-    const std::string &getBuffer() const;
+    const string &getBuffer() const;
 
-    void setBuffer(const std::string &buffer);
+    void setBuffer(const string &buffer);
 
 private:
-    std::map<std::string, std::string> headers;
-    std::vector<std::string> headersVector;
+    map<string, string> headers;
+    vector<string> headersVector;
 
 public:
     Request();
@@ -46,26 +39,25 @@ public:
 
     const Method &getMethod();
 
-    const std::string &getUri();
+    const string &getUri();
 
     const Protocol &getProtocol();
 
-    void setMethod(const std::string &);
+    void setMethod(const string &);
 
-    void setUri(const std::string &);
+    void setUri(const string &);
 
-    void setProtocol(const std::string &);
+    void setProtocol(const string &);
 
-    std::string getHeader(const std::string &) const;
+    string getHeader(const string &) const;
 
-    void setHeader(std::string key, std::string value);
+    void setHeader(string key, string value);
 
-    void setHeadersVector(std::vector<std::string>);
+    void setHeadersVector(vector<string>);
 
-    std::vector<std::string> &getHeadersVector();
+    vector<string> &getHeadersVector();
 
     bool emptyHeader() const;
-
 };
 
 #endif

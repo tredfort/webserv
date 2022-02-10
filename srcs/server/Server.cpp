@@ -50,20 +50,20 @@ void Server::polling() {
 }
 
 void Server::handleEvents() {
-    for (pollVector::iterator it = _pollfds.begin(), ite = _pollfds.end(); it != ite; ++it) {
-        if (it->revents == 0)
+    for (ssize_t i = 0, countFd = _pollfds.size(); i < countFd; ++i) {
+        if (_pollfds[i].revents == 0)
             continue;
-        if (it->events == POLLIN) {
+        if (_pollfds[i].events == POLLIN) {
             acceptNewClients();
             continue;
         }
-        WebClient *client = reinterpret_cast<WebClient *>(_clientsRepo->findById(it->fd));
-        if (it->revents & POLLIN && !receiveRequest(client)) {
-            _pollfds.erase(it);
+        WebClient *client = reinterpret_cast<WebClient *>(_clientsRepo->findById(_pollfds[i].fd));
+        if (_pollfds[i].revents & POLLIN && !receiveRequest(client)) {
+            _pollfds.erase(_pollfds.begin() + i);
             break;
         }
-        if (it->revents & POLLOUT && !sendResponse(client)) {
-            _pollfds.erase(it);
+        if (_pollfds[i].revents & POLLOUT && !sendResponse(client)) {
+            _pollfds.erase(_pollfds.begin() + i);
             break;
         }
     }
@@ -92,15 +92,15 @@ bool Server::receiveRequest(WebClient *client) {
     if (bytesRead <= 0) {
         cout << "Client ended the _userfd!" << client->getFd() << endl;
         close(client->getFd());
+        delete client->getResponse();
+        delete client->getRequest();
         _clientsRepo->deleteById(client->getFd());
         return false;
     }
 
-    if (bytesRead > 0) {
-        buffer[bytesRead] = '\0';
-        client->getRequest()->setBuffer(string(buffer, bytesRead));
-        _parser.processRequest(client);
-    }
+    buffer[bytesRead] = '\0';
+    client->getRequest()->setBuffer(string(buffer, bytesRead));
+    _parser.processRequest(client);
 
     return true;
 }
@@ -111,16 +111,21 @@ bool Server::sendResponse(WebClient *client) {
     _handler.formResponse(client);
     if (!client->getResponse()->toSend.empty()) {
         string buffer = client->getResponse()->toSend;
-        std::string::size_type sendBytes = send(client->getFd(), buffer.c_str(), buffer.size(), 0);
-        if (sendBytes == 0) {
-            client->setStatus(WebClient::CLOSE);
-        } else if (sendBytes != std::string::npos) {
-            client->getResponse()->toSend = buffer.substr(sendBytes);
-            std::cout << "Sent " << sendBytes << " bytes to fd: " << client->getFd() << std::endl;
-            if (client->getResponse()->toSend.empty())
-                client->update();
-            return true;
+        ssize_t sendBytes = send(client->getFd(), buffer.c_str(), buffer.size(), 0);
+
+        if (sendBytes <= 0) {
+            cout << "Client ended the _userfd!" << client->getFd() << endl;
+            close(client->getFd());
+            delete client->getResponse();
+            delete client->getRequest();
+            _clientsRepo->deleteById(client->getFd());
+            return false;
         }
+
+        client->getResponse()->toSend = buffer.substr(sendBytes);
+        std::cout << "Sent " << sendBytes << " bytes to fd: " << client->getFd() << std::endl;
+        if (client->getResponse()->toSend.empty())
+            client->update();
     }
-    return false;
+    return true;
 }

@@ -3,14 +3,12 @@
 WebClient::WebClient(int fd, int port)
         : _fd(fd),
           _port(port),
-          _status(READABLE),
           _request(new Request()),
           _response(new Response()) {}
 
 WebClient::WebClient(const WebClient &other)
         : _fd(other._fd),
           _port(other._port),
-          _status(other._status),
           _request(other._request),
           _response(other._response) {}
 
@@ -18,7 +16,6 @@ WebClient &WebClient::operator=(const WebClient &other) {
     if (this != &other) {
         _fd = other._fd;
         _port = other._port;
-        _status = other._status;
         _request = other._request;
         _response = other._response;
     }
@@ -28,10 +25,6 @@ WebClient &WebClient::operator=(const WebClient &other) {
 WebClient::~WebClient() {
     delete _request;
     delete _response;
-}
-
-void WebClient::setStatus(Status status) {
-    this->_status = status;
 }
 
 void WebClient::setRequest(Request *request) {
@@ -50,10 +43,6 @@ int WebClient::getPort() const {
     return _port;
 }
 
-WebClient::Status WebClient::getStatus() const {
-    return _status;
-}
-
 Request *WebClient::getRequest() const {
     return _request;
 }
@@ -67,5 +56,4 @@ void WebClient::update() {
     delete _response;
     _request = new Request();
     _response = new Response();
-    setStatus(READABLE);
 }

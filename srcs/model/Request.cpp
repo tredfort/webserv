@@ -10,19 +10,19 @@ bool Request::isBadRequest() {
     return _method == UNKNOWN || _uri.empty() || _protocol == ANOTHER;
 }
 
-const Request::Method &Request::getMethod() {
+const Method &Request::getMethod() {
     return _method;
 }
 
-const std::string &Request::getUri() {
+const string &Request::getUri() {
     return _uri;
 }
 
-const Request::Protocol &Request::getProtocol() {
+const Protocol &Request::getProtocol() {
     return _protocol;
 }
 
-void Request::setMethod(const std::string &method) {
+void Request::setMethod(const string &method) {
     if (method == "POST")
         _method = POST;
     else if (method == "GET")
@@ -33,17 +33,17 @@ void Request::setMethod(const std::string &method) {
         _method = DELETE;
 }
 
-void Request::setUri(const std::string &uri) {
+void Request::setUri(const string &uri) {
     _uri = uri;
 }
 
-void Request::setProtocol(const std::string &protocol) {
+void Request::setProtocol(const string &protocol) {
     if (protocol == "HTTP/1.1")
         _protocol = HTTP1_1;
 }
 
-std::string Request::getHeader(const std::string &key) const {
-    std::map<std::string, std::string>::const_iterator it = headers.find(key);
+string Request::getHeader(const string &key) const {
+    map<string, string>::const_iterator it = headers.find(key);
     if (it == headers.end())
         return "";
     return it->second;
@@ -53,22 +53,22 @@ bool Request::emptyHeader() const {
     return headers.empty();
 }
 
-void Request::setHeadersVector(std::vector<std::string> headers) {
+void Request::setHeadersVector(vector<string> headers) {
     headersVector = headers;
 }
 
-std::vector<std::string> &Request::getHeadersVector() {
+vector<string> &Request::getHeadersVector() {
     return headersVector;
 }
 
-void Request::setHeader(std::string key, std::string value) {
-    headers.insert(std::make_pair<std::string, std::string>(key, value));
+void Request::setHeader(string key, string value) {
+    headers.insert(make_pair<string, string>(key, value));
 }
 
-const std::string &Request::getBuffer() const {
+const string &Request::getBuffer() const {
     return _buffer;
 }
 
-void Request::setBuffer(const std::string &buffer) {
+void Request::setBuffer(const string &buffer) {
     _buffer = buffer;
 }

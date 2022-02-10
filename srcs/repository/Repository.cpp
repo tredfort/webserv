@@ -22,7 +22,7 @@ IEntity *Repository::findById(int id) {
 void Repository::deleteById(int id) {
     map<int, IEntity *>::iterator it = entities.find(id);
     if (it != entities.end()) {
-        delete it->second;
         entities.erase(it);
+        delete it->second;
     }
 }

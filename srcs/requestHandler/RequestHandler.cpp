@@ -147,14 +147,13 @@ void RequestHandler::formResponse(WebClient *client) {
     Request *request = client->getRequest();
     if (request->isBadRequest()) {
         client->getResponse(); // TODO: Bad Request
-        client->setStatus(WebClient::WRITING);
-    } else if (request->getMethod() == Request::POST)
+    } else if (request->getMethod() == POST)
         doPost(client);
-    else if (request->getMethod() == Request::GET)
+    else if (request->getMethod() == GET)
         doGet(client);
-    else if (request->getMethod() == Request::PUT)
+    else if (request->getMethod() == PUT)
         doPut(client);
-    else if (request->getMethod() == Request::DELETE)
+    else if (request->getMethod() == DELETE)
         doDelete(client);
 }
 
