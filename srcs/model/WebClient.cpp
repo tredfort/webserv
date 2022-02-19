@@ -1,59 +1,54 @@
 #include "WebClient.hpp"
 
 WebClient::WebClient(int fd, int port)
-        : _fd(fd),
-          _port(port),
-          _request(new Request()),
-          _response(new Response()) {}
-
-WebClient::WebClient(const WebClient &other)
-        : _fd(other._fd),
-          _port(other._port),
-          _request(other._request),
-          _response(other._response) {}
-
-WebClient &WebClient::operator=(const WebClient &other) {
-    if (this != &other) {
-        _fd = other._fd;
-        _port = other._port;
-        _request = other._request;
-        _response = other._response;
-    }
-    return *this;
+	: _fd(fd)
+	, _port(port)
+	, _request(new Request())
+	, _response(new Response())
+{
 }
 
-WebClient::~WebClient() {
-    delete _request;
-    delete _response;
+WebClient::WebClient(const WebClient& other)
+	: _fd(other._fd)
+	, _port(other._port)
+	, _request(other._request)
+	, _response(other._response)
+{
 }
 
-void WebClient::setRequest(Request *request) {
-    this->_request = request;
+WebClient& WebClient::operator=(const WebClient& other)
+{
+	if (this != &other) {
+		_fd = other._fd;
+		_port = other._port;
+		_request = other._request;
+		_response = other._response;
+	}
+	return *this;
 }
 
-void WebClient::setResponse(Response *response) {
-    this->_response = response;
+WebClient::~WebClient()
+{
+	delete _request;
+	delete _response;
 }
 
-int WebClient::getFd() const {
-    return _fd;
-}
+void WebClient::setRequest(Request* request) { this->_request = request; }
 
-int WebClient::getPort() const {
-    return _port;
-}
+void WebClient::setResponse(Response* response) { this->_response = response; }
 
-Request *WebClient::getRequest() const {
-    return _request;
-}
+int WebClient::getFd() const { return _fd; }
 
-Response *WebClient::getResponse() const {
-    return _response;
-}
+int WebClient::getPort() const { return _port; }
 
-void WebClient::update() {
-    delete _request;
-    delete _response;
-    _request = new Request();
-    _response = new Response();
+Request* WebClient::getRequest() const { return _request; }
+
+Response* WebClient::getResponse() const { return _response; }
+
+void WebClient::update()
+{
+	delete _request;
+	delete _response;
+	_request = new Request();
+	_response = new Response();
 }

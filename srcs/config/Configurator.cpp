@@ -4,8 +4,9 @@
 
 #include "Configurator.hpp"
 
-Config *Configurator::createConfig(string path) {
-    if (path.empty())
-        NULL;
-    return new Config();
+Config* Configurator::createConfig(string path)
+{
+	if (path.empty())
+		NULL;
+	return new Config();
 }

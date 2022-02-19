@@ -2,22 +2,23 @@
 #define SERVER_HPP
 
 #include "../config/Config.hpp"
-#include "../requestParser/RequestParser.hpp"
-#include "../requestHandler/RequestHandler.hpp"
 #include "../model/WebClient.hpp"
 #include "../repository/Repository.hpp"
-#include "../utils/utils.hpp"
+#include "../requestHandler/RequestHandler.hpp"
+#include "../requestParser/RequestParser.hpp"
 #include "../utils/constants.hpp"
+#include "../utils/utils.hpp"
 #include "Socket.hpp"
-#include <iostream>
-#include <vector>
 #include <arpa/inet.h>
+#include <cstring>
+#include <iostream>
 #include <sys/poll.h>
+#include <vector>
 
 using std::cerr;
-using std::pair;
 using std::cout;
 using std::endl;
+using std::pair;
 using std::string;
 using std::vector;
 
@@ -28,37 +29,37 @@ using std::vector;
 class Server {
 
 private:
-    typedef vector<struct pollfd> pollVector;
-    RequestParser _parser;
-    RequestHandler _handler;
-    Socket *_socket;
-    Config *_config;
-    Repository *_clientsRepo;
-    struct sockaddr_in _address;
-    pollVector _pollfds;
+	typedef vector<struct pollfd> pollVector;
+	RequestParser _parser;
+	RequestHandler _handler;
+	Socket* _socket;
+	Config* _config;
+	Repository* _clientsRepo;
+	struct sockaddr_in _address;
+	pollVector _pollfds;
 
 public:
-    Server(Config *config);
+	Server(Config* config);
 
-    ~Server();
+	~Server();
 
-    void createSocket();
+	void createSocket();
 
-    void start();
+	void start();
 
-    void polling();
+	void polling();
 
-    void acceptNewClients();
+	void acceptNewClients();
 
-    void handleEvents();
+	void handleEvents();
 
-    bool receiveRequest(WebClient *client);
+	bool receiveRequest(WebClient* client);
 
-    bool sendResponse(WebClient *client);
+	bool sendResponse(WebClient* client);
 
 private:
-    Server &operator=(Server const &); // Don't implement.
-    Server(Server const &); // Don't Implement.
+	Server& operator=(Server const&); // Don't implement.
+	Server(Server const&); // Don't Implement.
 };
 
 #endif

@@ -1,40 +1,40 @@
 
 #pragma once
 
+#include "../interfaces/IEntity.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
-#include "../interfaces/IEntity.hpp"
 
 class WebClient : public IEntity {
 private:
-    int _fd;
-    int _port;
-    Request *_request;
-    Response *_response;
+	int _fd;
+	int _port;
+	Request* _request;
+	Response* _response;
 
 public:
-    WebClient(int fd, int port);
+	WebClient(int fd, int port);
 
-    WebClient(const WebClient &client);
+	WebClient(const WebClient& client);
 
-    WebClient &operator=(const WebClient &client);
+	WebClient& operator=(const WebClient& client);
 
-    ~WebClient();
+	~WebClient();
 
-    void setRequest(Request *request);
+	void setRequest(Request* request);
 
-    void setResponse(Response *response);
+	void setResponse(Response* response);
 
-    int getFd() const;
+	int getFd() const;
 
-    int getPort() const;
+	int getPort() const;
 
-    Request *getRequest() const;
+	Request* getRequest() const;
 
-    Response *getResponse() const;
+	Response* getResponse() const;
 
-    void update();
+	void update();
 
 private:
-    WebClient();
+	WebClient();
 };

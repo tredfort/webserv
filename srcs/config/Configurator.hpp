@@ -10,12 +10,9 @@
 
 using std::string;
 
-
 class Configurator {
-    public:
-        Config* createConfig(string path);
-
+public:
+	Config* createConfig(string path);
 };
-
 
 #endif

@@ -6,7 +6,7 @@
 class IResponse {
 public:
 	virtual std::string toString() const = 0;
-    virtual ~IResponse() {};
+	virtual ~IResponse() {};
 };
 
 #endif

@@ -1,63 +1,63 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
+#include "../interfaces/IHeader.hpp"
+#include "../interfaces/IRequest.hpp"
+#include "Method.hpp"
+#include "Protocol.hpp"
 #include <iostream>
 #include <map>
 #include <vector>
-#include "../interfaces/IRequest.hpp"
-#include "../interfaces/IHeader.hpp"
-#include "Method.hpp"
-#include "Protocol.hpp"
 
-using std::string;
-using std::map;
-using std::vector;
 using std::make_pair;
+using std::map;
+using std::string;
+using std::vector;
 
 class Request : public IHeader {
 private:
-    Method _method;
-    string _uri;
-    Protocol _protocol;
-    string _buffer;
+	Method _method;
+	string _uri;
+	Protocol _protocol;
+	string _buffer;
 
 public:
-    const string &getBuffer() const;
+	const string& getBuffer() const;
 
-    void setBuffer(const string &buffer);
+	void setBuffer(const string& buffer);
 
 private:
-    map<string, string> headers;
-    vector<string> headersVector;
+	map<string, string> headers;
+	vector<string> headersVector;
 
 public:
-    Request();
+	Request();
 
-    ~Request();
+	~Request();
 
-    bool isBadRequest();
+	bool isBadRequest();
 
-    const Method &getMethod();
+	const Method& getMethod();
 
-    const string &getUri();
+	const string& getUri();
 
-    const Protocol &getProtocol();
+	const Protocol& getProtocol();
 
-    void setMethod(const string &);
+	void setMethod(const string&);
 
-    void setUri(const string &);
+	void setUri(const string&);
 
-    void setProtocol(const string &);
+	void setProtocol(const string&);
 
-    string getHeader(const string &) const;
+	string getHeader(const string&) const;
 
-    void setHeader(string key, string value);
+	void setHeader(string key, string value);
 
-    void setHeadersVector(vector<string>);
+	void setHeadersVector(vector<string>);
 
-    vector<string> &getHeadersVector();
+	vector<string>& getHeadersVector();
 
-    bool emptyHeader() const;
+	bool emptyHeader() const;
 };
 
 #endif

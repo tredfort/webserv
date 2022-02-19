@@ -62,3 +62,7 @@ cmake-build-debug
 
 *.swp
 *.conf
+
+#executable
+webserv
+a.out

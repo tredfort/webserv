@@ -53,6 +53,6 @@ fclean: clean
 	rm -rf $(NAME)
 
 format:
-	find . -iname *.hpp -o -iname *.cpp | xargs clang-format -i -style=file
+	find . -iname srcs/*.hpp -o -iname srcs/*.cpp | xargs clang-format -i -style=file
 
 re: fclean all

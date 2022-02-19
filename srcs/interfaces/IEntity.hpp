@@ -8,4 +8,4 @@
 class IEntity {
 };
 
-#endif //WEBSERV_ENTITY_HPP
+#endif // WEBSERV_ENTITY_HPP

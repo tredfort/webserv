@@ -13,24 +13,23 @@ using std::map;
 
 class Repository : public ICrudRepository {
 private:
-    map<int, IEntity *> entities;
+	map<int, IEntity*> entities;
 
 public:
-    Repository();
+	Repository();
 
-    ~Repository();
+	~Repository();
 
-    void save(int id, IEntity *entity);
+	void save(int id, IEntity* entity);
 
-    IEntity *findById(int id);
+	IEntity* findById(int id);
 
-    void deleteById(int id);
+	void deleteById(int id);
 
 private:
-    Repository(const Repository &);
+	Repository(const Repository&);
 
-    Repository &operator=(const Repository &);
+	Repository& operator=(const Repository&);
 };
-
 
 #endif

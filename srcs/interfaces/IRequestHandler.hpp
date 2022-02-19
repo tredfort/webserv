@@ -5,17 +5,17 @@
 
 class IRequestHandler {
 public:
-    ~IRequestHandler() {};
+	~IRequestHandler() {};
 
-    virtual void formResponse(WebClient *client) = 0;
+	virtual void formResponse(WebClient* client) = 0;
 
-    virtual void doPost(WebClient *client) = 0;
+	virtual void doPost(WebClient* client) = 0;
 
-    virtual void doGet(WebClient *client) = 0;
+	virtual void doGet(WebClient* client) = 0;
 
-    virtual void doPut(WebClient *client) = 0;
+	virtual void doPut(WebClient* client) = 0;
 
-    virtual void doDelete(WebClient *client) = 0;
+	virtual void doDelete(WebClient* client) = 0;
 };
 
 #endif

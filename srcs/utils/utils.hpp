@@ -1,22 +1,22 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <algorithm>
 #include <climits>
+#include <iostream>
 #include <netinet/in.h>
 #include <sstream>
-#include <iostream>
 #include <string>
 #include <sys/poll.h>
 #include <vector>
 
+using std::cout;
+using std::endl;
 using std::getline;
 using std::istringstream;
 using std::string;
 using std::stringstream;
 using std::vector;
-using std::cout;
-using std::endl;
-
 
 /**
  * split string with delimiter. It skips empty strings

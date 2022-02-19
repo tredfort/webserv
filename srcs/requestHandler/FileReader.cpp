@@ -1,8 +1,8 @@
 
 #include "FileReader.hpp"
 
-
-std::string FileReader::readFile(const std::string& fileName) {
+std::string FileReader::readFile(const std::string& fileName)
+{
 
 	std::ifstream inFile(fileName, std::ios::binary);
 	// if (!inFile) {
@@ -10,7 +10,7 @@ std::string FileReader::readFile(const std::string& fileName) {
 	// }
 	std::string result;
 	inFile.seekg(0, std::ios::end);
-//	TODO: Разобраться с resize()
+	//	TODO: Разобраться с resize()
 	try {
 		result.resize(inFile.tellg());
 	} catch (std::exception& e) {
@@ -30,28 +30,17 @@ std::string FileReader::readFile(const std::string& fileName) {
 	return result;
 }
 
+FileReader::~FileReader() { }
 
-FileReader::~FileReader() {
+FileReader::FileReader() { }
 
+FileReader::FileNotFoundException::FileNotFoundException(const std::string& fileName)
+	: fileName(fileName)
+{
 }
 
-
-FileReader::FileReader() {}
-
-
-FileReader::FileNotFoundException::FileNotFoundException(const std::string& fileName) _NOEXCEPT :
-		fileName(fileName) {
-
-}
-
-
-FileReader::FileNotFoundException::~FileNotFoundException() throw() {
-
-}
-
-
-const char* FileReader::FileNotFoundException::what() const throw() {
-	 std::string* msg = new std::string (
-			 fileName + " could not be opened for reading!");
+const char* FileReader::FileNotFoundException::what() const noexcept
+{
+	std::string* msg = new std::string(fileName + " could not be opened for reading!");
 	return msg->c_str();
 }

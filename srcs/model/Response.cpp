@@ -1,18 +1,17 @@
 #include "Response.hpp"
 
-Response::Response() {
+Response::Response()
+{
 
-//    file.open(fileName, std::ios::binary | std::ios::ate);
-//    try {
-//        fileSize = file.tellg();
-//    } catch (std::exception& e) {
-//        std::cout << e.what() << std::endl;
-//    }
-//    file.seekg(0, std::ios::beg);
+	//    file.open(fileName, std::ios::binary | std::ios::ate);
+	//    try {
+	//        fileSize = file.tellg();
+	//    } catch (std::exception& e) {
+	//        std::cout << e.what() << std::endl;
+	//    }
+	//    file.seekg(0, std::ios::beg);
 }
 
-Response::~Response() {}
+Response::~Response() { }
 
-std::string Response::toString() const {
-	return toSend;
-}
+std::string Response::toString() const { return toSend; }
