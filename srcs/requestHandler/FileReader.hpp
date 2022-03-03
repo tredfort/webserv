@@ -21,6 +21,7 @@ public:
 
 	public:
 		explicit FileNotFoundException(const std::string&);
-		const char* what() const noexcept override;
+		~FileNotFoundException() _NOEXCEPT;
+		const char* what() const _NOEXCEPT;
 	};
 };

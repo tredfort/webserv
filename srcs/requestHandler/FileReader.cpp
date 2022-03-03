@@ -34,12 +34,9 @@ FileReader::~FileReader() { }
 
 FileReader::FileReader() { }
 
-FileReader::FileNotFoundException::FileNotFoundException(const std::string& fileName)
-	: fileName(fileName)
-{
-}
+FileReader::FileNotFoundException::~FileNotFoundException() throw() { }
 
-const char* FileReader::FileNotFoundException::what() const noexcept
+const char* FileReader::FileNotFoundException::what() const throw()
 {
 	std::string* msg = new std::string(fileName + " could not be opened for reading!");
 	return msg->c_str();
