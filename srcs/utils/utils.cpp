@@ -99,3 +99,35 @@ in_port_t getValidPort(const string& port)
 	}
 	return htons(_port);
 }
+
+void fatalError(const string& errorMessage, int errorCode)
+{
+	std::cerr << errorMessage << std::endl;
+	exit(errorCode);
+}
+
+int getStringIndexFromArray(string str, const string* array)
+{
+	int i = 0;
+	while (!array[i].empty()) {
+		if (str == array[i])
+			return i;
+		++i;
+	}
+	return -1;
+}
+
+bool isDigits(const std::string& str) { return str.find_first_not_of("0123456789") == std::string::npos; }
+
+bool isFileExists(string pathToFile)
+{
+	std::ifstream file(pathToFile);
+	return file.is_open();
+}
+void printStringVector(const vector<string>& v)
+{
+	for (vector<string>::const_iterator it = v.begin(); it != v.end(); ++it) {
+		cout << *it << endl;
+	}
+	cout << endl;
+}

@@ -2,14 +2,14 @@ NAME=webserv
 
 CC = clang++
 
-# TODO:: remove -g flag
 CFLAGS = -Wall -Werror -Wextra -std=c++98 -g
 
 SRC = srcs/main.cpp \
 	srcs/server/Server.cpp \
 	srcs/server/Socket.cpp \
 	srcs/config/Config.cpp \
-	srcs/config/Configurator.cpp \
+	srcs/config/LocationContext.cpp \
+	srcs/config/ServerContext.cpp \
 	srcs/utils/utils.cpp \
 	srcs/repository/Repository.cpp \
 	srcs/model/WebClient.cpp \
@@ -25,7 +25,8 @@ HEADERS = \
 	srcs/server/Server.hpp \
 	srcs/server/Socket.hpp \
 	srcs/config/Config.hpp \
-	srcs/config/Configurator.hpp \
+	srcs/config/LocationContext.hpp \
+	srcs/config/ServerContext.hpp \
 	srcs/utils/utils.hpp \
 	srcs/repository/Repository.hpp \
 	srcs/interfaces/ICrudRepository.hpp \
