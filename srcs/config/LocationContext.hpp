@@ -14,7 +14,7 @@ using std::string;
 using std::vector;
 
 const string LOCATION_CONTEXT_DIRECTIVES[]
-	= { "allowedMethod", "autoindex", "cgiExtension", "cgiPath", "client_max_body_size", "error_page", "index", "redirect", "root", "upload_path", "" };
+	= { "allowed_method", "autoindex", "cgi_extension", "cgi_path", "client_max_body_size", "error_page", "index", "redirect", "root", "upload_path", "" };
 
 class LocationContext {
 

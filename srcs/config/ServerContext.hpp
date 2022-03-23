@@ -15,7 +15,7 @@ using std::string;
 using std::vector;
 
 const string SERVER_CONTEXT_DIRECTIVES[] = { //
-	"server_name", "listen", "autoindex", "client_max_body_size", "error_page", "index", "listen", "location", ""
+	"server_name", "listen", "autoindex", "client_max_body_size", "error_page", "index", "location", ""
 };
 
 class LocationContext;

@@ -137,7 +137,7 @@ void RequestHandler::readfile(const std::string& path)
 	try {
 		body = FileReader::readFile(path);
 	} catch (FileReader::FileNotFoundException& ex) {
-		body = FileReader::readFile("resources/errorpages/404.html");
+		body = FileReader::readFile("resources/errorPages/404.html");
 	}
 	if (!body.empty()) {
 		content_lengh = body.size();
@@ -192,7 +192,7 @@ void RequestHandler::doGet(WebClient* client)
 	} else { // Requested path not found
 		std::cout << "404 for URL " << _uri << std::endl;
 		status_code = 404;
-		path = "resources/errorpages/404.html";
+		path = "resources/errorPages/404.html";
 	}
 	readfile(path);
 	toSend.append("HTTP/1.1 ");

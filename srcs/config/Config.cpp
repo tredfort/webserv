@@ -13,11 +13,11 @@ Config::Config(const string& filename)
 		fatalError("Failed to open fail", 10);
 	}
 	while (getline(fileStream, line)) {
-		line = trim(line);
+		line = rtrim(trim(line), ";");
 		if (line.empty() || line[0] == '#') {
 			continue;
 		}
-		vector<string> lineWords = ft_split(line, " ;");
+		vector<string> lineWords = ft_split(line, " ");
 		// main context doesn't have any directives containing one word
 		if (lineWords.size() < 2) {
 			fatalError("Key doesn't have value! Main context", 11);
@@ -80,8 +80,6 @@ const vector<pair<int, string> >& Config::getErrorPages() const { return _errorP
 
 void Config::setErrorPages(const vector<pair<int, string> >& errorPages) { _errorPages = errorPages; }
 
-void Config::printConfig() { cout << "printing config is still todo feature" << endl; }
-
 void Config::parseClientMaxBodySize(string toParseValue, size_t* value)
 {
 	size_t idx, result;
@@ -92,7 +90,7 @@ void Config::parseClientMaxBodySize(string toParseValue, size_t* value)
 	} catch (const std::out_of_range& oor) {
 		fatalError("Failed to parse client_max_body_size directive!", 24);
 	}
-	if (toParseValue.size() > idx + 1 || toParseValue[idx] != 'm') {
+	if (toParseValue.size() > idx + 1 || (toParseValue.size() == idx + 1 && toParseValue[idx] != 'm')) {
 		fatalError("Failed to parse client_max_body_size directive!", 25);
 	}
 	if (toParseValue[idx] == 'm') {
@@ -110,7 +108,8 @@ void Config::parseIndex(const vector<string>& lineWords, vector<string>& index)
 		index.push_back(lineWords[i]);
 	}
 }
-void Config::printfConfig()
+
+void Config::printConfig()
 {
 	cout << "GLOBAL CONFIG" << endl;
 	cout << endl << "Error pages:" << endl;

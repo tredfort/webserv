@@ -15,7 +15,7 @@ LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstre
 	_redirect.second = "";
 
 	while (getline(*fileStream, line)) {
-		line = trim(line);
+		line = rtrim(trim(line), ";");
 		if (line.empty() || line[0] == '#') {
 			continue;
 		}
@@ -23,10 +23,10 @@ LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstre
 			// TODO:: check if is fulfilled and done
 			return;
 		}
-		vector<string> lineWords = ft_split(line, " ;");
+		vector<string> lineWords = ft_split(line, " ");
 		// TODO:: im' not sure
 		if (lineWords.size() < 2) {
-			fatalError("Key doesn't have value! Server context", 11);
+			fatalError("Key doesn't have value! Location context", 31);
 		}
 		string key = lineWords[0];
 		int stringIndex = getStringIndexFromArray(key, LOCATION_CONTEXT_DIRECTIVES);
@@ -37,22 +37,22 @@ LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstre
 			break;
 		case 1: // autoindex
 			if (lineWords.size() != 2 || (lineWords[1] != "on" && lineWords[1] != "off"))
-				fatalError("Failed to parse autoindex directive!", 23);
+				fatalError("Failed to parse autoindex directive!", 32);
 			setAutoIndex(lineWords[1] == "on");
 			break;
 		case 2: // cgiExtension
 			if (lineWords.size() != 2)
-				fatalError("Failed to parse cgiExtension directive!", 24);
+				fatalError("Failed to parse cgiExtension directive!", 33);
 			setCgiExtension(lineWords[1]);
 			break;
 		case 3: // cgiPath
 			if (lineWords.size() != 2)
-				fatalError("Failed to parse cgiExtension directive!", 24);
+				fatalError("Failed to parse cgiExtension directive!", 34);
 			setCgiPath(lineWords[1]); // TODO:: check if it possible to reach or don't check it? What if it is remote cgi?
 			break;
 		case 4: // client_max_body_size
 			if (lineWords.size() > 2 || lineWords[1].find_first_not_of("0123456789m") != std::string::npos)
-				fatalError("failed to parse client_max_body_size directive", 24);
+				fatalError("failed to parse client_max_body_size directive", 35);
 			Config::parseClientMaxBodySize(lineWords[1], &_clientMaxBodySize);
 			break;
 		case 5: // error_page
@@ -63,7 +63,7 @@ LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstre
 			break;
 		case 7: // redirect the most similar in nginx return https://nginx.org/en/docs/http/ngx_http_rewrite_module.html#return
 			if (_redirect.first != 0)
-				fatalError("Failed to parse redirect directive! Already parsed!", 25);
+				fatalError("Failed to parse redirect directive! Already parsed!", 36);
 			if (lineWords.size() == 2) {
 				_redirect.first = 302;
 				_redirect.second = lineWords[1];
@@ -71,9 +71,9 @@ LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstre
 				try {
 					_redirect.first = std::stoi(lineWords[1]);
 				} catch (const std::invalid_argument& ia) {
-					fatalError("Failed to parse redirect directive!", 26);
+					fatalError("Failed to parse redirect directive!", 37);
 				} catch (const std::out_of_range& oor) {
-					fatalError("Failed to parse redirect directive!", 27);
+					fatalError("Failed to parse redirect directive!", 38);
 				}
 				_redirect.second = lineWords[2];
 			} else {
@@ -82,18 +82,18 @@ LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstre
 			break;
 		case 8: // root
 			if (!isFileExists(lineWords[1]))
-				fatalError("Failed to find file specified in root directive!", 28);
+				fatalError("Failed to find file specified in root directive!", 39);
 			_root = lineWords[1];
 			break;
 		case 9: // upload_path doesn't exist in nginx.
 			// From subject :Make the route able to accept uploaded files and configure where they should be saved.
-			if (!isFileExists(lineWords[1]))
-				fatalError("Failed to find file specified in root directive!", 28);
+			if (!isFileExists(lineWords[1])) // TODO:: check for directory
+				fatalError("Failed to find file specified in upload_path directive!", 30);
 			_uploadPath = lineWords[1];
 			break;
 		case -1:
 		default:
-			fatalError(string("Failed to parse config. unknown directive: ") + key, 13);
+			fatalError("Failed to parse config. unknown directive: " + key, 30);
 			break;
 		}
 	}

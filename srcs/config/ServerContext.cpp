@@ -13,7 +13,7 @@ ServerContext::ServerContext(std::ifstream* fileStream)
 	// TODO:: index index.html
 
 	while (getline(*fileStream, line)) {
-		line = trim(line);
+		line = rtrim(trim(line), ";");
 		if (line.empty() || line[0] == '#') {
 			continue;
 		}
@@ -21,10 +21,10 @@ ServerContext::ServerContext(std::ifstream* fileStream)
 			// TODO:: check if is fulfilled and done
 			return;
 		}
-		vector<string> lineWords = ft_split(line, " ;");
+		vector<string> lineWords = ft_split(line, " ");
 		// TODO:: im' not sure
 		if (lineWords.size() < 2) {
-			fatalError("Key doesn't have value! Server context", 11);
+			fatalError(string("Key doesn't have value! Server context: ") + lineWords[0], 11);
 		}
 		string key = lineWords[0];
 		int stringIndex = getStringIndexFromArray(key, SERVER_CONTEXT_DIRECTIVES);
@@ -67,9 +67,10 @@ ServerContext::ServerContext(std::ifstream* fileStream)
 			if (lineWords.size() < 3 || lineWords.size() > 4 || lineWords[lineWords.size() - 1] != "{")
 				fatalError("Failed to parse location directive!", 25);
 			_locations.push_back(new LocationContext(lineWords, fileStream));
+			break;
 		case -1:
 		default:
-			fatalError(string("Failed to parse config. unknown directive: ") + key, 13);
+			fatalError(string("Failed to parse config. unknown directive: ") + key, 29);
 			break;
 		}
 	}
