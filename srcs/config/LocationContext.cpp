@@ -3,6 +3,8 @@
 LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstream* fileStream)
 {
 	string line;
+	ssize_t directiveIndex;
+	vector<string> lineWords;
 
 	if (lineLocation.size() == 4) {
 		_modificator = lineLocation[1];
@@ -14,23 +16,8 @@ LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstre
 	_redirect.first = 0;
 	_redirect.second = "";
 
-	while (getline(*fileStream, line)) {
-		line = rtrim(trim(line), ";");
-		if (line.empty() || line[0] == '#') {
-			continue;
-		}
-		if (line == "}") {
-			// TODO:: check if is fulfilled and done
-			return;
-		}
-		vector<string> lineWords = ft_split(line, " ");
-		// TODO:: im' not sure
-		if (lineWords.size() < 2) {
-			fatalError("Key doesn't have value! Location context", 31);
-		}
-		string key = lineWords[0];
-		int stringIndex = getStringIndexFromArray(key, LOCATION_CONTEXT_DIRECTIVES);
-		switch (stringIndex) {
+	while ((directiveIndex = Config::getParsedLine(fileStream, false, &lineWords, LOCATION_CONTEXT_DIRECTIVES)) != -1) {
+		switch (directiveIndex) {
 		case 0: // allowedMethod not exists in nginx, just read values like GET POST e.t.c. The most similar from nginx
 				// https://nginx.org/en/docs/http/ngx_http_core_module.html#limit_except
 			parseAllowedMethods(lineWords);
@@ -93,7 +80,7 @@ LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstre
 			break;
 		case -1:
 		default:
-			fatalError("Failed to parse config. unknown directive: " + key, 30);
+			fatalError("Unexpected value in switch!", 30);
 			break;
 		}
 	}

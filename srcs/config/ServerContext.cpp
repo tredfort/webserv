@@ -8,30 +8,14 @@ ServerContext::ServerContext(std::ifstream* fileStream)
 	, _clientMaxBodySize(1024 * 1024)
 {
 	string line;
-	// TODO:: set default
-	// TODO:: listen *:80 | *:8000
-	// TODO:: index index.html
+	ssize_t directiveIndex;
+	vector<string> lineWords;
 
-	while (getline(*fileStream, line)) {
-		line = rtrim(trim(line), ";");
-		if (line.empty() || line[0] == '#') {
-			continue;
-		}
-		if (line == "}") {
-			// TODO:: check if is fulfilled and done
-			return;
-		}
-		vector<string> lineWords = ft_split(line, " ");
-		// TODO:: im' not sure
-		if (lineWords.size() < 2) {
-			fatalError(string("Key doesn't have value! Server context: ") + lineWords[0], 11);
-		}
-		string key = lineWords[0];
-		int stringIndex = getStringIndexFromArray(key, SERVER_CONTEXT_DIRECTIVES);
-		switch (stringIndex) {
+	while ((directiveIndex = Config::getParsedLine(fileStream, false, &lineWords, SERVER_CONTEXT_DIRECTIVES)) != -1) {
+		switch (directiveIndex) {
 		case 0: // server_name https://nginx.org/en/docs/http/ngx_http_core_module.html#server_name
 			for (size_t i = 1; i < lineWords.size(); ++i)
-				_serverNames.push_back(lineWords[i]); // TODO:: should it be validated?
+				_serverNames.push_back(lineWords[i]);
 			break;
 		case 1: // listen https://nginx.org/en/docs/http/ngx_http_core_module.html#listen
 			if (lineWords.size() > 2)
@@ -39,7 +23,7 @@ ServerContext::ServerContext(std::ifstream* fileStream)
 			if (isDigits(lineWords[1])) // in this case it is only port provided
 			{
 				addPortListener(lineWords[1]);
-			} else if (lineWords[1].find(":") != string::npos) // directive provide address and port
+			} else if (lineWords[1].find(':') != string::npos) // directive provide address and port
 			{
 				addAddressPortListener(lineWords[1]);
 			} else { // else only address
@@ -66,14 +50,30 @@ ServerContext::ServerContext(std::ifstream* fileStream)
 		case 6: // location
 			if (lineWords.size() < 3 || lineWords.size() > 4 || lineWords[lineWords.size() - 1] != "{")
 				fatalError("Failed to parse location directive!", 25);
-			_locations.push_back(new LocationContext(lineWords, fileStream));
+			_locations.push_back(LocationContext(lineWords, fileStream));
 			break;
 		case -1:
 		default:
-			fatalError(string("Failed to parse config. unknown directive: ") + key, 29);
+			fatalError("Unexpected value in switch!", 29);
 			break;
 		}
 	}
+	checkDefaultValues();
+}
+
+void ServerContext::checkDefaultValues()
+{
+	if (_serverNames.empty()) {
+		_serverNames.push_back("");
+	}
+	if (_listenes.empty()) {
+		// TODO:: if it is root set -> *:8000
+		_listenes.push_back(make_pair("*", 80));
+	}
+	if (_index.empty()) {
+		_index.push_back("index.html");
+	}
+	// TODO:: what if there are no location contexts
 }
 
 const vector<string>& ServerContext::getServerNames() const { return _serverNames; }
@@ -138,9 +138,9 @@ void ServerContext::printConfig()
 	cout << endl;
 
 	cout << "locations:" << endl;
-	for (vector<LocationContext*>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
+	for (vector<LocationContext>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
 		cout << endl;
-		(*it)->printConfig();
+		it->printConfig();
 	}
 	cout << endl;
 }

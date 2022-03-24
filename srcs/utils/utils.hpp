@@ -111,10 +111,12 @@ void fatalError(const string& errorMessage, int errorCode = 1);
  * @param array the last element of the array SHOULD BE EMPTY string
  * @return
  */
-int getStringIndexFromArray(string str, const string* array);
+int getStringIndexFromArray(const string& str, const string* array);
 
 bool isFileExists(string pathToFile);
 
 void printStringVector(const vector<string>&);
+
+string removeAfter(string, char);
 
 #endif

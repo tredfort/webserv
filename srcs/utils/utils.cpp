@@ -106,7 +106,7 @@ void fatalError(const string& errorMessage, int errorCode)
 	exit(errorCode);
 }
 
-int getStringIndexFromArray(string str, const string* array)
+int getStringIndexFromArray(const string& str, const string* array)
 {
 	int i = 0;
 	while (!array[i].empty()) {
@@ -130,4 +130,13 @@ void printStringVector(const vector<string>& v)
 		cout << *it << endl;
 	}
 	cout << endl;
+}
+
+string removeAfter(string s, char c)
+{
+	size_t pos = s.find(c);
+	if (pos == string::npos) {
+		return s;
+	}
+	return s.substr(0, pos);
 }

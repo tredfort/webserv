@@ -38,6 +38,7 @@ public:
 	static void addErrorPage(const vector<string>& lineWords, vector<pair<int, std::string> > errorPages);
 	static void parseClientMaxBodySize(string, size_t*);
 	static void parseIndex(const vector<string>& lineWords, vector<string>& index);
+	static ssize_t getParsedLine(ifstream* fileStream, bool isMainContext, vector<string>* lineWords, const string* CONTEXT_DIRECTIVE);
 
 	const vector<pair<int, string> >& getErrorPages() const;
 	void setErrorPages(const vector<pair<int, string> >& errorPages);
@@ -45,7 +46,9 @@ public:
 
 private:
 	vector<pair<int, string> > _errorPages;
-	vector<ServerContext*> _servers;
+	vector<ServerContext> _servers;
+	ssize_t getParseLine(
+		ifstream* fileStream, bool isMainContext, vector<string>* wordsLine, const std::basic_string<char, std::char_traits<char>, std::allocator<char> >* CONTEXT_DIRECTIVE);
 };
 
 #endif

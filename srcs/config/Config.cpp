@@ -2,29 +2,54 @@
 
 #include <utility>
 
-// TODO:: set default values... looks like there are not any default values
+/**
+ * Fill the vector of string "lineWords" with parsed directive words
+ * @param fileStream
+ * @param isMainContext
+ * @param lineWords
+ * @param CONTEXT_DIRECTIVE
+ * @return -1 in case if there is no more input, or
+ */
+ssize_t Config::getParsedLine(ifstream* fileStream, bool isMainContext, vector<string>* lineWords, const string* CONTEXT_DIRECTIVE)
+{
+	string line;
+
+	if (getline(*fileStream, line)) {
+		line = removeAfter(rtrim(trim(line), ";"), '#');
+		if (line.empty() || line[0] == '#') {
+			return Config::getParsedLine(fileStream, isMainContext, lineWords, CONTEXT_DIRECTIVE); // if it is empty line just call function one more time
+		}
+		if (!isMainContext && line == "}") {
+			return -1;
+		}
+		*lineWords = ft_split(line, " ");
+		// main context doesn't have any directives containing one word
+		if (lineWords->size() < 2) {
+			fatalError("Key doesn't have value!", 11);
+		}
+		string key = (*lineWords)[0];
+		int stringIndex = getStringIndexFromArray(key, CONTEXT_DIRECTIVE);
+		if (stringIndex < 0)
+			fatalError(string("Failed to parse config. unknown directive: ") + key, 13);
+		else
+			return stringIndex;
+	}
+	return -1;
+}
+
 Config::Config(const string& filename)
 {
 	ifstream fileStream;
 	string line;
+	vector<string> lineWords;
+	ssize_t directiveIndex;
 
 	fileStream.open(filename);
 	if (!fileStream.is_open()) {
 		fatalError("Failed to open fail", 10);
 	}
-	while (getline(fileStream, line)) {
-		line = rtrim(trim(line), ";");
-		if (line.empty() || line[0] == '#') {
-			continue;
-		}
-		vector<string> lineWords = ft_split(line, " ");
-		// main context doesn't have any directives containing one word
-		if (lineWords.size() < 2) {
-			fatalError("Key doesn't have value! Main context", 11);
-		}
-		string key = lineWords[0];
-		int stringIndex = getStringIndexFromArray(key, MAIN_CONTEXT_DIRECTIVES);
-		switch (stringIndex) {
+	while ((directiveIndex = Config::getParsedLine(&fileStream, true, &lineWords, MAIN_CONTEXT_DIRECTIVES)) != -1) {
+		switch (directiveIndex) {
 		case 0: // _error_page codeInInt pathToFile
 			Config::addErrorPage(lineWords, getErrorPages());
 			break;
@@ -32,23 +57,20 @@ Config::Config(const string& filename)
 			if (lineWords.size() != 2 && trim(lineWords[1]) != "{") {
 				fatalError("Failed to parse server", 12);
 			}
-			_servers.push_back(new ServerContext(&fileStream));
+			_servers.push_back(ServerContext(&fileStream));
 			break;
 		case -1: // not found
 		default:
-			fatalError(string("Failed to parse config. unknown directive: ") + key, 13);
+			fatalError("Unexpected value in switch!", 13);
 			break;
 		}
 	}
-
 	fileStream.close();
 }
 
-// TODO:: free allocated memory
 Config::~Config()
 {
 	_errorPages.clear();
-	// TODO:: before clear should I free each server?
 	_servers.clear();
 }
 
@@ -118,6 +140,6 @@ void Config::printConfig()
 	}
 	cout << endl;
 	for (size_t i = 0; i < _servers.size(); ++i) {
-		_servers[i]->printConfig();
+		_servers[i].printConfig();
 	}
 }

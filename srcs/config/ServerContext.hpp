@@ -45,7 +45,8 @@ private:
 	vector<string> _index;
 	vector<pair<string, int> > _listenes;
 	vector<string> _serverNames;
-	vector<LocationContext*> _locations;
+	vector<LocationContext> _locations;
+	void checkDefaultValues();
 };
 
 #endif
