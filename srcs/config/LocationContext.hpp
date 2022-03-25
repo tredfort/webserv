@@ -43,6 +43,7 @@ private:
 	string _uploadPath;
 	string _location;
 	string _modificator;
+	void checkDefaultValues();
 };
 
 #endif

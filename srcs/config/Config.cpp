@@ -1,7 +1,5 @@
 #include "Config.hpp"
 
-#include <utility>
-
 /**
  * Fill the vector of string "lineWords" with parsed directive words
  * @param fileStream
@@ -50,7 +48,7 @@ Config::Config(const string& filename)
 	}
 	while ((directiveIndex = Config::getParsedLine(&fileStream, true, &lineWords, MAIN_CONTEXT_DIRECTIVES)) != -1) {
 		switch (directiveIndex) {
-		case 0: // _error_page codeInInt pathToFile
+		case 0: // error_page codeInInt pathToFile
 			Config::addErrorPage(lineWords, getErrorPages());
 			break;
 		case 1: // server
@@ -66,6 +64,13 @@ Config::Config(const string& filename)
 		}
 	}
 	fileStream.close();
+	checkDefaultValues();
+}
+
+void Config::checkDefaultValues()
+{
+	if (_servers.empty())
+		fatalError("Please fill the config file with at least one server directive!", 10);
 }
 
 Config::~Config()

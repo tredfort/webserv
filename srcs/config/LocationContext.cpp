@@ -84,6 +84,13 @@ LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstre
 			break;
 		}
 	}
+	checkDefaultValues();
+}
+
+void LocationContext::checkDefaultValues()
+{
+	if (_location.empty())
+		fatalError("Location has to have URL", 30);
 }
 
 LocationContext::~LocationContext() { }

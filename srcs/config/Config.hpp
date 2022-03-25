@@ -16,7 +16,7 @@ using std::pair;
 using std::string;
 using std::vector;
 
-const string MAIN_CONTEXT_DIRECTIVES[] = { "_error_page", "server", "" };
+const string MAIN_CONTEXT_DIRECTIVES[] = { "error_page", "server", "" };
 
 class LocationContext;
 class ServerContext;
@@ -49,6 +49,7 @@ private:
 	vector<ServerContext> _servers;
 	ssize_t getParseLine(
 		ifstream* fileStream, bool isMainContext, vector<string>* wordsLine, const std::basic_string<char, std::char_traits<char>, std::allocator<char> >* CONTEXT_DIRECTIVE);
+	void checkDefaultValues();
 };
 
 #endif
