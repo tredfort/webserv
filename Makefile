@@ -2,7 +2,7 @@ NAME=webserv
 
 CC = clang++
 
-CFLAGS = -Wall -Werror -Wextra -std=c++98 -g
+CFLAGS = -Wall -Werror -Wextra -std=c++11 -g -DUNIX_OS
 
 SRC = srcs/main.cpp \
 	srcs/server/Server.cpp \
@@ -33,10 +33,10 @@ HEADERS = \
 	srcs/model/WebClient.hpp \
 	srcs/interfaces/IEntity.hpp \
 	srcs/model/Request.hpp \
-    srcs/model/Response.hpp \
-    srcs/requestParser/RequestParser.hpp \
-    srcs/requestHandler/RequestHandler.hpp \
-    srcs/requestHandler/FileReader.hpp \
+	srcs/model/Response.hpp \
+	srcs/requestParser/RequestParser.hpp \
+	srcs/requestHandler/RequestHandler.hpp \
+	srcs/requestHandler/FileReader.hpp \
 
 
 srcs/%.o: srcs/%.cpp $(HEADERS)

@@ -85,7 +85,7 @@ void ServerContext::addPortListener(string value)
 {
 	int port = stoi(value);
 	if (port > 0 && port <= 65535) {
-		_listenes.push_back(make_pair<string, int>("*", port));
+		_listenes.push_back(make_pair("*", port));
 	} else {
 		fatalError("Failed to parse port from listen directive!", 14);
 	}
@@ -101,7 +101,7 @@ void ServerContext::addAddressPortListener(string value)
 	if (port <= 0 || port > 65535) {
 		fatalError("Failed to parse address and port from listen directive!", 15);
 	}
-	_listenes.push_back(make_pair<string, int>(result[1], port));
+	_listenes.push_back(make_pair(result[1], port));
 }
 
 void ServerContext::addAddressListener(string value)
