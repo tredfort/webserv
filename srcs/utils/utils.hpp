@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <climits>
+#include <fstream>
 #include <iostream>
 #include <netinet/in.h>
 #include <sstream>
@@ -57,6 +58,8 @@ std::string ltrim(std::string str, const std::string& chars = "\t\n\v\f\r ");
 std::string rtrim(std::string str, const std::string& chars = "\t\n\v\f\r ");
 std::string trim(std::string str, const std::string& chars = "\t\n\v\f\r ");
 
+bool isDigits(const std::string& str);
+
 void sendMessage(int fd, string msg);
 
 template <class Container> void fullDeleteContainer(Container& c)
@@ -99,5 +102,21 @@ bool StarCmp(const char* str, const char* mask);
 void stringToLowerCase(string& str);
 
 in_port_t getValidPort(const string& port);
+
+void fatalError(const string& errorMessage, int errorCode = 1);
+
+/**
+ *
+ * @param str
+ * @param array the last element of the array SHOULD BE EMPTY string
+ * @return
+ */
+int getStringIndexFromArray(const string& str, const string* array);
+
+bool isFileExists(string pathToFile);
+
+void printStringVector(const vector<string>&);
+
+string removeAfter(string, char);
 
 #endif

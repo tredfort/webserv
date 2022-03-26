@@ -50,7 +50,7 @@ void Request::setHeadersVector(vector<string> headers) { headersVector = headers
 
 vector<string>& Request::getHeadersVector() { return headersVector; }
 
-void Request::setHeader(string key, string value) { headers.insert(make_pair<string, string>(key, value)); }
+void Request::setHeader(string key, string value) { headers.insert(make_pair(key, value)); }
 
 const string& Request::getBuffer() const { return _buffer; }
 
