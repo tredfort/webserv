@@ -195,7 +195,7 @@ void RequestHandler::doGet(WebClient* client)
 		path = "resources/errorPages/404.html";
 	}
 	readfile(path);
-	toSend.append("HTTP/1.1 ");
+	toSend.append("HTTP/1.1 200 OK");
 	// toSend.append(std::to_string(status_code));
 	if (status_code != CGICODE) {
 		toSend.append("\r\n");

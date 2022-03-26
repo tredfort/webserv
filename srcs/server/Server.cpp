@@ -134,7 +134,7 @@ bool Server::sendResponse(WebClient* client)
 		}
 
 		client->getResponse()->toSend = buffer.substr(sendBytes);
-		std::cout << "Sent " << sendBytes << " bytes to fd: " << client->getFd() << std::endl;
+		cout << "Sent " << sendBytes << " bytes to fd: " << client->getFd() << endl;
 		if (client->getResponse()->toSend.empty())
 			client->update();
 	}

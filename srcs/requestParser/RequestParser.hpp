@@ -1,10 +1,12 @@
 
 #pragma once
 
+#include "../model/WebClient.hpp"
 #include <sys/socket.h>
 #include <vector>
 
-#include "../model/WebClient.hpp"
+using std::string;
+using std::vector;
 
 class RequestParser {
 
