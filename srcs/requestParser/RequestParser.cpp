@@ -25,7 +25,7 @@ void RequestParser::processRequest(WebClient* client)
 	Request* request = client->getRequest();
 	size_t pos = request->getBuffer().find("\r\n\r\n");
 
-	if (pos == std::string::npos)
+	if (pos == std::string::npos) //add buffer to some list with old received data
 		return;
 
 	std::string buffer = request->getBuffer().substr(0, pos);
