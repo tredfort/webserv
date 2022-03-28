@@ -61,7 +61,7 @@ CMakeLists.txt
 cmake-build-debug
 
 *.swp
-*.conf
+# *.conf
 
 #executable
 webserv
