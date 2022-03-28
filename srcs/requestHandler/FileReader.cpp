@@ -33,7 +33,15 @@ std::string FileReader::readFile(const std::string& fileName)
 FileReader::~FileReader() { }
 
 FileReader::FileReader() { }
+#ifdef UNIX_OS
+FileReader::FileNotFoundException::~FileNotFoundException() { }
 
+const char* FileReader::FileNotFoundException::what() const throw()
+{
+	std::string* msg = new std::string(fileName + " could not be opened for reading!");
+	return msg->c_str();
+}
+#else
 FileReader::FileNotFoundException::~FileNotFoundException() throw() { }
 
 const char* FileReader::FileNotFoundException::what() const throw()
@@ -41,3 +49,4 @@ const char* FileReader::FileNotFoundException::what() const throw()
 	std::string* msg = new std::string(fileName + " could not be opened for reading!");
 	return msg->c_str();
 }
+#endif

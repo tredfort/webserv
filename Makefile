@@ -2,14 +2,16 @@ NAME=webserv
 
 CC = clang++
 
-# TODO:: remove -g flag
 CFLAGS = -Wall -Werror -Wextra -std=c++98 -g
+# For UNIX
+# CFLAGS = -Wall -Werror -Wextra -std=c++11 -g -DUNIX_OS
 
 SRC = srcs/main.cpp \
 	srcs/server/Server.cpp \
 	srcs/server/Socket.cpp \
 	srcs/config/Config.cpp \
-	srcs/config/Configurator.cpp \
+	srcs/config/LocationContext.cpp \
+	srcs/config/ServerContext.cpp \
 	srcs/utils/utils.cpp \
 	srcs/repository/Repository.cpp \
 	srcs/model/WebClient.cpp \
@@ -25,17 +27,18 @@ HEADERS = \
 	srcs/server/Server.hpp \
 	srcs/server/Socket.hpp \
 	srcs/config/Config.hpp \
-	srcs/config/Configurator.hpp \
+	srcs/config/LocationContext.hpp \
+	srcs/config/ServerContext.hpp \
 	srcs/utils/utils.hpp \
 	srcs/repository/Repository.hpp \
 	srcs/interfaces/ICrudRepository.hpp \
 	srcs/model/WebClient.hpp \
 	srcs/interfaces/IEntity.hpp \
 	srcs/model/Request.hpp \
-    srcs/model/Response.hpp \
-    srcs/requestParser/RequestParser.hpp \
-    srcs/requestHandler/RequestHandler.hpp \
-    srcs/requestHandler/FileReader.hpp \
+	srcs/model/Response.hpp \
+	srcs/requestParser/RequestParser.hpp \
+	srcs/requestHandler/RequestHandler.hpp \
+	srcs/requestHandler/FileReader.hpp \
 
 
 srcs/%.o: srcs/%.cpp $(HEADERS)
