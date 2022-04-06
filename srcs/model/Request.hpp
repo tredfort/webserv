@@ -58,6 +58,8 @@ public:
 	vector<string>& getHeadersVector();
 
 	bool emptyHeader() const;
+
+	map<string, string> getHeadrsMap() const;
 };
 
 #endif

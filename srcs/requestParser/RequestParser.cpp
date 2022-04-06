@@ -25,6 +25,8 @@ void RequestParser::processRequest(WebClient* client)
 	Request* request = client->getRequest();
 	size_t pos = request->getBuffer().find("\r\n\r\n");
 
+	//start parse header
+	// std::cout << request->getBuffer() << std::endl;
 	if (pos == std::string::npos) //add buffer to some list with old received data
 		return;
 
@@ -88,4 +90,10 @@ void RequestParser::fillHeaders(Request* request)
 		std::string value = strings[i].substr(pos + 2);
 		request->setHeader(key, value);
 	}
+	std::cout << "Headers" << std::endl;
+	map<string, string> head = request->getHeadrsMap();
+	for (map<string, string>::iterator it = head.begin(); it != head.end(); it++) {
+		std::cout << it->first << " " << it->second << std::endl;
+	}
+	std::cout << std::endl;
 }

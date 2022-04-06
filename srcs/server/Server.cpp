@@ -110,7 +110,7 @@ bool Server::receiveRequest(WebClient* client)
 
 	buffer[bytesRead] = '\0';
 	client->getRequest()->setBuffer(string(buffer, bytesRead));
-	cout << client->getRequest()->getBuffer() << endl;
+	// cout << client->getRequest()->getBuffer() << endl;
 
 	_parser.processRequest(client);
 

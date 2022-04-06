@@ -55,3 +55,5 @@ void Request::setHeader(string key, string value) { headers.insert(make_pair(key
 const string& Request::getBuffer() const { return _buffer; }
 
 void Request::setBuffer(const string& buffer) { _buffer = buffer; }
+
+map<string, string>  Request::getHeadrsMap() const { return (headers); }
