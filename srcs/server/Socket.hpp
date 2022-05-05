@@ -4,7 +4,7 @@
 #include <cstdio>
 #include <iostream>
 #include <netinet/in.h>
-#include <stdlib.h>
+#include <cstdlib>
 #include <sys/fcntl.h>
 #include <unistd.h>
 

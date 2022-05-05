@@ -2,6 +2,7 @@
 #pragma once
 
 #include <sys/socket.h>
+#include <sys/poll.h>
 #include <vector>
 
 #include "../model/WebClient.hpp"
@@ -13,7 +14,7 @@ public:
 	~RequestParser();
 
 	void processRequest(WebClient* client);
-	void bodyHeadersParse(WebClient* client);
+	void parseBodyHeaders(WebClient* client);
 
 private:
 	RequestParser(const RequestParser& parser);

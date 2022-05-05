@@ -61,19 +61,24 @@ void Server::handleEvents()
 	for (ssize_t i = 0, countFd = _pollfds.size(); i < countFd; ++i) {
 		if (_pollfds[i].revents == 0)
 			continue;
-		if (_pollfds[i].events == POLLIN) {
+		// TODO: Добавить условие для сокета сервера
+		if (i < 1 && _pollfds[i].events) {
+			_pollfds[i].revents = 0;
 			acceptNewClients();
 			continue;
 		}
+		cout << "До " << _pollfds[i].events << endl;
 		WebClient* client = reinterpret_cast<WebClient*>(_clientsRepo->findById(_pollfds[i].fd));
 		if (_pollfds[i].revents & POLLIN && !receiveRequest(client)) {
 			_pollfds.erase(_pollfds.begin() + i);
 			break;
 		}
+		cout << "После " << _pollfds[i].events << endl;
 		if (_pollfds[i].revents & POLLOUT && !sendResponse(client)) {
 			_pollfds.erase(_pollfds.begin() + i);
 			break;
 		}
+		_pollfds[i].revents = 0;
 	}
 }
 
@@ -85,8 +90,8 @@ void Server::acceptNewClients()
 		userfd = accept(_socket->getSockfd(), NULL, NULL);
 		if (userfd <= 0)
 			break;
-		_pollfds.push_back(fillPollfd(userfd, POLLIN | POLLOUT));
-		IEntity* client = reinterpret_cast<IEntity*>(new WebClient(userfd, ntohs(_address.sin_port)));
+		_pollfds.push_back(fillPollfd(userfd, POLLIN));
+		IEntity* client = reinterpret_cast<IEntity*>(new WebClient(userfd, ntohs(_address.sin_port), _pollfds.back().events));
 		_clientsRepo->save(userfd, client);
 	}
 }
@@ -108,7 +113,7 @@ bool Server::receiveRequest(WebClient* client)
 		return false;
 	}
 
-	buffer[bytesRead] = '\0';
+	//	buffer[bytesRead] = '\0';
 	client->getRequest()->setBuffer(string(buffer, bytesRead));
 	_parser.processRequest(client);
 
@@ -137,6 +142,7 @@ bool Server::sendResponse(WebClient* client)
 		std::cout << "Sent " << sendBytes << " bytes to fd: " << client->getFd() << std::endl;
 		if (client->getResponse()->toSend.empty())
 			client->update();
+		client->setStatus(POLLIN);
 	}
 	return true;
 }
