@@ -25,23 +25,23 @@ void RequestParser::processRequest(WebClient* client)
 	Request* request = client->getRequest();
 	size_t pos = request->getBuffer().find("\r\n\r\n");
 
-	if (pos == std::string::npos)
-		return;
-
-	std::string buffer = request->getBuffer().substr(0, pos);
-	request->setBuffer(request->getBuffer().substr(pos + 4));
-
-	if (client->getRequest()->emptyHeader()) {
+	if (pos != std::string::npos && client->getRequest()->emptyHeader()) {
+		std::string buffer = request->getBuffer().substr(0, pos);
+		request->setBuffer(request->getBuffer().substr(pos + 4));
 		client->getRequest()->setHeadersVector(split(buffer, "\r\n"));
 		parseStartLine(client->getRequest());
 		fillHeaders(client->getRequest());
 	}
-	if (!request->getBuffer().empty()) {
-		bodyHeadersParse(client);
+
+	if (request->getMethod() == GET) {
+		client->setStatus(POLLOUT);
+		request->setBuffer("");
+	} else {
+		parseBodyHeaders(client);
 	}
 }
 
-void RequestParser::bodyHeadersParse(WebClient* client)
+void RequestParser::parseBodyHeaders(WebClient* client)
 {
 	Request* request = client->getRequest();
 	size_t pos = request->getBuffer().find("\r\n\r\n");

@@ -31,9 +31,7 @@ HEADERS = \
 	srcs/config/ServerContext.hpp \
 	srcs/utils/utils.hpp \
 	srcs/repository/Repository.hpp \
-	srcs/interfaces/ICrudRepository.hpp \
 	srcs/model/WebClient.hpp \
-	srcs/interfaces/IEntity.hpp \
 	srcs/model/Request.hpp \
 	srcs/model/Response.hpp \
 	srcs/requestParser/RequestParser.hpp \

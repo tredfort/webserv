@@ -5,26 +5,24 @@
 #ifndef REPOSITORY_HPP
 #define REPOSITORY_HPP
 
-#include "../interfaces/ICrudRepository.hpp"
 #include <iostream>
 #include <map>
+#include "../model/WebClient.hpp"
 
 using std::map;
 
-class Repository : public ICrudRepository {
+class Repository {
 private:
-	map<int, IEntity*> entities;
+	map<int, WebClient*> entities;
 
 public:
 	Repository();
 
 	~Repository();
 
-	void save(int id, IEntity* entity);
+	void save(WebClient* client);
 
-	IEntity* findById(int id);
-
-	void deleteById(int id);
+	WebClient* findById(int id);
 
 private:
 	Repository(const Repository&);
