@@ -9,7 +9,7 @@
 #include "../utils/constants.hpp"
 #include "../utils/utils.hpp"
 #include "Socket.hpp"
-#include <arpa/inet.h>
+//#include <arpa/inet.h>
 #include <cstring>
 #include <iostream>
 #include <sys/poll.h>
@@ -29,27 +29,27 @@ using std::vector;
 class Server {
 
 private:
-	typedef vector<struct pollfd> pollVector;
+	Config* _config;
 	RequestParser _parser;
 	RequestHandler _handler;
-	Socket* _socket;
-	Config* _config;
-	Repository* _clientsRepo;
-	struct sockaddr_in _address;
-	pollVector _pollfds;
+	vector<Socket*> _sockets;
+	vector<WebClient*> _clients;
+	vector<struct pollfd> _pollfds;
 
 public:
 	Server(Config* config);
 
 	~Server();
 
-	void createSocket();
+	void createSockets();
 
 	void start();
 
+	void stop();
+
 	void polling();
 
-	void acceptNewClients();
+	void acceptNewClients(Socket* socket);
 
 	void handleEvents();
 

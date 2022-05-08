@@ -34,6 +34,8 @@ private:
 private:
 	const std::string& mimeType(const std::string& uri);
 
+	bool isBadRequest(Request* request) const;
+
 	void readfile(const std::string&);
 
 public:

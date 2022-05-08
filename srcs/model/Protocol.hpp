@@ -2,7 +2,7 @@
 #define PROTOCOL_HPP
 
 enum Protocol {
-	ANOTHER, //
+	UNKNOWN_PROTOCOL,
 	HTTP1_1
 };
 

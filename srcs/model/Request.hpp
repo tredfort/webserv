@@ -35,8 +35,6 @@ public:
 
 	~Request();
 
-	bool isBadRequest();
-
 	const Method& getMethod();
 
 	const string& getUri();

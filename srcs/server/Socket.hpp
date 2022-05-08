@@ -7,23 +7,31 @@
 #include <cstdlib>
 #include <sys/fcntl.h>
 #include <unistd.h>
+#include <arpa/inet.h>
+
+using std::string;
+using std::cerr;
+using std::endl;
 
 class Socket {
 
 private:
 	int _sockfd;
 	int _backlog;
+	struct sockaddr_in _address;
 
 public:
 	Socket(int, int, int);
 	~Socket();
 
 	int getSockfd() const;
+	int getPort() const;
 	int getBacklog() const;
+	const sockaddr_in& getAddress() const;
 
 	void setAddressReuseMode();
 	void setNonblockMode();
-	void bindToAddress(struct sockaddr*);
+	void bindToAddress(string, string);
 	void startListening(int);
 
 private:

@@ -1,14 +1,12 @@
 #include "Request.hpp"
 
 Request::Request()
-	: _method(UNKNOWN)
-	, _protocol(ANOTHER)
+	: _method(UNKNOWN_METHOD)
+	, _protocol(UNKNOWN_PROTOCOL)
 {
 }
 
 Request::~Request() { }
-
-bool Request::isBadRequest() { return _method == UNKNOWN || _uri.empty() || _protocol == ANOTHER; }
 
 const Method& Request::getMethod() { return _method; }
 

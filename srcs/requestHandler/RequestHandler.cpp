@@ -146,10 +146,15 @@ void RequestHandler::readfile(const std::string& path)
 	_header_fields["Status"] = "200 OK";
 }
 
+bool RequestHandler::isBadRequest(Request* request) const
+{
+	return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol() == UNKNOWN_PROTOCOL;
+}
+
 void RequestHandler::formResponse(WebClient* client)
 {
 	Request* request = client->getRequest();
-	if (request->isBadRequest()) {
+	if (isBadRequest(request)) {
 		client->getResponse(); // TODO: Bad Request
 	} else if (request->getMethod() == POST)
 		doPost(client);

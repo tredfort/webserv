@@ -1,33 +1,23 @@
 #include "Server.hpp"
 
 Server::Server(Config* config)
-	: _socket(NULL)
-	, _config(config)
-	, _clientsRepo(new Repository())
-{
-	_address.sin_family = AF_INET;
-	_address.sin_port = getValidPort("8080");
-	if (inet_aton("127.0.0.1", &_address.sin_addr) == 0) {
-		cout << "ERROR: Invalid ip address!" << endl;
-		exit(EXIT_FAILURE);
-	}
-}
+	: _config(config) { }
 
 Server::~Server()
 {
-	delete _socket;
 	delete _config;
-	delete _clientsRepo;
 }
 
-void Server::createSocket()
+void Server::createSockets()
 {
-	_socket = new Socket(AF_INET, SOCK_STREAM, 0);
+	Socket* socket = new Socket(AF_INET, SOCK_STREAM, 0);
 
-	_socket->setAddressReuseMode();
-	_socket->setNonblockMode();
-	_socket->bindToAddress(reinterpret_cast<struct sockaddr*>(&_address));
-	_socket->startListening(SOMAXCONN);
+	socket->setAddressReuseMode();
+	socket->setNonblockMode();
+	socket->bindToAddress("127.0.0.1", "8080");
+	socket->startListening(SOMAXCONN);
+	_sockets.push_back(socket);
+	_pollfds.push_back(fillPollfd(socket->getSockfd(), POLLIN));
 }
 
 /**
@@ -35,8 +25,7 @@ void Server::createSocket()
  */
 void Server::start()
 {
-	createSocket();
-	_pollfds.push_back(fillPollfd(_socket->getSockfd(), POLLIN));
+	createSockets();
 
 	while (true) {
 		try {
@@ -50,6 +39,8 @@ void Server::start()
 	}
 }
 
+void Server::stop() { }
+
 void Server::polling()
 {
 	if (poll(&(_pollfds.front()), _pollfds.size(), -1) < 0)
@@ -58,40 +49,41 @@ void Server::polling()
 
 void Server::handleEvents()
 {
-	for (ssize_t i = 0, countFd = _pollfds.size(); i < countFd; ++i) {
+	for (size_t i = 0, socksCount = _sockets.size(), fdsCount = _pollfds.size(); i < fdsCount; ++i) {
 		if (_pollfds[i].revents == 0)
 			continue;
-		// TODO: Добавить условие для сокета сервера
-		if (i < 1 && _pollfds[i].events) {
-			acceptNewClients();
+		if (i < socksCount && _pollfds[i].revents & POLLIN) {
+			acceptNewClients(_sockets[i]);
 			continue;
+		} else if (i >= socksCount) {
+			bool keepAlive = true;
+			WebClient* client = _clients[i - socksCount];
+			if (_pollfds[i].revents & POLLIN) {
+				keepAlive = receiveRequest(client);
+			} else if (_pollfds[i].revents & POLLOUT) {
+				keepAlive = sendResponse(client);
+			}
+			if (!keepAlive) {
+				_pollfds.erase(_pollfds.begin() + i);
+				_clients.erase(_clients.begin() + i - socksCount);
+				delete client;
+				break;
+			}
+			_pollfds[i].events = client->getStatus();
 		}
-		WebClient* client = _clientsRepo->findById(_pollfds[i].fd);
-		if (_pollfds[i].revents & POLLIN && !receiveRequest(client)) {
-			_pollfds.erase(_pollfds.begin() + i);
-			delete client;
-			break;
-		}
-		if (_pollfds[i].revents & POLLOUT && !sendResponse(client)) {
-			_pollfds.erase(_pollfds.begin() + i);
-			delete client;
-			break;
-		}
-		_pollfds[i].events = client->getStatus();
 	}
 }
 
-void Server::acceptNewClients()
+void Server::acceptNewClients(Socket* socket)
 {
-	int userfd;
-
 	while (true) {
-		userfd = accept(_socket->getSockfd(), NULL, NULL);
-		if (userfd <= 0)
+		int client_fd = accept(socket->getSockfd(), NULL, NULL);
+		if (client_fd <= 0) {
 			break;
-		_pollfds.push_back(fillPollfd(userfd, POLLIN));
-		WebClient* client = new WebClient(userfd, ntohs(_address.sin_port), _pollfds.back().events);
-		_clientsRepo->save(client);
+		}
+		_pollfds.push_back(fillPollfd(client_fd, POLLIN));
+		WebClient* client = new WebClient(client_fd, socket->getSockfd(), _pollfds.back().events);
+		_clients.push_back(client);
 	}
 }
 
