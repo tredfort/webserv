@@ -101,7 +101,7 @@ bool Server::receiveRequest(WebClient* client)
 		return false;
 	}
 
-	client->getRequest()->setBuffer(string(buffer, bytesRead));
+	client->getRequest()->appendBuffer(string(buffer, bytesRead));
 	_parser.processRequest(client);
 
 	return true;

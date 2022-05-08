@@ -1,21 +1,5 @@
 #include "RequestParser.hpp"
 
-static std::vector<std::string> split(const std::string& str, const std::string& delim)
-{
-	std::vector<std::string> tokens;
-	size_t prev = 0, pos;
-	do {
-		pos = str.find(delim, prev);
-		if (pos == std::string::npos)
-			pos = str.length();
-		std::string token = str.substr(prev, pos - prev);
-		if (!token.empty())
-			tokens.push_back(token);
-		prev = pos + delim.length();
-	} while (pos < str.length() && prev < str.length());
-	return tokens;
-}
-
 RequestParser::RequestParser() { }
 
 RequestParser::~RequestParser() { }
@@ -28,9 +12,9 @@ void RequestParser::processRequest(WebClient* client)
 	if (pos != std::string::npos && client->getRequest()->emptyHeader()) {
 		std::string buffer = request->getBuffer().substr(0, pos);
 		request->setBuffer(request->getBuffer().substr(pos + 4));
-		client->getRequest()->setHeadersVector(split(buffer, "\r\n"));
-		parseStartLine(client->getRequest());
-		fillHeaders(client->getRequest());
+		vector<string> headers = ft_split(buffer, "\r\n");
+		parseStartLine(client->getRequest(), headers[0]);
+		fillHeaders(client->getRequest(), headers);
 	}
 
 	if (request->getMethod() == GET) {
@@ -55,37 +39,35 @@ void RequestParser::parseBodyHeaders(WebClient* client)
 	// TODO: написать этот метод
 }
 
-void RequestParser::parseStartLine(Request* request)
+void RequestParser::parseStartLine(Request* request, string& startLine)
 {
-	std::string& line = request->getHeadersVector()[0];
 	size_t start;
-	size_t end = line.find(' ');
+	size_t end = startLine.find(' ');
 	if (end == std::string::npos)
 		return;
-	request->setMethod(line.substr(0, end));
+	request->setMethod(startLine.substr(0, end));
 
 	start = end + 1;
-	end = line.find(' ', start);
+	end = startLine.find(' ', start);
 	if (end == std::string::npos)
 		return;
-	request->setUri(line.substr(start, end - start));
+	request->setUri(startLine.substr(start, end - start));
 
 	start = end + 1;
-	if (start > line.length())
+	if (start > startLine.length())
 		return;
-	request->setProtocol(line.substr(start));
+	request->setProtocol(startLine.substr(start));
 }
 
-void RequestParser::fillHeaders(Request* request)
+void RequestParser::fillHeaders(Request* request, vector<string> headers)
 {
-	std::vector<std::string> strings = request->getHeadersVector();
 	size_t pos;
-	for (size_t i = 1; i < strings.size(); ++i) {
-		pos = strings[i].find(": ");
+	for (size_t i = 1; i < headers.size(); ++i) {
+		pos = headers[i].find(": ");
 		if (pos == std::string::npos)
 			continue;
-		std::string key = strings[i].substr(0, pos);
-		std::string value = strings[i].substr(pos + 2);
+		std::string key = headers[i].substr(0, pos);
+		std::string value = headers[i].substr(pos + 2);
 		request->setHeader(key, value);
 	}
 }

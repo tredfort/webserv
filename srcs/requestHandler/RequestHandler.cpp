@@ -119,15 +119,6 @@ int checkWhatsThere(std::string const& path, time_t* lastModified)
 	}
 }
 
-std::string noQueryArgs(std::string uri)
-{
-	size_t i = 0;
-	while (uri[i] && uri[i] != '?') {
-		i++;
-	}
-	return (std::string(uri, 0, i));
-}
-
 void RequestHandler::readfile(const std::string& path)
 {
 	std::string exеtention = path.substr(path.find_last_of("/\\") + 1);
@@ -171,17 +162,13 @@ void RequestHandler::doPost(WebClient* client) { (void)client; }
 void RequestHandler::doGet(WebClient* client)
 {
 	Request* request = client->getRequest();
-	this->client = client;
-	_method = request->getMethod();
-	_uri = request->getUri();
-	_requestHeaders = request->getHeadersVector();
 	toSend = "";
 
 	time_t lastModified;
 	std::string path;
 	std::string location = "resources/html_data/"; // TODO link with config
 
-	if (_uri == "/") { // Root page
+	if (request->getUri() == "/") { // Root page
 		for (std::vector<std::string>::iterator it = _index.begin(); it != _index.end(); it++) {
 			if (checkWhatsThere((*it), &lastModified) == REGFILE) {
 				path = *it;
@@ -189,13 +176,13 @@ void RequestHandler::doGet(WebClient* client)
 				break;
 			}
 		}
-	} else if (checkWhatsThere(location + _uri.substr(1), &lastModified) == REGFILE) { // Not root
+	} else if (checkWhatsThere(location + request->getUri().substr(1), &lastModified) == REGFILE) { // Not root
 		path = location;
-		path += &_uri.c_str()[1];
-		std::cout << "trying " << location + _uri.substr(1) << "\n path = " << path << std::endl;
+		path += &request->getUri().c_str()[1];
+		std::cout << "trying " << location + request->getUri().substr(1) << "\n path = " << path << std::endl;
 		status_code = 200;
 	} else { // Requested path not found
-		std::cout << "404 for URL " << _uri << std::endl;
+		std::cout << "404 for URL " << request->getUri() << std::endl;
 		status_code = 404;
 		path = "resources/errorPages/404.html";
 	}

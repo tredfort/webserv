@@ -4,7 +4,6 @@
 #include "../interfaces/IHeader.hpp"
 #include "../interfaces/IRequest.hpp"
 #include "Method.hpp"
-#include "Protocol.hpp"
 #include <iostream>
 #include <map>
 #include <vector>
@@ -18,17 +17,9 @@ class Request : public IHeader {
 private:
 	Method _method;
 	string _uri;
-	Protocol _protocol;
+	string _protocol;
 	string _buffer;
-
-public:
-	const string& getBuffer() const;
-
-	void setBuffer(const string& buffer);
-
-private:
-	map<string, string> headers;
-	vector<string> headersVector;
+	map<string, string> _headers;
 
 public:
 	Request();
@@ -39,7 +30,9 @@ public:
 
 	const string& getUri();
 
-	const Protocol& getProtocol();
+	const string& getProtocol();
+
+	const string& getBuffer() const;
 
 	void setMethod(const string&);
 
@@ -47,13 +40,13 @@ public:
 
 	void setProtocol(const string&);
 
+	void setBuffer(const string& buffer);
+
+	void appendBuffer(const string& buffer);
+
 	string getHeader(const string&) const;
 
 	void setHeader(string key, string value);
-
-	void setHeadersVector(vector<string>);
-
-	vector<string>& getHeadersVector();
 
 	bool emptyHeader() const;
 };

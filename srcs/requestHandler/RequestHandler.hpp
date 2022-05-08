@@ -16,14 +16,9 @@
 
 class RequestHandler : public IRequestHandler {
 private:
-	WebClient* client;
 	std::map<std::string, std::string> types;
-	Method _method;
-	std::string _uri;
 	std::vector<std::string> _index;
 	std::map<std::string, std::string> _header_fields;
-	std::string _header;
-	std::vector<std::string> _requestHeaders;
 
 	int status_code;
 	unsigned int content_lengh;

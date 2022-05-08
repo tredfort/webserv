@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "../model/WebClient.hpp"
+#include "../utils/utils.hpp"
 
 class RequestParser {
 
@@ -20,6 +21,6 @@ private:
 	RequestParser(const RequestParser& parser);
 	RequestParser& operator=(const RequestParser& parser);
 
-	void parseStartLine(Request* request);
-	void fillHeaders(Request* request);
+	void parseStartLine(Request* request, string& startLine);
+	void fillHeaders(Request* request, vector<string> headers);
 };
