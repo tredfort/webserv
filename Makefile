@@ -13,7 +13,6 @@ SRC = srcs/main.cpp \
 	srcs/config/LocationContext.cpp \
 	srcs/config/ServerContext.cpp \
 	srcs/utils/utils.cpp \
-	srcs/repository/Repository.cpp \
 	srcs/model/WebClient.cpp \
 	srcs/model/Request.cpp \
 	srcs/model/Response.cpp \
@@ -30,7 +29,6 @@ HEADERS = \
 	srcs/config/LocationContext.hpp \
 	srcs/config/ServerContext.hpp \
 	srcs/utils/utils.hpp \
-	srcs/repository/Repository.hpp \
 	srcs/model/WebClient.hpp \
 	srcs/model/Request.hpp \
 	srcs/model/Response.hpp \

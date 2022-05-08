@@ -1,4 +1,5 @@
-#pragma once
+#ifndef FILEREADER_HPP
+#define FILEREADER_HPP
 
 #include <exception>
 #include <fstream>
@@ -30,3 +31,5 @@ public:
 #endif
 	};
 };
+
+#endif
