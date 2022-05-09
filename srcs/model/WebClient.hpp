@@ -1,5 +1,5 @@
-
-#pragma once
+#ifndef WEBCLIENT_HPP
+#define WEBCLIENT_HPP
 
 #include "Request.hpp"
 #include "Response.hpp"
@@ -8,20 +8,17 @@ class WebClient {
 private:
 	int _fd;
 	int _port;
-	short _status;
 	Request* _request;
 	Response* _response;
 
 public:
-	WebClient(int fd, int port, short status);
+	WebClient(int fd, int port);
 
 	WebClient(const WebClient& client);
 
 	WebClient& operator=(const WebClient& client);
 
 	~WebClient();
-
-	void setStatus(short status);
 
 	void setRequest(Request* request);
 
@@ -30,8 +27,6 @@ public:
 	int getFd() const;
 
 	int getPort() const;
-
-	short getStatus() const;
 
 	Request* getRequest() const;
 
@@ -42,3 +37,5 @@ public:
 private:
 	WebClient();
 };
+
+#endif

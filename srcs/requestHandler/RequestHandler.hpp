@@ -1,4 +1,5 @@
-#pragma once
+#ifndef REQUESTHANDLER_HPP
+#define REQUESTHANDLER_HPP
 
 #include <exception>
 #include <fstream>
@@ -11,40 +12,41 @@
 #include "../config/Config.hpp"
 #include "../interfaces/IRequestHandler.hpp"
 #include "../model/Request.hpp"
-#include "../model/WebClient.hpp"
+#include "../model/Response.hpp"
 #include "FileReader.hpp"
 
 class RequestHandler : public IRequestHandler {
 private:
-	std::map<std::string, std::string> types;
-	std::vector<std::string> _index;
-	std::map<std::string, std::string> _header_fields;
+	map<string, string> types;
+	map<string, string> _header_fields;
 
 	int status_code;
 	unsigned int content_lengh;
-	std::string toSend;
-	std::string body;
-	std::string filepath;
+	string toSend;
+	string body;
+//	string filepath;
 
 private:
-	const std::string& mimeType(const std::string& uri);
+	const string& mimeType(const string& uri);
 
 	bool isBadRequest(Request* request) const;
 
-	void readfile(const std::string&);
+	void readfile(const string&);
 
 public:
 	RequestHandler();
 
 	~RequestHandler();
 
-	void formResponse(WebClient* client);
+	void formResponse(Request* request, Response* response);
 
-	void doPost(WebClient* client);
+	void doPost(Request* request, Response* response);
 
-	void doGet(WebClient* client);
+	void doGet(Request* request, Response* response);
 
-	void doPut(WebClient* client);
+	void doPut(Request* request, Response* response);
 
-	void doDelete(WebClient* client);
+	void doDelete(Request* request, Response* response);
 };
+
+#endif

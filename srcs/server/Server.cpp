@@ -1,12 +1,11 @@
 #include "Server.hpp"
 
 Server::Server(Config* config)
-	: _config(config) { }
-
-Server::~Server()
+	: _config(config)
 {
-	delete _config;
 }
+
+Server::~Server() { delete _config; }
 
 void Server::createSockets()
 {
@@ -56,20 +55,17 @@ void Server::handleEvents()
 			acceptNewClients(_sockets[i]);
 			continue;
 		} else if (i >= socksCount) {
-			bool keepAlive = true;
 			WebClient* client = _clients[i - socksCount];
-			if (_pollfds[i].revents & POLLIN) {
-				keepAlive = receiveRequest(client);
-			} else if (_pollfds[i].revents & POLLOUT) {
-				keepAlive = sendResponse(client);
-			}
-			if (!keepAlive) {
-				_pollfds.erase(_pollfds.begin() + i);
-				_clients.erase(_clients.begin() + i - socksCount);
-				delete client;
+			if (_pollfds[i].revents & POLLHUP) {
+				closeConnection(client, i);
 				break;
 			}
-			_pollfds[i].events = client->getStatus();
+			if (_pollfds[i].revents & POLLIN) {
+				receiveRequest(client, _pollfds[i].events);
+			}
+			if (_pollfds[i].revents & POLLOUT) {
+				sendResponse(client, _pollfds[i].events);
+			}
 		}
 	}
 }
@@ -82,52 +78,57 @@ void Server::acceptNewClients(Socket* socket)
 			break;
 		}
 		_pollfds.push_back(fillPollfd(client_fd, POLLIN));
-		WebClient* client = new WebClient(client_fd, socket->getSockfd(), _pollfds.back().events);
+		WebClient* client = new WebClient(client_fd, socket->getPort());
 		_clients.push_back(client);
 	}
 }
 
-bool Server::receiveRequest(WebClient* client)
+void Server::receiveRequest(WebClient* client, short& events)
 {
 	char buffer[BUFFER_SIZE];
-	ssize_t bytesRead;
 
 	cout << "User listens:" << endl;
-	bytesRead = recv(client->getFd(), buffer, sizeof(buffer), 0);
+	ssize_t bytesRead = recv(client->getFd(), buffer, sizeof(buffer), 0);
 
-	if (bytesRead <= 0) {
-		cout << "Client ended the _userfd!" << client->getFd() << endl;
-		close(client->getFd());
-		return false;
-	}
+	//	if (bytesRead <= 0) {
+	//		cout << "Client ended the _userfd!" << client->getFd() << endl;
+	//		return false;
+	//	}
 
 	client->getRequest()->appendBuffer(string(buffer, bytesRead));
-	_parser.processRequest(client);
-
-	return true;
+	_parser.processRequest(client->getRequest());
+	if (_parser.isReadyRequest(client->getRequest())) {
+		events = POLLOUT;
+	}
 }
 
-bool Server::sendResponse(WebClient* client)
+void Server::sendResponse(WebClient* client, short& events)
 {
-	if (!client)
-		return false;
-	_handler.formResponse(client);
-	if (!client->getResponse()->toSend.empty()) {
+	if (client->getResponse()->toSend.empty()) {
+		_handler.formResponse(client->getRequest(), client->getResponse());
+	}
+	else {
 		string buffer = client->getResponse()->toSend;
 		ssize_t sendBytes = send(client->getFd(), buffer.c_str(), buffer.size(), 0);
 
-		if (sendBytes <= 0) {
-			cout << "Client ended the _userfd!" << client->getFd() << endl;
-			close(client->getFd());
-			return false;
-		}
+		//		if (sendBytes <= 0) {
+		//			cout << "Client ended the _userfd!" << client->getFd() << endl;
+		//			return false;
+		//		}
 
 		client->getResponse()->toSend = buffer.substr(sendBytes);
 		std::cout << "Sent " << sendBytes << " bytes to fd: " << client->getFd() << std::endl;
 		if (client->getResponse()->toSend.empty()) {
 			client->update();
+			events = POLLIN;
 		}
-		client->setStatus(POLLIN);
 	}
-	return true;
+}
+
+void Server::closeConnection(WebClient* client, size_t number)
+{
+	close(client->getFd());
+	_pollfds.erase(_pollfds.begin() + number);
+	_clients.erase(_clients.begin() + number - _sockets.size());
+	delete client;
 }

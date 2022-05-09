@@ -2,7 +2,6 @@
 #define RESPONSE_HPP
 
 #include "../interfaces/IResponse.hpp"
-#include "Protocol.hpp"
 #include <fstream>
 #include <iostream>
 #include <map>
@@ -15,7 +14,7 @@ using std::vector;
 
 class Response : public IResponse {
 private:
-	Protocol _protocol;
+	string _protocol;
 	string _status;
 	string _buffer;
 	map<string, string> _headers;
@@ -25,13 +24,13 @@ public:
 	//    std::ifstream file;
 	//    long fileSize;
 	//    bool headersSent;
-	//	std::string toSend;
+	string toSend;
 
 public:
 	Response();
 	~Response();
 
-	std::string toString() const;
+	string toString() const;
 
 private:
 	Response(const Response&);

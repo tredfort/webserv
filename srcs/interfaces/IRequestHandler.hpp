@@ -1,21 +1,22 @@
 #ifndef IREQUESTHANDLER_HPP
 #define IREQUESTHANDLER_HPP
 
-#include "../model/WebClient.hpp"
+#include "../model/Request.hpp"
+#include "../model/Response.hpp"
 
 class IRequestHandler {
 public:
 	~IRequestHandler() {};
 
-	virtual void formResponse(WebClient* client) = 0;
+	virtual void formResponse(Request* request, Response* response) = 0;
 
-	virtual void doPost(WebClient* client) = 0;
+	virtual void doPost(Request* request, Response* response) = 0;
 
-	virtual void doGet(WebClient* client) = 0;
+	virtual void doGet(Request* request, Response* response) = 0;
 
-	virtual void doPut(WebClient* client) = 0;
+	virtual void doPut(Request* request, Response* response) = 0;
 
-	virtual void doDelete(WebClient* client) = 0;
+	virtual void doDelete(Request* request, Response* response) = 0;
 };
 
 #endif

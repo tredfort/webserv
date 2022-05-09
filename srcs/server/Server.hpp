@@ -51,9 +51,11 @@ public:
 
 	void handleEvents();
 
-	bool receiveRequest(WebClient* client);
+	void receiveRequest(WebClient* client, short& events);
 
-	bool sendResponse(WebClient* client);
+	void sendResponse(WebClient* client, short& events);
+
+	void closeConnection(WebClient*, size_t);
 
 private:
 	Server& operator=(Server const&); // Don't implement.

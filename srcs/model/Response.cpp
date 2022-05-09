@@ -14,4 +14,6 @@ Response::Response()
 
 Response::~Response() { }
 
-std::string Response::toString() const { return toSend; }
+std::string Response::toString() const {
+	return toSend;
+}

@@ -9,9 +9,6 @@
 
 RequestHandler::RequestHandler()
 {
-	_index.push_back("resources/html_data/index");
-	_index.push_back("resources/html_data/index.html");
-
 	types["aac"] = "audio/aac";
 	types["abw"] = "application/x-abiword";
 	types["arc"] = "application/x-freearc";
@@ -96,11 +93,11 @@ const std::string& RequestHandler::mimeType(const std::string& uri)
 {
 	std::string::size_type found = uri.find_last_of('.');
 	if (found == std::string::npos)
-		return (types["txt"]);
+		return types["txt"];
 	std::string extension = uri.substr(found + 1);
 	if (types.find(extension) != types.end())
-		return (types[extension]);
-	return (types["bin"]);
+		return types[extension];
+	return types["bin"];
 }
 
 int checkWhatsThere(std::string const& path, time_t* lastModified)
@@ -108,21 +105,20 @@ int checkWhatsThere(std::string const& path, time_t* lastModified)
 	struct stat file;
 
 	if (stat(path.c_str(), &file) == -1) {
-		return (NOTEXIST);
+		return NOTEXIST;
 	}
 	if (S_ISREG(file.st_mode)) {
 		if (lastModified)
 			*lastModified = file.st_mtime;
-		return (REGFILE);
-	} else {
-		return (ISFOLDER);
+		return REGFILE;
 	}
+	return ISFOLDER;
 }
 
 void RequestHandler::readfile(const std::string& path)
 {
-	std::string exеtention = path.substr(path.find_last_of("/\\") + 1);
-	std::string fileExеtention = path.substr(path.find_last_of(".") + 1);
+	string exеtention = path.substr(path.find_last_of("/\\") + 1);
+	string fileExеtention = path.substr(path.find_last_of(".") + 1);
 
 	_header_fields["Content-Type"] = mimeType(exеtention);
 	try {
@@ -139,29 +135,33 @@ void RequestHandler::readfile(const std::string& path)
 
 bool RequestHandler::isBadRequest(Request* request) const
 {
-	return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol() == UNKNOWN_PROTOCOL;
+	return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol().empty();
 }
 
-void RequestHandler::formResponse(WebClient* client)
+void RequestHandler::formResponse(Request* request, Response* response)
 {
-	Request* request = client->getRequest();
 	if (isBadRequest(request)) {
-		client->getResponse(); // TODO: Bad Request
+		 // TODO: Bad Request
 	} else if (request->getMethod() == POST)
-		doPost(client);
+		doPost(request, response);
 	else if (request->getMethod() == GET)
-		doGet(client);
+		doGet(request, response);
 	else if (request->getMethod() == PUT)
-		doPut(client);
+		doPut(request, response);
 	else if (request->getMethod() == DELETE)
-		doDelete(client);
+		doDelete(request, response);
 }
 
-void RequestHandler::doPost(WebClient* client) { (void)client; }
+void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::doGet(WebClient* client)
+void RequestHandler::doGet(Request* request, Response* response)
 {
-	Request* request = client->getRequest();
+	string locationPath = "resources/html_data";
+//	bool autoindex = true;
+	vector<string> index;
+	index.push_back("index");
+	index.push_back("index.html");
+
 	toSend = "";
 
 	time_t lastModified;
@@ -169,26 +169,28 @@ void RequestHandler::doGet(WebClient* client)
 	std::string location = "resources/html_data/"; // TODO link with config
 
 	if (request->getUri() == "/") { // Root page
-		for (std::vector<std::string>::iterator it = _index.begin(); it != _index.end(); it++) {
+		for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
 			if (checkWhatsThere((*it), &lastModified) == REGFILE) {
 				path = *it;
 				status_code = 200;
 				break;
 			}
 		}
-	} else if (checkWhatsThere(location + request->getUri().substr(1), &lastModified) == REGFILE) { // Not root
+	}
+	else if (checkWhatsThere(location + request->getUri().substr(1), &lastModified) == REGFILE) { // Not root
 		path = location;
 		path += &request->getUri().c_str()[1];
 		std::cout << "trying " << location + request->getUri().substr(1) << "\n path = " << path << std::endl;
 		status_code = 200;
-	} else { // Requested path not found
+	}
+	else { // Requested path not found
 		std::cout << "404 for URL " << request->getUri() << std::endl;
 		status_code = 404;
 		path = "resources/errorPages/404.html";
 	}
 	readfile(path);
 	toSend.append("HTTP/1.1 ");
-	// toSend.append(std::to_string(status_code));
+	 toSend.append(std::to_string(status_code));
 	if (status_code != CGICODE) {
 		toSend.append("\r\n");
 		for (std::map<std::string, std::string>::iterator it = _header_fields.begin(); it != _header_fields.end(); it++) {
@@ -203,9 +205,9 @@ void RequestHandler::doGet(WebClient* client)
 		toSend.append(body);
 		toSend.append("\r\n");
 	}
-	client->getResponse()->toSend = toSend;
+	response->toSend = toSend;
 }
 
-void RequestHandler::doPut(WebClient* client) { (void)client; }
+void RequestHandler::doPut(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::doDelete(WebClient* client) { (void)client; }
+void RequestHandler::doDelete(Request* request, Response* response) { (void)request, (void)response; }

@@ -4,39 +4,21 @@ RequestParser::RequestParser() { }
 
 RequestParser::~RequestParser() { }
 
-void RequestParser::processRequest(WebClient* client)
+void RequestParser::processRequest(Request* request)
 {
-	Request* request = client->getRequest();
 	size_t pos = request->getBuffer().find("\r\n\r\n");
 
-	if (pos != std::string::npos && client->getRequest()->emptyHeader()) {
+	if (pos != std::string::npos && request->emptyHeader()) {
 		std::string buffer = request->getBuffer().substr(0, pos);
 		request->setBuffer(request->getBuffer().substr(pos + 4));
 		vector<string> headers = ft_split(buffer, "\r\n");
-		parseStartLine(client->getRequest(), headers[0]);
-		fillHeaders(client->getRequest(), headers);
+		parseStartLine(request, headers[0]);
+		fillHeaders(request, headers);
 	}
 
-	if (request->getMethod() == GET) {
-		client->setStatus(POLLOUT);
-		request->setBuffer("");
-	} else {
-		parseBodyHeaders(client);
+	if (request->getMethod() == POST) {
+		parseBodyHeaders(request);
 	}
-}
-
-void RequestParser::parseBodyHeaders(WebClient* client)
-{
-	Request* request = client->getRequest();
-	size_t pos = request->getBuffer().find("\r\n\r\n");
-
-	if (pos == std::string::npos)
-		return;
-
-	std::string buffer = request->getBuffer().substr(0, pos);
-	request->setBuffer(request->getBuffer().substr(pos + 4));
-
-	// TODO: написать этот метод
 }
 
 void RequestParser::parseStartLine(Request* request, string& startLine)
@@ -70,4 +52,33 @@ void RequestParser::fillHeaders(Request* request, vector<string> headers)
 		std::string value = headers[i].substr(pos + 2);
 		request->setHeader(key, value);
 	}
+}
+
+void RequestParser::parseBodyHeaders(Request* request)
+{
+	size_t pos = request->getBuffer().find("\r\n\r\n");
+
+	if (pos == std::string::npos)
+		return;
+
+	std::string buffer = request->getBuffer().substr(0, pos);
+	request->setBuffer(request->getBuffer().substr(pos + 4));
+
+	// TODO: написать этот метод
+}
+
+bool RequestParser::isReadyRequest(Request* request)
+{
+	if (request->getMethod() == GET) {
+		request->setBuffer("");
+		return true;
+	}
+	else if (request->getMethod() == POST) {
+
+	}
+	else if (request->getMethod() == DELETE) {
+
+	}
+
+	return false;
 }
