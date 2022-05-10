@@ -167,8 +167,8 @@ void RequestHandler::doGet(Request* request, Response* response)
 
 	if (!isFileExists(pathToFile)) {
 		formResponseBody(404, "Not Found");
-//		status_code = 404;
-//		readfile("resources/errorPages/404.html");
+		//		status_code = 404;
+		//		readfile("resources/errorPages/404.html");
 	} else if (isDirectory(pathToFile)) {
 		if (pathToFile.back() != '/')
 			pathToFile += '/';
@@ -176,9 +176,10 @@ void RequestHandler::doGet(Request* request, Response* response)
 			status_code = 403;
 			readfile("resources/errorPages/404.html");
 		}
-		if (autoindex) {
-
-		} else {
+//		if (autoindex) {
+//
+//		}
+		else {
 			folderContents(pathToFile, request->getUri());
 			_header_fields["Content-Type"] = mimeType(".html");
 			_header_fields["Content-Length"] = std::to_string(body.size());
@@ -189,7 +190,7 @@ void RequestHandler::doGet(Request* request, Response* response)
 		std::cout << "path = " << path << std::endl;
 		status_code = 200;
 	}
-//	readfile(path);
+	//	readfile(path);
 	toSend.append("HTTP/1.1 ");
 	toSend.append(std::to_string(status_code));
 	if (status_code != CGICODE) {
@@ -213,15 +214,15 @@ void RequestHandler::doGet(Request* request, Response* response)
 bool RequestHandler::fillBodyFromIndexFile(const string& pathToFile)
 {
 	time_t lastModified;
-	struct stat file;
+//	struct stat file;
 
 	for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
 		string indexFile = pathToFile + *it;
 		if (checkWhatsThere(indexFile, &lastModified) == REGFILE) {
-			if (stat(indexFile.c_str(), &file) == -1 || file.st_mode & S_IRGRP) {
-				cout << "Нет прав на чтение" << endl;
-				return false;
-			}
+//			if (stat(indexFile.c_str(), &file) == -1 || file.st_mode & S_IRGRP) {
+//				cout << "Нет прав на чтение" << endl;
+//				return false;
+//			}
 			readfile(indexFile);
 			status_code = 200;
 			return true;
@@ -284,19 +285,29 @@ void RequestHandler::doDelete(Request* request, Response* response) { (void)requ
 void RequestHandler::formResponseBody(int errorCode, string errorMessage)
 {
 	string _body = "<html>\n"
-				"<head><title>Error "
-		+ std::to_string(errorCode) + ". (" + errorMessage + ")"
-		+ "</title><link rel=\"stylesheet\" href=\"./errorPages/style.css\">"
-		+ "</head>\n<body>\n"
-		+ "<div id=\"main\">\n"
-			"    \t<div class=\"fof\">\n"
-			"        \t\t<h1>" + std::to_string(errorCode) + ". " + errorMessage + "</h1>\n"
-			"    \t</div>\n</div><h1>\n</body>\n</html>\n";
+				   "<head>\n"
+				   "    <title>Error "
+		+ std::to_string(errorCode) + ". (" + errorMessage
+		+ ")</title>"
+		  "    <link href=\"https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap\" rel=\"stylesheet\">\n"
+		  "    <link rel=\"stylesheet\" href=\"./errorPages/style.css\">\n"
+		  "</head>\n"
+		  "<body>\n"
+		  "<div id=\"main\">\n"
+		  "    <div class=\"fof\">\n"
+		  "        <h1>"
+		+ std::to_string(errorCode) + ". " + errorMessage
+		+ "</h1>\n"
+		  "        <br>\n"
+		  "        <img src=\"./errorPages/mem.gif\">\n"
+		  "    </div>\n"
+		  "</div>\n"
+		  "</body>\n"
+		  "</html>";
 
 	body = _body;
 	status_code = 404;
 	_header_fields["Content-Type"] = mimeType(".html");
 	_header_fields["Content-Length"] = std::to_string(body.size());
 	_header_fields["Status"] = std::to_string(errorCode) + " " + errorMessage;
-
 }
