@@ -15,9 +15,10 @@ using std::vector;
 class Response : public IResponse {
 private:
 	string _protocol;
-	string _status;
+	int _statusCode;
 	string _buffer;
-	map<string, string> _headers;
+	vector<string> _headers;
+	string _body;
 
 public:
 	//    std::string fileName;
@@ -28,12 +29,24 @@ public:
 
 public:
 	Response();
+
 	~Response();
 
 	string toString() const;
 
+	void setProtocol(const string& protocol);
+
+	void setStatusCode(int status_code);
+
+	void setBuffer(const string& buffer);
+
+	void setHeader(const string& header);
+
+	void setBody(const string& body);
+
 private:
 	Response(const Response&);
+
 	Response& operator=(const Response&);
 };
 

@@ -166,8 +166,9 @@ void RequestHandler::doGet(Request* request, Response* response)
 	std::string location = "resources/html_data/"; // TODO link with config
 
 	if (!isFileExists(pathToFile)) {
-		status_code = 404;
-		readfile("resources/errorPages/404.html");
+		formResponseBody(404, "Not Found");
+//		status_code = 404;
+//		readfile("resources/errorPages/404.html");
 	} else if (isDirectory(pathToFile)) {
 		if (pathToFile.back() != '/')
 			pathToFile += '/';
@@ -269,7 +270,6 @@ void RequestHandler::folderContents(const std::string& path, const string& uri)
 				}
 			}
 		}
-
 		closedir(dp);
 	}
 	body.append("</pre><hr></body>\n"
@@ -279,3 +279,30 @@ void RequestHandler::folderContents(const std::string& path, const string& uri)
 void RequestHandler::doPut(Request* request, Response* response) { (void)request, (void)response; }
 
 void RequestHandler::doDelete(Request* request, Response* response) { (void)request, (void)response; }
+
+void RequestHandler::formResponseBody(int errorCode, string errorMessage)
+{
+	string _body = "<html>\n"
+				"<head><title>Error "
+		+ std::to_string(errorCode) + ". (" + errorMessage + ")"
+		+ "</title><link rel=\"stylesheet\" href=\"../errorPages/style.css\">"
+		+ "</head>\n<_body>\n"
+		+ "<div id=\"main\">\n"
+			"    \t<div class=\"fof\">\n"
+			"        \t\t<h1>Error " + std::to_string(errorCode) + ". " + errorMessage + "</h1>\n"
+			"    \t</div>\n</div><h1>\n</_body>\n</html>\n</_body>\n</html>\n";
+
+	body = _body;
+	_header_fields["Content-Type"] = mimeType(".html");
+	_header_fields["Content-Length"] = std::to_string(body.size());
+	_header_fields["Status"] = "200 OK";
+//	response->setBody(_body);
+//	toSend = "HTTP/1.1 " + std::to_string(errorCode) + "\r\n";
+//	toSend += "Content-Type: " + mimeType(".html") + "\r\n";
+//	toSend += "Content-Length: " + std::to_string(_body.size()) + "\r\n\r\n";
+//	toSend += _body;
+//	toSend += "\r\n";
+//	response->setHeader("HTTP/1.1 " + std::to_string(errorCode) + "\r\n");
+//	response->setHeader("Content-Type: " + mimeType(".html") + "\r\n");
+//	response->setHeader("Content-Length: " + std::to_string(_body.size()) + "\r\n\r\n");
+}

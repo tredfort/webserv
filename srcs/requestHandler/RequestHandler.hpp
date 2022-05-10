@@ -25,7 +25,6 @@ private:
 	string toSend;
 	string body;
 
-
 	vector<string> index;
 	bool autoindex;
 	string locationPath;
@@ -41,6 +40,8 @@ private:
 	void folderContents(const string&, const string&);
 
 	bool fillBodyFromIndexFile(const string&);
+
+	void formResponseBody(int, string);
 
 public:
 	RequestHandler();
