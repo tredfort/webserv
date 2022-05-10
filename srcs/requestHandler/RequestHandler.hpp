@@ -1,12 +1,12 @@
 #ifndef REQUESTHANDLER_HPP
 #define REQUESTHANDLER_HPP
 
+#include <dirent.h>
 #include <exception>
 #include <fstream>
 #include <map>
 #include <string>
 #include <sys/socket.h>
-#include <sys/stat.h>
 #include <vector>
 
 #include "../config/Config.hpp"
@@ -24,7 +24,12 @@ private:
 	unsigned int content_lengh;
 	string toSend;
 	string body;
-//	string filepath;
+
+
+	vector<string> index;
+	bool autoindex;
+	string locationPath;
+	//	string filepath;
 
 private:
 	const string& mimeType(const string& uri);
@@ -32,6 +37,10 @@ private:
 	bool isBadRequest(Request* request) const;
 
 	void readfile(const string&);
+
+	void folderContents(const string&, const string&);
+
+	bool fillBodyFromIndexFile(const string&);
 
 public:
 	RequestHandler();

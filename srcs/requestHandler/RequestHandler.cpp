@@ -85,6 +85,12 @@ RequestHandler::RequestHandler()
 	types["3gp"] = "video/3gpp audio/3gpp if it doesn't contain video";
 	types["3g2"] = "video/3gpp2 audio/3gpp2 if it doesn't contain video";
 	types["7z"] = "application/x-7z-compressed";
+
+	//Временные переменные
+	locationPath = "resources/html_data";
+	autoindex = false;
+	index.push_back("index");
+	index.push_back("index.html");
 }
 
 RequestHandler::~RequestHandler() { }
@@ -133,15 +139,12 @@ void RequestHandler::readfile(const std::string& path)
 	_header_fields["Status"] = "200 OK";
 }
 
-bool RequestHandler::isBadRequest(Request* request) const
-{
-	return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol().empty();
-}
+bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol().empty(); }
 
 void RequestHandler::formResponse(Request* request, Response* response)
 {
 	if (isBadRequest(request)) {
-		 // TODO: Bad Request
+		// TODO: Bad Request
 	} else if (request->getMethod() == POST)
 		doPost(request, response);
 	else if (request->getMethod() == GET)
@@ -156,41 +159,38 @@ void RequestHandler::doPost(Request* request, Response* response) { (void)reques
 
 void RequestHandler::doGet(Request* request, Response* response)
 {
-	string locationPath = "resources/html_data";
-//	bool autoindex = true;
-	vector<string> index;
-	index.push_back("index");
-	index.push_back("index.html");
-
+	string pathToFile = locationPath + request->getUri();
 	toSend = "";
 
-	time_t lastModified;
 	std::string path;
 	std::string location = "resources/html_data/"; // TODO link with config
 
-	if (request->getUri() == "/") { // Root page
-		for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
-			if (checkWhatsThere((*it), &lastModified) == REGFILE) {
-				path = *it;
-				status_code = 200;
-				break;
-			}
+	if (!isFileExists(pathToFile)) {
+		status_code = 404;
+		readfile("resources/errorPages/404.html");
+	} else if (isDirectory(pathToFile)) {
+		if (pathToFile.back() != '/')
+			pathToFile += '/';
+		if (!fillBodyFromIndexFile(pathToFile)) {
+			status_code = 403;
+			readfile("resources/errorPages/404.html");
 		}
-	}
-	else if (checkWhatsThere(location + request->getUri().substr(1), &lastModified) == REGFILE) { // Not root
-		path = location;
-		path += &request->getUri().c_str()[1];
-		std::cout << "trying " << location + request->getUri().substr(1) << "\n path = " << path << std::endl;
+		if (autoindex) {
+
+		} else {
+			folderContents(pathToFile, request->getUri());
+			_header_fields["Content-Type"] = mimeType(".html");
+			_header_fields["Content-Length"] = std::to_string(body.size());
+			_header_fields["Status"] = "200 OK";
+		}
+	} else {
+		path = pathToFile;
+		std::cout << "path = " << path << std::endl;
 		status_code = 200;
 	}
-	else { // Requested path not found
-		std::cout << "404 for URL " << request->getUri() << std::endl;
-		status_code = 404;
-		path = "resources/errorPages/404.html";
-	}
-	readfile(path);
+//	readfile(path);
 	toSend.append("HTTP/1.1 ");
-	 toSend.append(std::to_string(status_code));
+	toSend.append(std::to_string(status_code));
 	if (status_code != CGICODE) {
 		toSend.append("\r\n");
 		for (std::map<std::string, std::string>::iterator it = _header_fields.begin(); it != _header_fields.end(); it++) {
@@ -206,6 +206,74 @@ void RequestHandler::doGet(Request* request, Response* response)
 		toSend.append("\r\n");
 	}
 	response->toSend = toSend;
+}
+
+bool RequestHandler::fillBodyFromIndexFile(const string& pathToFile)
+{
+	time_t lastModified;
+	struct stat file;
+
+	for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
+		string indexFile = pathToFile + *it;
+		if (checkWhatsThere(indexFile, &lastModified) == REGFILE) {
+			if (stat(indexFile.c_str(), &file) == -1 || file.st_mode & S_IRGRP) {
+				cout << "Нет прав на чтение" << endl;
+				return false;
+			}
+			readfile(indexFile);
+			status_code = 200;
+			return true;
+		}
+	}
+	return false;
+}
+
+void RequestHandler::folderContents(const std::string& path, const string& uri)
+{
+	DIR* dp;
+	struct dirent* di_struct;
+	struct stat file_stats;
+	time_t lastModified;
+
+	(void)path;
+	string title = "Index of " + uri;
+	body.append("<html>\n"
+				"<head><title>"
+		+ title
+		+ "</title></head>\n"
+		  "<body>\n"
+		  "<h1>"
+		+ title + "</h1><hr><pre><a href=\"../\">../</a>\n");
+	if ((dp = opendir(path.c_str())) != nullptr) {
+		while ((di_struct = readdir(dp)) != nullptr) {
+			if (strcmp(di_struct->d_name, ".") && strcmp(di_struct->d_name, "..")) {
+
+				string tmp_path = path + "/" + di_struct->d_name;
+				stat(tmp_path.data(), &file_stats);
+
+				body.append("<a href=\"" + uri + string(di_struct->d_name));
+				if (S_ISDIR(file_stats.st_mode))
+					body.append("/");
+				body.append("\">" + string(di_struct->d_name));
+				if (S_ISDIR(file_stats.st_mode))
+					body.append("/");
+				body.append("</a>                                               ");
+				checkWhatsThere(tmp_path, &lastModified);
+				string date = string(std::ctime(&lastModified));
+				date = date.substr(0, date.size() - 1);
+				body.append(date + "                   ");
+				if (S_ISDIR(file_stats.st_mode))
+					body.append("-\n");
+				else {
+					body.append(std::to_string(static_cast<float>(file_stats.st_size)) + "\n");
+				}
+			}
+		}
+
+		closedir(dp);
+	}
+	body.append("</pre><hr></body>\n"
+				"</html>\n");
 }
 
 void RequestHandler::doPut(Request* request, Response* response) { (void)request, (void)response; }

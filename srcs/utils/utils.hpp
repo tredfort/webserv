@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <sys/poll.h>
+#include <sys/stat.h>
 #include <vector>
 
 using std::cout;
@@ -96,7 +97,9 @@ void fatalError(const string& errorMessage, int errorCode = 1);
  */
 int getStringIndexFromArray(const string& str, const string* array);
 
-bool isFileExists(string pathToFile);
+bool isFileExists(string& pathToFile);
+
+bool isDirectory(string& pathToFile);
 
 void printStringVector(const vector<string>&);
 

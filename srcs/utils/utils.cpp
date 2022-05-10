@@ -133,11 +133,18 @@ int getStringIndexFromArray(const string& str, const string* array)
 
 bool isDigits(const std::string& str) { return str.find_first_not_of("0123456789") == std::string::npos; }
 
-bool isFileExists(string pathToFile)
+bool isFileExists(string& pathToFile)
 {
 	std::ifstream file(pathToFile);
 	return file.is_open();
 }
+
+bool isDirectory(string& pathToFile)
+{
+	struct stat file;
+	return stat(pathToFile.c_str(), &file) != -1 && S_ISDIR(file.st_mode);
+}
+
 void printStringVector(const vector<string>& v)
 {
 	for (vector<string>::const_iterator it = v.begin(); it != v.end(); ++it) {
