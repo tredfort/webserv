@@ -144,7 +144,7 @@ bool RequestHandler::isBadRequest(Request* request) const { return request->getM
 void RequestHandler::formResponse(Request* request, Response* response)
 {
 	if (isBadRequest(request)) {
-		// TODO: Bad Request
+		formResponseBodyWithError(response, "400 Bad Request");
 	} else if (request->getMethod() == POST)
 		doPost(request, response);
 	else if (request->getMethod() == GET)
@@ -166,7 +166,7 @@ void RequestHandler::doGet(Request* request, Response* response)
 	std::string location = "resources/html_data/"; // TODO link with config
 
 	if (!isFileExists(pathToFile)) {
-		formResponseBody(404, "Not Found");
+		formResponseBodyWithError(404, "Not Found");
 		//		status_code = 404;
 		//		readfile("resources/errorPages/404.html");
 	} else if (isDirectory(pathToFile)) {
@@ -282,32 +282,29 @@ void RequestHandler::doPut(Request* request, Response* response) { (void)request
 
 void RequestHandler::doDelete(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::formResponseBody(int errorCode, string errorMessage)
+void RequestHandler::formResponseBodyWithError(Response* response, string errorMessage)
 {
 	string _body = "<html>\n"
 				   "<head>\n"
-				   "    <title>Error "
-		+ std::to_string(errorCode) + ". (" + errorMessage
-		+ ")</title>"
+				   "    <title>Error " + errorMessage + "</title>"
 		  "    <link href=\"https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap\" rel=\"stylesheet\">\n"
 		  "    <link rel=\"stylesheet\" href=\"./errorPages/style.css\">\n"
 		  "</head>\n"
 		  "<body>\n"
 		  "<div id=\"main\">\n"
 		  "    <div class=\"fof\">\n"
-		  "        <h1>"
-		+ std::to_string(errorCode) + ". " + errorMessage
-		+ "</h1>\n"
+		  "        <h1>" + errorMessage + "</h1>\n"
 		  "        <br>\n"
 		  "        <img src=\"./errorPages/mem.gif\">\n"
 		  "    </div>\n"
 		  "</div>\n"
 		  "</body>\n"
-		  "</html>";
+		  "</html>\n";
 
-	body = _body;
-	status_code = 404;
-	_header_fields["Content-Type"] = mimeType(".html");
-	_header_fields["Content-Length"] = std::to_string(body.size());
-	_header_fields["Status"] = std::to_string(errorCode) + " " + errorMessage;
+	response->setBody(_body);
+//	body = _body;
+//	status_code = 404;
+//	_header_fields["Content-Type"] = mimeType(".html");
+//	_header_fields["Content-Length"] = std::to_string(body.size());
+//	_header_fields["Status"] = std::to_string(errorCode) + " " + errorMessage;
 }

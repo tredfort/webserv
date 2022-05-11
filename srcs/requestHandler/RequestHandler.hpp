@@ -41,7 +41,7 @@ private:
 
 	bool fillBodyFromIndexFile(const string&);
 
-	void formResponseBody(int, string);
+	void formResponseBodyWithError(Response* response, string errorMessage);
 
 public:
 	RequestHandler();
