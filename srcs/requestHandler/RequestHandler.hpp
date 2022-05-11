@@ -18,30 +18,25 @@
 class RequestHandler : public IRequestHandler {
 private:
 	map<string, string> types;
-	map<string, string> _header_fields;
-
-	int status_code;
-	unsigned int content_lengh;
-	string toSend;
-	string body;
 
 	vector<string> index;
 	bool autoindex;
 	string locationPath;
-	//	string filepath;
 
 private:
 	const string& mimeType(const string& uri);
 
 	bool isBadRequest(Request* request) const;
 
-	void readfile(const string&);
+	void readfile(Response* response, const string&);
 
-	void folderContents(const string&, const string&);
+	void folderContents(Response* response, const string&, const string&);
 
-	bool fillBodyFromIndexFile(const string&);
+	bool fillBodyFromIndexFile(Response* response, const string&);
 
-	void formResponseBodyWithError(Response* response, string errorMessage);
+	void setResponseWithError(Response* response, string errorMessage);
+
+	void fillHeaders(Response* response);
 
 public:
 	RequestHandler();

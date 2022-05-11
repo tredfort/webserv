@@ -1,6 +1,5 @@
 #include "RequestHandler.hpp"
 
-#define BUFFERSIZE 256
 #define NOTEXIST 0
 #define REGFILE 1
 #define ISFOLDER 2
@@ -121,31 +120,27 @@ int checkWhatsThere(std::string const& path, time_t* lastModified)
 	return ISFOLDER;
 }
 
-void RequestHandler::readfile(const std::string& path)
+void RequestHandler::readfile(Response* response, const std::string& path)
 {
 	string exеtention = path.substr(path.find_last_of("/\\") + 1);
 	string fileExеtention = path.substr(path.find_last_of(".") + 1);
 
-	_header_fields["Content-Type"] = mimeType(exеtention);
+	response->setContentType(mimeType(exеtention));
 	try {
-		body = FileReader::readFile(path);
+		response->setBody(FileReader::readFile(path));
 	} catch (FileReader::FileNotFoundException& ex) {
-		body = FileReader::readFile("resources/errorPages/404.html");
+		response->setBody(FileReader::readFile("resources/errorPages/404.html"));
 	}
-	if (!body.empty()) {
-		content_lengh = body.size();
-		_header_fields["Content-Length"] = std::to_string(content_lengh);
-	}
-	_header_fields["Status"] = "200 OK";
+	response->setStatus("200 OK");
 }
 
 bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol().empty(); }
 
 void RequestHandler::formResponse(Request* request, Response* response)
 {
-	if (isBadRequest(request)) {
-		formResponseBodyWithError(response, "400 Bad Request");
-	} else if (request->getMethod() == POST)
+	if (isBadRequest(request))
+		setResponseWithError(response, "400 Bad Request");
+	else if (request->getMethod() == POST)
 		doPost(request, response);
 	else if (request->getMethod() == GET)
 		doGet(request, response);
@@ -153,6 +148,7 @@ void RequestHandler::formResponse(Request* request, Response* response)
 		doPut(request, response);
 	else if (request->getMethod() == DELETE)
 		doDelete(request, response);
+	fillHeaders(response);
 }
 
 void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
@@ -160,58 +156,26 @@ void RequestHandler::doPost(Request* request, Response* response) { (void)reques
 void RequestHandler::doGet(Request* request, Response* response)
 {
 	string pathToFile = locationPath + request->getUri();
-	toSend = "";
-
-	std::string path;
-	std::string location = "resources/html_data/"; // TODO link with config
 
 	if (!isFileExists(pathToFile)) {
-		formResponseBodyWithError(404, "Not Found");
-		//		status_code = 404;
-		//		readfile("resources/errorPages/404.html");
+		setResponseWithError(response, "404 Not Found");
 	} else if (isDirectory(pathToFile)) {
-		if (pathToFile.back() != '/')
-			pathToFile += '/';
-		if (!fillBodyFromIndexFile(pathToFile)) {
-			status_code = 403;
-			readfile("resources/errorPages/404.html");
+		if (pathToFile.back() != '/') {
+			pathToFile.append("/");
 		}
-//		if (autoindex) {
-//
-//		}
-		else {
-			folderContents(pathToFile, request->getUri());
-			_header_fields["Content-Type"] = mimeType(".html");
-			_header_fields["Content-Length"] = std::to_string(body.size());
-			_header_fields["Status"] = "200 OK";
+		if (!fillBodyFromIndexFile(response, pathToFile) && !autoindex) {
+			setResponseWithError(response, "403 Forbidden");
+		} else if (autoindex) {
+			folderContents(response, pathToFile, request->getUri());
 		}
+		response->setContentType(mimeType(".html"));
 	} else {
-		path = pathToFile;
-		std::cout << "path = " << path << std::endl;
-		status_code = 200;
+		readfile(response, pathToFile);
 	}
-	//	readfile(path);
-	toSend.append("HTTP/1.1 ");
-	toSend.append(std::to_string(status_code));
-	if (status_code != CGICODE) {
-		toSend.append("\r\n");
-		for (std::map<std::string, std::string>::iterator it = _header_fields.begin(); it != _header_fields.end(); it++) {
-			toSend.append((*it).first);
-			toSend.append(": ");
-			toSend.append((*it).second);
-			toSend.append("\r\n");
-		}
-	}
-	if (body.size()) {
-		toSend.append("\r\n");
-		toSend.append(body);
-		toSend.append("\r\n");
-	}
-	response->toSend = toSend;
-	cout << toSend << endl;
+	fillHeaders(response);
 }
 
-bool RequestHandler::fillBodyFromIndexFile(const string& pathToFile)
+bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pathToFile)
 {
 	time_t lastModified;
 //	struct stat file;
@@ -223,20 +187,20 @@ bool RequestHandler::fillBodyFromIndexFile(const string& pathToFile)
 //				cout << "Нет прав на чтение" << endl;
 //				return false;
 //			}
-			readfile(indexFile);
-			status_code = 200;
+			readfile(response, indexFile);
 			return true;
 		}
 	}
 	return false;
 }
 
-void RequestHandler::folderContents(const std::string& path, const string& uri)
+void RequestHandler::folderContents(Response* response, const std::string& path, const string& uri)
 {
 	DIR* dp;
 	struct dirent* di_struct;
 	struct stat file_stats;
 	time_t lastModified;
+	string body;
 
 	(void)path;
 	string title = "Index of " + uri;
@@ -276,17 +240,18 @@ void RequestHandler::folderContents(const std::string& path, const string& uri)
 	}
 	body.append("</pre><hr></body>\n"
 				"</html>\n");
+	response->setStatus("200 OK");
 }
 
 void RequestHandler::doPut(Request* request, Response* response) { (void)request, (void)response; }
 
 void RequestHandler::doDelete(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::formResponseBodyWithError(Response* response, string errorMessage)
+void RequestHandler::setResponseWithError(Response* response, string errorMessage)
 {
-	string _body = "<html>\n"
-				   "<head>\n"
-				   "    <title>Error " + errorMessage + "</title>"
+	string body = "<html>\n"
+		  "<head>\n"
+		  "    <title>Error " + errorMessage + "</title>"
 		  "    <link href=\"https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap\" rel=\"stylesheet\">\n"
 		  "    <link rel=\"stylesheet\" href=\"./errorPages/style.css\">\n"
 		  "</head>\n"
@@ -301,10 +266,17 @@ void RequestHandler::formResponseBodyWithError(Response* response, string errorM
 		  "</body>\n"
 		  "</html>\n";
 
-	response->setBody(_body);
-//	body = _body;
-//	status_code = 404;
-//	_header_fields["Content-Type"] = mimeType(".html");
-//	_header_fields["Content-Length"] = std::to_string(body.size());
-//	_header_fields["Status"] = std::to_string(errorCode) + " " + errorMessage;
+	response->setBody(body);
+	response->setStatus(errorMessage);
+}
+
+void RequestHandler::fillHeaders(Response* response)
+{
+	time_t currentTime = time(0);
+	response->setHeader(response->getProtocol() + " " + response->getStatus());
+	response->setHeader("Server: webserv/2.0");
+	response->setHeader("Date: " + string(ctime(&currentTime)));
+	response->setHeader("Content-Type: " + response->getContentType());
+	response->setHeader("Content-Length: " + std::to_string(response->getBody().size()));
+	response->setHeader("Connection: keep-alive");
 }
