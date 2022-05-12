@@ -148,7 +148,7 @@ void RequestHandler::formResponse(Request* request, Response* response)
 		doPut(request, response);
 	else if (request->getMethod() == DELETE)
 		doDelete(request, response);
-	fillHeaders(response);
+  	fillHeaders(response);
 }
 
 void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
@@ -156,8 +156,10 @@ void RequestHandler::doPost(Request* request, Response* response) { (void)reques
 void RequestHandler::doGet(Request* request, Response* response)
 {
 	string pathToFile = locationPath + request->getUri();
+	response->setProtocol("HTTP/1.1");
 
 	if (!isFileExists(pathToFile)) {
+//		readfile(response, "resources/html_data/errorPages/index.html");
 		setResponseWithError(response, "404 Not Found");
 	} else if (isDirectory(pathToFile)) {
 		if (pathToFile.back() != '/') {
@@ -172,7 +174,6 @@ void RequestHandler::doGet(Request* request, Response* response)
 	} else {
 		readfile(response, pathToFile);
 	}
-	fillHeaders(response);
 }
 
 bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pathToFile)
@@ -251,32 +252,36 @@ void RequestHandler::setResponseWithError(Response* response, string errorMessag
 {
 	string body = "<html>\n"
 		  "<head>\n"
-		  "    <title>Error " + errorMessage + "</title>"
+		  "    <title>Error " + errorMessage + "</title>\n"
 		  "    <link href=\"https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap\" rel=\"stylesheet\">\n"
 		  "    <link rel=\"stylesheet\" href=\"./errorPages/style.css\">\n"
 		  "</head>\n"
 		  "<body>\n"
 		  "<div id=\"main\">\n"
-		  "    <div class=\"fof\">\n"
+		  "    <div class=\"msg\">\n"
 		  "        <h1>" + errorMessage + "</h1>\n"
 		  "        <br>\n"
-		  "        <img src=\"./errorPages/mem.gif\">\n"
+		  "        <img src=\"./errorPages/mem.gif\" height=\"413px\" width=\"504px\">\n"
 		  "    </div>\n"
 		  "</div>\n"
 		  "</body>\n"
 		  "</html>\n";
 
 	response->setBody(body);
+	response->setContentType(mimeType(".html"));
 	response->setStatus(errorMessage);
 }
 
 void RequestHandler::fillHeaders(Response* response)
 {
 	time_t currentTime = time(0);
-	response->setHeader(response->getProtocol() + " " + response->getStatus());
-	response->setHeader("Server: webserv/2.0");
-	response->setHeader("Date: " + string(ctime(&currentTime)));
-	response->setHeader("Content-Type: " + response->getContentType());
-	response->setHeader("Content-Length: " + std::to_string(response->getBody().size()));
-	response->setHeader("Connection: keep-alive");
+	char* time = ctime(&currentTime);
+	response->setHeader(response->getProtocol() + " " + response->getStatus() + "\r\n");
+	response->setHeader("Server: webserv/2.0\r\n");
+	response->setHeader("Date: " + string(time, strlen(time) - 1) + "\r\n");
+	response->setHeader("Content-Type: " + response->getContentType() + "\r\n");
+	response->setHeader("Content-Length: " + std::to_string(response->getBody().size()) + "\r\n");
+	response->setHeader("Connection: keep-alive\r\n\r\n");
+	response->setBuffer(response->getHeaders() + response->getBody());
+	cout << response->getBuffer() << endl;
 }

@@ -104,11 +104,11 @@ void Server::receiveRequest(WebClient* client, short& events)
 
 void Server::sendResponse(WebClient* client, short& events)
 {
-	if (client->getResponse()->toSend.empty()) {
+	if (client->getResponse()->getBuffer().empty()) {
 		_handler.formResponse(client->getRequest(), client->getResponse());
 	}
 	else {
-		string buffer = client->getResponse()->toSend;
+		string buffer = client->getResponse()->getBuffer();
 		ssize_t sendBytes = send(client->getFd(), buffer.c_str(), buffer.size(), 0);
 
 		//		if (sendBytes <= 0) {
@@ -116,9 +116,9 @@ void Server::sendResponse(WebClient* client, short& events)
 		//			return false;
 		//		}
 
-		client->getResponse()->toSend = buffer.substr(sendBytes);
+		client->getResponse()->setBuffer(buffer.substr(sendBytes));
 		std::cout << "Sent " << sendBytes << " bytes to fd: " << client->getFd() << std::endl;
-		if (client->getResponse()->toSend.empty()) {
+		if (client->getResponse()->getBuffer().empty()) {
 			client->update();
 			events = POLLIN;
 		}

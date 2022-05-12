@@ -12,13 +12,14 @@
 using std::string;
 using std::vector;
 
-class Response : public IResponse {
+class Response {
 private:
 	string _protocol;
 	string _status;
 	string _contentType;
 	string _buffer;
-	vector<string> _headers;
+//	vector<string> _headers;
+	string _headers;
 	string _body;
 
 public:
@@ -26,14 +27,14 @@ public:
 	//    std::ifstream file;
 	//    long fileSize;
 	//    bool headersSent;
-	string toSend;
+//	string toSend;
 
 public:
 	Response();
 
 	~Response();
 
-	string toString() const;
+//	string toString() const;
 
 	void setProtocol(const string& protocol);
 
@@ -54,6 +55,8 @@ public:
 	const string& getBuffer() const;
 
 	const string& getContentType() const;
+
+	const string& getHeaders() const;
 
 	const string& getBody() const;
 
