@@ -105,4 +105,6 @@ void printStringVector(const vector<string>&);
 
 string removeAfter(string, char);
 
+bool isAccessRights(string& pathToFile);
+
 #endif

@@ -87,7 +87,7 @@ RequestHandler::RequestHandler()
 
 	//Временные переменные
 	locationPath = "resources/html_data";
-	autoindex = false;
+	autoindex = true;
 	index.push_back("index");
 	index.push_back("index.html");
 }
@@ -156,16 +156,15 @@ void RequestHandler::doPost(Request* request, Response* response) { (void)reques
 void RequestHandler::doGet(Request* request, Response* response)
 {
 	string pathToFile = locationPath + request->getUri();
-	response->setProtocol("HTTP/1.1");
+	response->setProtocol(request->getProtocol());
 
 	if (!isFileExists(pathToFile)) {
-//		readfile(response, "resources/html_data/errorPages/index.html");
 		setResponseWithError(response, "404 Not Found");
 	} else if (isDirectory(pathToFile)) {
 		if (pathToFile.back() != '/') {
 			pathToFile.append("/");
 		}
-		if (!fillBodyFromIndexFile(response, pathToFile) && !autoindex) {
+		if (!isAccessRights(pathToFile) || (!fillBodyFromIndexFile(response, pathToFile) && !autoindex)) {
 			setResponseWithError(response, "403 Forbidden");
 		} else if (autoindex) {
 			folderContents(response, pathToFile, request->getUri());
@@ -241,6 +240,7 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	}
 	body.append("</pre><hr></body>\n"
 				"</html>\n");
+	response->setBody(body);
 	response->setStatus("200 OK");
 }
 

@@ -161,3 +161,10 @@ string removeAfter(string s, char c)
 	}
 	return s.substr(0, pos);
 }
+
+bool isAccessRights(string& pathToFile)
+{
+	struct stat file;
+
+	return stat(pathToFile.c_str(), &file) != -1 && file.st_mode & S_IROTH;
+}
