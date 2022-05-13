@@ -157,6 +157,7 @@ void RequestHandler::doGet(Request* request, Response* response)
 {
 	string pathToFile = locationPath + request->getUri();
 	response->setProtocol(request->getProtocol());
+	bool isIndexFileFound = false;
 
 	if (!isFileExists(pathToFile)) {
 		setResponseWithError(response, "404 Not Found");
@@ -164,10 +165,13 @@ void RequestHandler::doGet(Request* request, Response* response)
 		if (pathToFile.back() != '/') {
 			pathToFile.append("/");
 		}
-		if (!isAccessRights(pathToFile) || (!fillBodyFromIndexFile(response, pathToFile) && !autoindex)) {
-			setResponseWithError(response, "403 Forbidden");
-		} else if (autoindex) {
+		if (isAccessRights(pathToFile)) {
+			isIndexFileFound = fillBodyFromIndexFile(response, pathToFile);
+		}
+		if (!isIndexFileFound && autoindex) {
 			folderContents(response, pathToFile, request->getUri());
+		} else if (!isIndexFileFound) {
+			setResponseWithError(response, "403 Forbidden");
 		}
 		response->setContentType(mimeType(".html"));
 	} else {
