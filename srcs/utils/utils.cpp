@@ -139,6 +139,13 @@ bool isFileExists(string& pathToFile)
 	return file.is_open();
 }
 
+bool isFileExists(const string& pathToFile)
+{
+	std::ifstream file(pathToFile);
+	return file.is_open();
+}
+
+
 bool isDirectory(string& pathToFile)
 {
 	struct stat file;

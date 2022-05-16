@@ -159,6 +159,15 @@ void RequestHandler::doGet(Request* request, Response* response)
 	response->setProtocol(request->getProtocol());
 	bool isIndexFileFound = false;
 
+	// Check files extension
+	// CGI
+	// создать свой фаайл записать в него результат компиляции файла и прописать путь в path to file
+	CGI cgi = CGI(pathToFile);
+	try {
+		cgi.getPathToFileWithResult();
+	} catch (std::exception & e) {
+		cout << e.what() << endl;
+	}
 	if (!isFileExists(pathToFile)) {
 		setResponseWithError(response, "404 Not Found");
 	} else if (isDirectory(pathToFile)) {
@@ -287,5 +296,5 @@ void RequestHandler::fillHeaders(Response* response)
 	response->setHeader("Content-Length: " + std::to_string(response->getBody().size()) + "\r\n");
 	response->setHeader("Connection: keep-alive\r\n\r\n");
 	response->setBuffer(response->getHeaders() + response->getBody());
-	cout << response->getBuffer() << endl;
+	// cout << response->getBuffer() << endl;
 }

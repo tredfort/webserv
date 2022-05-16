@@ -12,13 +12,7 @@
 #include <sys/stat.h>
 #include <vector>
 
-using std::cout;
-using std::endl;
-using std::getline;
-using std::istringstream;
-using std::string;
-using std::stringstream;
-using std::vector;
+#include "usings.hpp"
 
 /**
  * split string with delimiter. It skips empty strings
@@ -98,6 +92,7 @@ void fatalError(const string& errorMessage, int errorCode = 1);
 int getStringIndexFromArray(const string& str, const string* array);
 
 bool isFileExists(string& pathToFile);
+bool isFileExists(const string& pathToFile);
 
 bool isDirectory(string& pathToFile);
 

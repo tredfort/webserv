@@ -19,6 +19,7 @@ SRC = srcs/main.cpp \
 	srcs/requestParser/RequestParser.cpp \
 	srcs/requestHandler/RequestHandler.cpp \
 	srcs/requestHandler/FileReader.cpp \
+	srcs/requestHandler/CGI.cpp \
 
 OBJ=$(SRC:.cpp=.o)
 
@@ -35,6 +36,8 @@ HEADERS = \
 	srcs/requestParser/RequestParser.hpp \
 	srcs/requestHandler/RequestHandler.hpp \
 	srcs/requestHandler/FileReader.hpp \
+	srcs/requestHandler/CGI.hpp \
+	srcs/interfaces/ICGI.hpp
 
 
 srcs/%.o: srcs/%.cpp $(HEADERS)
