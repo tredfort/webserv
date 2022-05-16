@@ -2,11 +2,11 @@
 #define METHOD_HPP
 
 enum Method {
-	UNKNOWN, //
-	POST, //
-	GET, //
-	PUT, //
-	DELETE //
+	UNKNOWN_METHOD,
+	POST,
+	GET,
+	PUT,
+	DELETE
 };
 
 #endif

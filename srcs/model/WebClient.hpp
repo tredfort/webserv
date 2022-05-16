@@ -1,11 +1,10 @@
+#ifndef WEBCLIENT_HPP
+#define WEBCLIENT_HPP
 
-#pragma once
-
-#include "../interfaces/IEntity.hpp"
 #include "Request.hpp"
 #include "Response.hpp"
 
-class WebClient : public IEntity {
+class WebClient {
 private:
 	int _fd;
 	int _port;
@@ -38,3 +37,5 @@ public:
 private:
 	WebClient();
 };
+
+#endif

@@ -1,20 +1,15 @@
 #include "Request.hpp"
 
 Request::Request()
-	: _method(UNKNOWN)
-	, _protocol(ANOTHER)
-{
-}
+	: _method(UNKNOWN_METHOD) { }
 
 Request::~Request() { }
-
-bool Request::isBadRequest() { return _method == UNKNOWN || _uri.empty() || _protocol == ANOTHER; }
 
 const Method& Request::getMethod() { return _method; }
 
 const string& Request::getUri() { return _uri; }
 
-const Protocol& Request::getProtocol() { return _protocol; }
+const string& Request::getProtocol() { return _protocol; }
 
 void Request::setMethod(const string& method)
 {
@@ -33,25 +28,23 @@ void Request::setUri(const string& uri) { _uri = uri; }
 void Request::setProtocol(const string& protocol)
 {
 	if (protocol == "HTTP/1.1")
-		_protocol = HTTP1_1;
+		_protocol = protocol;
 }
 
 string Request::getHeader(const string& key) const
 {
-	map<string, string>::const_iterator it = headers.find(key);
-	if (it == headers.end())
+	map<string, string>::const_iterator it = _headers.find(key);
+	if (it == _headers.end())
 		return "";
 	return it->second;
 }
 
-bool Request::emptyHeader() const { return headers.empty(); }
+bool Request::emptyHeader() const { return _headers.empty(); }
 
-void Request::setHeadersVector(vector<string> headers) { headersVector = headers; }
-
-vector<string>& Request::getHeadersVector() { return headersVector; }
-
-void Request::setHeader(string key, string value) { headers.insert(make_pair(key, value)); }
+void Request::setHeader(string key, string value) { _headers.insert(make_pair(key, value)); }
 
 const string& Request::getBuffer() const { return _buffer; }
 
 void Request::setBuffer(const string& buffer) { _buffer = buffer; }
+
+void Request::appendBuffer(const string& buffer) { _buffer.append(buffer); }

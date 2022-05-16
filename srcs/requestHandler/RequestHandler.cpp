@@ -1,6 +1,5 @@
 #include "RequestHandler.hpp"
 
-#define BUFFERSIZE 256
 #define NOTEXIST 0
 #define REGFILE 1
 #define ISFOLDER 2
@@ -9,9 +8,6 @@
 
 RequestHandler::RequestHandler()
 {
-	_index.push_back("resources/html_data/index");
-	_index.push_back("resources/html_data/index.html");
-
 	types["aac"] = "audio/aac";
 	types["abw"] = "application/x-abiword";
 	types["arc"] = "application/x-freearc";
@@ -88,6 +84,12 @@ RequestHandler::RequestHandler()
 	types["3gp"] = "video/3gpp audio/3gpp if it doesn't contain video";
 	types["3g2"] = "video/3gpp2 audio/3gpp2 if it doesn't contain video";
 	types["7z"] = "application/x-7z-compressed";
+
+	//Временные переменные
+	locationPath = "resources/html_data";
+	autoindex = true;
+	index.push_back("index");
+	index.push_back("index.html");
 }
 
 RequestHandler::~RequestHandler() { }
@@ -96,11 +98,11 @@ const std::string& RequestHandler::mimeType(const std::string& uri)
 {
 	std::string::size_type found = uri.find_last_of('.');
 	if (found == std::string::npos)
-		return (types["txt"]);
+		return types["txt"];
 	std::string extension = uri.substr(found + 1);
 	if (types.find(extension) != types.end())
-		return (types[extension]);
-	return (types["bin"]);
+		return types[extension];
+	return types["bin"];
 }
 
 int checkWhatsThere(std::string const& path, time_t* lastModified)
@@ -108,112 +110,182 @@ int checkWhatsThere(std::string const& path, time_t* lastModified)
 	struct stat file;
 
 	if (stat(path.c_str(), &file) == -1) {
-		return (NOTEXIST);
+		return NOTEXIST;
 	}
 	if (S_ISREG(file.st_mode)) {
 		if (lastModified)
 			*lastModified = file.st_mtime;
-		return (REGFILE);
-	} else {
-		return (ISFOLDER);
+		return REGFILE;
 	}
+	return ISFOLDER;
 }
 
-std::string noQueryArgs(std::string uri)
+void RequestHandler::readfile(Response* response, const std::string& path)
 {
-	size_t i = 0;
-	while (uri[i] && uri[i] != '?') {
-		i++;
-	}
-	return (std::string(uri, 0, i));
-}
+	string exеtention = path.substr(path.find_last_of("/\\") + 1);
+	string fileExеtention = path.substr(path.find_last_of(".") + 1);
 
-void RequestHandler::readfile(const std::string& path)
-{
-	std::string exеtention = path.substr(path.find_last_of("/\\") + 1);
-	std::string fileExеtention = path.substr(path.find_last_of(".") + 1);
-
-	_header_fields["Content-Type"] = mimeType(exеtention);
+	response->setContentType(mimeType(exеtention));
 	try {
-		body = FileReader::readFile(path);
+		response->setBody(FileReader::readFile(path));
 	} catch (FileReader::FileNotFoundException& ex) {
-		body = FileReader::readFile("resources/errorPages/404.html");
+		response->setBody(FileReader::readFile("resources/errorPages/404.html"));
 	}
-	if (!body.empty()) {
-		content_lengh = body.size();
-		_header_fields["Content-Length"] = std::to_string(content_lengh);
-	}
-	_header_fields["Status"] = "200 OK";
+	response->setStatus("200 OK");
 }
 
-void RequestHandler::formResponse(WebClient* client)
+bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol().empty(); }
+
+void RequestHandler::formResponse(Request* request, Response* response)
 {
-	Request* request = client->getRequest();
-	if (request->isBadRequest()) {
-		client->getResponse(); // TODO: Bad Request
-	} else if (request->getMethod() == POST)
-		doPost(client);
+	if (isBadRequest(request))
+		setResponseWithError(response, "400 Bad Request");
+	else if (request->getMethod() == POST)
+		doPost(request, response);
 	else if (request->getMethod() == GET)
-		doGet(client);
+		doGet(request, response);
 	else if (request->getMethod() == PUT)
-		doPut(client);
+		doPut(request, response);
 	else if (request->getMethod() == DELETE)
-		doDelete(client);
+		doDelete(request, response);
+  	fillHeaders(response);
 }
 
-void RequestHandler::doPost(WebClient* client) { (void)client; }
+void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::doGet(WebClient* client)
+void RequestHandler::doGet(Request* request, Response* response)
 {
-	Request* request = client->getRequest();
-	this->client = client;
-	_method = request->getMethod();
-	_uri = request->getUri();
-	_requestHeaders = request->getHeadersVector();
-	toSend = "";
+	string pathToFile = locationPath + request->getUri();
+	response->setProtocol(request->getProtocol());
+	bool isIndexFileFound = false;
 
+	if (!isFileExists(pathToFile)) {
+		setResponseWithError(response, "404 Not Found");
+	} else if (isDirectory(pathToFile)) {
+		if (pathToFile.back() != '/') {
+			pathToFile.append("/");
+		}
+		if (isAccessRights(pathToFile)) {
+			isIndexFileFound = fillBodyFromIndexFile(response, pathToFile);
+		}
+		if (!isIndexFileFound && autoindex) {
+			folderContents(response, pathToFile, request->getUri());
+		} else if (!isIndexFileFound) {
+			setResponseWithError(response, "403 Forbidden");
+		}
+		response->setContentType(mimeType(".html"));
+	} else {
+		readfile(response, pathToFile);
+	}
+}
+
+bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pathToFile)
+{
 	time_t lastModified;
-	std::string path;
-	std::string location = "resources/html_data/"; // TODO link with config
+//	struct stat file;
 
-	if (_uri == "/") { // Root page
-		for (std::vector<std::string>::iterator it = _index.begin(); it != _index.end(); it++) {
-			if (checkWhatsThere((*it), &lastModified) == REGFILE) {
-				path = *it;
-				status_code = 200;
-				break;
+	for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
+		string indexFile = pathToFile + *it;
+		if (checkWhatsThere(indexFile, &lastModified) == REGFILE) {
+//			if (stat(indexFile.c_str(), &file) == -1 || file.st_mode & S_IRGRP) {
+//				cout << "Нет прав на чтение" << endl;
+//				return false;
+//			}
+			readfile(response, indexFile);
+			return true;
+		}
+	}
+	return false;
+}
+
+void RequestHandler::folderContents(Response* response, const std::string& path, const string& uri)
+{
+	DIR* dp;
+	struct dirent* di_struct;
+	struct stat file_stats;
+	time_t lastModified;
+	string body;
+
+	(void)path;
+	string title = "Index of " + uri;
+	body.append("<html>\n"
+				"<head><title>"
+		+ title
+		+ "</title></head>\n"
+		  "<body>\n"
+		  "<h1>"
+		+ title + "</h1><hr><pre><a href=\"../\">../</a>\n");
+	if ((dp = opendir(path.c_str())) != nullptr) {
+		while ((di_struct = readdir(dp)) != nullptr) {
+			if (strcmp(di_struct->d_name, ".") && strcmp(di_struct->d_name, "..")) {
+
+				string tmp_path = path + "/" + di_struct->d_name;
+				stat(tmp_path.data(), &file_stats);
+
+				body.append("<a href=\"" + uri + string(di_struct->d_name));
+				if (S_ISDIR(file_stats.st_mode))
+					body.append("/");
+				body.append("\">" + string(di_struct->d_name));
+				if (S_ISDIR(file_stats.st_mode))
+					body.append("/");
+				body.append("</a>                                               ");
+				checkWhatsThere(tmp_path, &lastModified);
+				string date = string(std::ctime(&lastModified));
+				date = date.substr(0, date.size() - 1);
+				body.append(date + "                   ");
+				if (S_ISDIR(file_stats.st_mode))
+					body.append("-\n");
+				else {
+					body.append(std::to_string(static_cast<float>(file_stats.st_size)) + "\n");
+				}
 			}
 		}
-	} else if (checkWhatsThere(location + _uri.substr(1), &lastModified) == REGFILE) { // Not root
-		path = location;
-		path += &_uri.c_str()[1];
-		std::cout << "trying " << location + _uri.substr(1) << "\n path = " << path << std::endl;
-		status_code = 200;
-	} else { // Requested path not found
-		std::cout << "404 for URL " << _uri << std::endl;
-		status_code = 404;
-		path = "resources/errorPages/404.html";
+		closedir(dp);
 	}
-	readfile(path);
-	toSend.append("HTTP/1.1 ");
-	// toSend.append(std::to_string(status_code));
-	if (status_code != CGICODE) {
-		toSend.append("\r\n");
-		for (std::map<std::string, std::string>::iterator it = _header_fields.begin(); it != _header_fields.end(); it++) {
-			toSend.append((*it).first);
-			toSend.append(": ");
-			toSend.append((*it).second);
-			toSend.append("\r\n");
-		}
-	}
-	if (body.size()) {
-		toSend.append("\r\n");
-		toSend.append(body);
-		toSend.append("\r\n");
-	}
-	client->getResponse()->toSend = toSend;
+	body.append("</pre><hr></body>\n"
+				"</html>\n");
+	response->setBody(body);
+	response->setStatus("200 OK");
 }
 
-void RequestHandler::doPut(WebClient* client) { (void)client; }
+void RequestHandler::doPut(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::doDelete(WebClient* client) { (void)client; }
+void RequestHandler::doDelete(Request* request, Response* response) { (void)request, (void)response; }
+
+void RequestHandler::setResponseWithError(Response* response, string errorMessage)
+{
+	string body = "<html>\n"
+		  "<head>\n"
+		  "    <title>Error " + errorMessage + "</title>\n"
+		  "    <link href=\"https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap\" rel=\"stylesheet\">\n"
+		  "    <link rel=\"stylesheet\" href=\"./errorPages/style.css\">\n"
+		  "</head>\n"
+		  "<body>\n"
+		  "<div id=\"main\">\n"
+		  "    <div class=\"msg\">\n"
+		  "        <h1>" + errorMessage + "</h1>\n"
+		  "        <br>\n"
+		  "        <img src=\"./errorPages/mem.gif\" height=\"413px\" width=\"504px\">\n"
+		  "    </div>\n"
+		  "</div>\n"
+		  "</body>\n"
+		  "</html>\n";
+
+	response->setBody(body);
+	response->setContentType(mimeType(".html"));
+	response->setStatus(errorMessage);
+}
+
+void RequestHandler::fillHeaders(Response* response)
+{
+	time_t currentTime = time(0);
+	char* time = ctime(&currentTime);
+	response->setHeader(response->getProtocol() + " " + response->getStatus() + "\r\n");
+	response->setHeader("Server: webserv/2.0\r\n");
+	response->setHeader("Date: " + string(time, strlen(time) - 1) + "\r\n");
+	response->setHeader("Content-Type: " + response->getContentType() + "\r\n");
+	response->setHeader("Content-Length: " + std::to_string(response->getBody().size()) + "\r\n");
+	response->setHeader("Connection: keep-alive\r\n\r\n");
+	response->setBuffer(response->getHeaders() + response->getBody());
+	cout << response->getBuffer() << endl;
+}

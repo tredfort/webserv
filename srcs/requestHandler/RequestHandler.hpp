@@ -1,53 +1,57 @@
-#pragma once
+#ifndef REQUESTHANDLER_HPP
+#define REQUESTHANDLER_HPP
 
+#include <dirent.h>
 #include <exception>
 #include <fstream>
 #include <map>
 #include <string>
 #include <sys/socket.h>
-#include <sys/stat.h>
 #include <vector>
 
 #include "../config/Config.hpp"
 #include "../interfaces/IRequestHandler.hpp"
 #include "../model/Request.hpp"
-#include "../model/WebClient.hpp"
+#include "../model/Response.hpp"
 #include "FileReader.hpp"
 
 class RequestHandler : public IRequestHandler {
 private:
-	WebClient* client;
-	std::map<std::string, std::string> types;
-	Method _method;
-	std::string _uri;
-	std::vector<std::string> _index;
-	std::map<std::string, std::string> _header_fields;
-	std::string _header;
-	std::vector<std::string> _requestHeaders;
+	map<string, string> types;
 
-	int status_code;
-	unsigned int content_lengh;
-	std::string toSend;
-	std::string body;
-	std::string filepath;
+	vector<string> index;
+	bool autoindex;
+	string locationPath;
 
 private:
-	const std::string& mimeType(const std::string& uri);
+	const string& mimeType(const string& uri);
 
-	void readfile(const std::string&);
+	bool isBadRequest(Request* request) const;
+
+	void readfile(Response* response, const string&);
+
+	void folderContents(Response* response, const string&, const string&);
+
+	bool fillBodyFromIndexFile(Response* response, const string&);
+
+	void setResponseWithError(Response* response, string errorMessage);
+
+	void fillHeaders(Response* response);
 
 public:
 	RequestHandler();
 
 	~RequestHandler();
 
-	void formResponse(WebClient* client);
+	void formResponse(Request* request, Response* response);
 
-	void doPost(WebClient* client);
+	void doPost(Request* request, Response* response);
 
-	void doGet(WebClient* client);
+	void doGet(Request* request, Response* response);
 
-	void doPut(WebClient* client);
+	void doPut(Request* request, Response* response);
 
-	void doDelete(WebClient* client);
+	void doDelete(Request* request, Response* response);
 };
+
+#endif

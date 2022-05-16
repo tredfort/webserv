@@ -9,6 +9,7 @@
 #include <sstream>
 #include <string>
 #include <sys/poll.h>
+#include <sys/stat.h>
 #include <vector>
 
 using std::cout;
@@ -25,25 +26,8 @@ using std::vector;
  * @param delim delimiter string
  * @return vector of strings
  */
-template <class Container> Container ft_split(const string& s, const string& delimiter)
-{
-	size_t pos_start = 0, pos_end, delim_len = delimiter.length();
-	string token;
-	Container res;
 
-	while ((pos_end = s.find(delimiter, pos_start)) != string::npos) {
-		token = s.substr(pos_start, pos_end - pos_start);
-		pos_start = pos_end + delim_len;
-		if (!token.empty())
-			res.push_back(token);
-	}
-	token = s.substr(pos_start);
-	if (!token.empty())
-		res.push_back(token);
-	return res;
-}
-
-std::vector<string> ft_split(const string& s, const string& delimiter);
+std::vector<string> ft_split(const std::string& str, const std::string& delim);
 
 /**
  * Create pollFdPointer with pollFd structure
@@ -113,10 +97,14 @@ void fatalError(const string& errorMessage, int errorCode = 1);
  */
 int getStringIndexFromArray(const string& str, const string* array);
 
-bool isFileExists(string pathToFile);
+bool isFileExists(string& pathToFile);
+
+bool isDirectory(string& pathToFile);
 
 void printStringVector(const vector<string>&);
 
 string removeAfter(string, char);
+
+bool isAccessRights(string& pathToFile);
 
 #endif

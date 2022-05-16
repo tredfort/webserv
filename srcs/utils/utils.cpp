@@ -1,6 +1,20 @@
 #include "utils.hpp"
 
-std::vector<string> ft_split(const string& s, const string& delimiter) { return ft_split<vector<string> >(s, delimiter); }
+std::vector<string> ft_split(const std::string& str, const std::string& delim)
+{
+	std::vector<std::string> tokens;
+	size_t prev = 0, pos;
+	do {
+		pos = str.find(delim, prev);
+		if (pos == std::string::npos)
+			pos = str.length();
+		std::string token = str.substr(prev, pos - prev);
+		if (!token.empty())
+			tokens.push_back(token);
+		prev = pos + delim.length();
+	} while (pos < str.length() && prev < str.length());
+	return tokens;
+}
 
 std::string ltrim(std::string str, const std::string& chars)
 {
@@ -119,11 +133,18 @@ int getStringIndexFromArray(const string& str, const string* array)
 
 bool isDigits(const std::string& str) { return str.find_first_not_of("0123456789") == std::string::npos; }
 
-bool isFileExists(string pathToFile)
+bool isFileExists(string& pathToFile)
 {
 	std::ifstream file(pathToFile);
 	return file.is_open();
 }
+
+bool isDirectory(string& pathToFile)
+{
+	struct stat file;
+	return stat(pathToFile.c_str(), &file) != -1 && S_ISDIR(file.st_mode);
+}
+
 void printStringVector(const vector<string>& v)
 {
 	for (vector<string>::const_iterator it = v.begin(); it != v.end(); ++it) {
@@ -139,4 +160,11 @@ string removeAfter(string s, char c)
 		return s;
 	}
 	return s.substr(0, pos);
+}
+
+bool isAccessRights(string& pathToFile)
+{
+	struct stat file;
+
+	return stat(pathToFile.c_str(), &file) != -1 && file.st_mode & S_IROTH;
 }
