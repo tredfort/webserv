@@ -35,7 +35,7 @@ public:
 	void printConfig();
 
 	// common methods for all context of the config
-	static void addErrorPage(const vector<string>& lineWords, vector<pair<int, std::string> > errorPages);
+	static void addErrorPage(const vector<string>& lineWords, vector<pair<int, std::string> >& errorPages);
 	static void parseClientMaxBodySize(string, size_t*);
 	static void parseIndex(const vector<string>& lineWords, vector<string>& index);
 	static ssize_t getParsedLine(ifstream* fileStream, bool isMainContext, vector<string>* lineWords, const string* CONTEXT_DIRECTIVE);

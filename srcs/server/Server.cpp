@@ -2,6 +2,7 @@
 
 Server::Server(Config* config)
 	: _config(config)
+	, _handler(config)
 {
 }
 
@@ -106,15 +107,9 @@ void Server::sendResponse(WebClient* client, short& events)
 {
 	if (client->getResponse()->getBuffer().empty()) {
 		_handler.formResponse(client->getRequest(), client->getResponse());
-	}
-	else {
+	} else {
 		string buffer = client->getResponse()->getBuffer();
 		ssize_t sendBytes = send(client->getFd(), buffer.c_str(), buffer.size(), 0);
-
-		//		if (sendBytes <= 0) {
-		//			cout << "Client ended the _userfd!" << client->getFd() << endl;
-		//			return false;
-		//		}
 
 		client->getResponse()->setBuffer(buffer.substr(sendBytes));
 		std::cout << "Sent " << sendBytes << " bytes to fd: " << client->getFd() << std::endl;

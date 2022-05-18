@@ -161,3 +161,11 @@ string removeAfter(string s, char c)
 	}
 	return s.substr(0, pos);
 }
+
+string getWholeFile(const string pathToFile)
+{
+	std::ifstream file(pathToFile.c_str());
+	std::ostringstream sstr;
+	sstr << file.rdbuf();
+	return sstr.str();
+}

@@ -105,4 +105,6 @@ void printStringVector(const vector<string>&);
 
 string removeAfter(string, char);
 
+string getWholeFile(const string);
+
 #endif

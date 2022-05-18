@@ -49,7 +49,8 @@ Config::Config(const string& filename)
 	while ((directiveIndex = Config::getParsedLine(&fileStream, true, &lineWords, MAIN_CONTEXT_DIRECTIVES)) != -1) {
 		switch (directiveIndex) {
 		case 0: // error_page codeInInt pathToFile
-			Config::addErrorPage(lineWords, getErrorPages());
+			Config::addErrorPage(lineWords, _errorPages);
+			printConfig();
 			break;
 		case 1: // server
 			if (lineWords.size() != 2 && trim(lineWords[1]) != "{") {
@@ -84,7 +85,7 @@ Config::~Config()
  * Common method for all error pages in main, server and location contexts
  * @param errorPage string which contain error code in int and substring with pathToFile
  */
-void Config::addErrorPage(const vector<string>& lineWords, vector<pair<int, std::string> > errorPages)
+void Config::addErrorPage(const vector<string>& lineWords, vector<pair<int, std::string> >& errorPages)
 {
 	if (lineWords.size() != 3) {
 		fatalError("Value of key _error_page isn't correct!", 20);
@@ -101,6 +102,7 @@ void Config::addErrorPage(const vector<string>& lineWords, vector<pair<int, std:
 		fatalError("Specified error page doesn't exist! not able to find a file with: " + pathToFile, 22);
 	}
 	errorPages.push_back(std::make_pair(code, pathToFile));
+	cout << "error Pages updated size = " << errorPages.size() << " code:" << code << " pathToFile:" << pathToFile << endl;
 }
 
 const vector<pair<int, string> >& Config::getErrorPages() const { return _errorPages; }
@@ -139,7 +141,7 @@ void Config::parseIndex(const vector<string>& lineWords, vector<string>& index)
 void Config::printConfig()
 {
 	cout << "GLOBAL CONFIG" << endl;
-	cout << endl << "Error pages:" << endl;
+	cout << endl << "Error pages(" << _errorPages.size() << "):" << endl;
 	for (vector<pair<int, string> >::iterator it = _errorPages.begin(); it != _errorPages.end(); ++it) {
 		cout << it->first << " " << it->second << endl;
 	}

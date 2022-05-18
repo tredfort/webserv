@@ -1,11 +1,11 @@
 #ifndef REQUESTHANDLER_HPP
 #define REQUESTHANDLER_HPP
 
+#include <cstring>
 #include <dirent.h>
 #include <exception>
 #include <fstream>
 #include <map>
-#include <string>
 #include <sys/socket.h>
 #include <vector>
 
@@ -13,6 +13,7 @@
 #include "../interfaces/IRequestHandler.hpp"
 #include "../model/Request.hpp"
 #include "../model/Response.hpp"
+#include "../utils/utils.hpp"
 #include "FileReader.hpp"
 
 class RequestHandler : public IRequestHandler {
@@ -22,6 +23,7 @@ private:
 	vector<string> index;
 	bool autoindex;
 	string locationPath;
+	Config* _config;
 
 private:
 	const string& mimeType(const string& uri);
@@ -39,7 +41,7 @@ private:
 	void fillHeaders(Response* response);
 
 public:
-	RequestHandler();
+	RequestHandler(Config* _config);
 
 	~RequestHandler();
 
