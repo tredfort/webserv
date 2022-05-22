@@ -8,6 +8,8 @@
 #include "../utils/usings.hpp"
 #include "../interfaces/ICGI.hpp"
 #include "../utils/utils.hpp"
+#include <stdio.h>
+#include <unistd.h>
 
 class CGI : public ICGI {
 
@@ -34,6 +36,7 @@ private:
 	// throws exceptions
 	void validateFile() const;
 	string getFileFormat() const;
+	string executeCgi() const;
 };
 
 #endif
