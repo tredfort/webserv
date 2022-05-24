@@ -77,6 +77,7 @@ void ServerContext::checkDefaultValues()
 }
 
 const vector<string>& ServerContext::getServerNames() const { return _serverNames; }
+const vector<pair<string, int> >& ServerContext::getListeners() const { return _listenes; }
 void ServerContext::setServerNames(const vector<string>& serverNames) { _serverNames = serverNames; }
 bool ServerContext::isAutoIndex() const { return _autoIndex; }
 void ServerContext::setAutoIndex(bool autoIndex) { _autoIndex = autoIndex; }
