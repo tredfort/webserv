@@ -148,7 +148,7 @@ void RequestHandler::formResponse(Request* request, Response* response)
 		doPut(request, response);
 	else if (request->getMethod() == DELETE)
 		doDelete(request, response);
-  	fillHeaders(response);
+	fillHeaders(response);
 }
 
 void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
@@ -159,7 +159,7 @@ void RequestHandler::doGet(Request* request, Response* response)
 	response->setProtocol("HTTP/1.1");
 
 	if (!isFileExists(pathToFile)) {
-//		readfile(response, "resources/html_data/errorPages/index.html");
+		//		readfile(response, "resources/html_data/errorPages/index.html");
 		setResponseWithError(response, "404 Not Found");
 	} else if (isDirectory(pathToFile)) {
 		if (pathToFile.back() != '/') {
@@ -179,15 +179,15 @@ void RequestHandler::doGet(Request* request, Response* response)
 bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pathToFile)
 {
 	time_t lastModified;
-//	struct stat file;
+	//	struct stat file;
 
 	for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
 		string indexFile = pathToFile + *it;
 		if (checkWhatsThere(indexFile, &lastModified) == REGFILE) {
-//			if (stat(indexFile.c_str(), &file) == -1 || file.st_mode & S_IRGRP) {
-//				cout << "Нет прав на чтение" << endl;
-//				return false;
-//			}
+			//			if (stat(indexFile.c_str(), &file) == -1 || file.st_mode & S_IRGRP) {
+			//				cout << "Нет прав на чтение" << endl;
+			//				return false;
+			//			}
 			readfile(response, indexFile);
 			return true;
 		}
@@ -227,7 +227,7 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 					body.append("/");
 				body.append("</a>                                               ");
 				checkWhatsThere(tmp_path, &lastModified);
-				string date = string(std::ctime(&lastModified));
+				string date = string(ctime(&lastModified));
 				date = date.substr(0, date.size() - 1);
 				body.append(date + "                   ");
 				if (S_ISDIR(file_stats.st_mode))
@@ -251,15 +251,19 @@ void RequestHandler::doDelete(Request* request, Response* response) { (void)requ
 void RequestHandler::setResponseWithError(Response* response, string errorMessage)
 {
 	string body = "<html>\n"
-		  "<head>\n"
-		  "    <title>Error " + errorMessage + "</title>\n"
+				  "<head>\n"
+				  "    <title>Error "
+		+ errorMessage
+		+ "</title>\n"
 		  "    <link href=\"https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap\" rel=\"stylesheet\">\n"
 		  "    <link rel=\"stylesheet\" href=\"./errorPages/style.css\">\n"
 		  "</head>\n"
 		  "<body>\n"
 		  "<div id=\"main\">\n"
 		  "    <div class=\"msg\">\n"
-		  "        <h1>" + errorMessage + "</h1>\n"
+		  "        <h1>"
+		+ errorMessage
+		+ "</h1>\n"
 		  "        <br>\n"
 		  "        <img src=\"./errorPages/mem.gif\" height=\"413px\" width=\"504px\">\n"
 		  "    </div>\n"

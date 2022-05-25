@@ -20,7 +20,7 @@ ServerContext::ServerContext(std::ifstream* fileStream)
 		case 1: // listen https://nginx.org/en/docs/http/ngx_http_core_module.html#listen
 			if (lineWords.size() > 2)
 				fatalError("Failed to parse listen directive!", 23);
-			if (isDigits(lineWords[1])) // in this case it is only port provided
+			if (isOnlyDigits(lineWords[1])) // in this case it is only port provided
 			{
 				addPortListener(lineWords[1]);
 			} else if (lineWords[1].find(':') != string::npos) // directive provide address and port
@@ -77,6 +77,7 @@ void ServerContext::checkDefaultValues()
 }
 
 const vector<string>& ServerContext::getServerNames() const { return _serverNames; }
+const vector<pair<string, int> >& ServerContext::getListeners() const { return _listenes; }
 void ServerContext::setServerNames(const vector<string>& serverNames) { _serverNames = serverNames; }
 bool ServerContext::isAutoIndex() const { return _autoIndex; }
 void ServerContext::setAutoIndex(bool autoIndex) { _autoIndex = autoIndex; }
@@ -97,11 +98,11 @@ void ServerContext::addAddressPortListener(string value)
 	if (result.size() != 2) {
 		fatalError("Failed to parse address and port from listen directive!", 15);
 	}
-	int port = stoi(value);
+	int port = stoi(result[1]);
 	if (port <= 0 || port > 65535) {
 		fatalError("Failed to parse address and port from listen directive!", 15);
 	}
-	_listenes.push_back(make_pair(result[1], port));
+	_listenes.push_back(make_pair(result[0], port));
 }
 
 void ServerContext::addAddressListener(string value)
