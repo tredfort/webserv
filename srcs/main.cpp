@@ -15,8 +15,8 @@ int main(int argc, char** argv)
 	} else if (argc == 2)
 		configPath = argv[1];
 
-//	Config config(configPath);
-//	config.printConfig();
+	Config config(configPath);
+	config.printConfig();
 	Server* app = new Server(nullptr);
 
 	app->start();

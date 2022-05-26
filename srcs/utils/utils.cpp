@@ -131,7 +131,7 @@ int getStringIndexFromArray(const string& str, const string* array)
 	return -1;
 }
 
-bool isDigits(const std::string& str) { return str.find_first_not_of("0123456789") == std::string::npos; }
+bool isOnlyDigits(const std::string& str) { return str.find_first_not_of("0123456789") == std::string::npos; }
 
 bool isFileExists(string& pathToFile)
 {
