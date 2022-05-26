@@ -162,18 +162,17 @@ void RequestHandler::doGet(Request* request, Response* response)
 	// Check files extension
 	// CGI
 	// создать свой фаайл записать в него результат компиляции файла и прописать путь в path to file
-	CGI cgi = CGI(pathToFile);
-	try {
-		cgi.getPathToFileWithResult();
-	} catch (std::exception & e) {
-		cout << e.what() << endl;
-	}
+	string path = pathToFile;
+			CGI cgi = CGI(pathToFile);
+		if (cgi.isFileShouldBeHandleByCGI()) {
+			cout << cgi.getPathToFileWithResult(pathToFile) << endl;
+		}
 	if (!isFileExists(pathToFile)) {
 		setResponseWithError(response, "404 Not Found");
 	} else if (isDirectory(pathToFile)) {
-		if (pathToFile.back() != '/') {
-			pathToFile.append("/");
-		}
+			if (pathToFile.back() != '/') {
+				pathToFile.append("/");
+			}
 		if (isAccessRights(pathToFile)) {
 			isIndexFileFound = fillBodyFromIndexFile(response, pathToFile);
 		}

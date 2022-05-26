@@ -6,7 +6,7 @@
 class ICGI {
 public:
 	virtual ~ICGI() { };
-	virtual string	getPathToFileWithResult() const = 0;
+	virtual bool	getPathToFileWithResult(string & path) = 0;
 };
 
 #endif
