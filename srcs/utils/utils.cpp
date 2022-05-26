@@ -30,54 +30,12 @@ std::string rtrim(std::string str, const std::string& chars)
 
 std::string trim(std::string str, const std::string& chars) { return ltrim(rtrim(str, chars), chars); }
 
-void sendMessage(int fd, string msg)
-{
-	cout << "sending message to " << fd << ": " << msg << endl;
-	send(fd, msg.c_str(), msg.size(), 0);
-}
-
-int isChannelName(string channelName)
-{
-	if (channelName.empty() || (channelName[0] != '#' && channelName[0] != '&'))
-		return 0;
-	return 1;
-}
-
-void eraseSpacesInFront(string& cmd)
-{
-	int i = 0;
-	while (cmd[i] && cmd[i] == ' ')
-		i++;
-	cmd.erase(0, i);
-}
-
 struct pollfd fillPollfd(int sd, short events)
 {
 	struct pollfd fd;
 	fd.fd = sd;
 	fd.events = events;
 	return fd;
-}
-
-bool isChannel(string receiver)
-{
-	if (receiver[0] == '#' || receiver[0] == '&') {
-		return (true);
-	}
-	return (false);
-}
-
-bool isMaskMatch(const string& str, const string& mask) { return isMaskMatch(str.c_str(), mask.c_str()); }
-
-bool isMaskMatch(const char* str, const char* mask)
-{
-	if (!str || !mask)
-		return 0;
-	do {
-		if (StarCmp(str, mask))
-			return 1;
-	} while (*str++);
-	return 0;
 }
 
 // StarCompare() helper function
@@ -99,8 +57,6 @@ bool StarCmp(const char* str, const char* mask)
 	}
 	return 0;
 }
-
-void stringToLowerCase(string& str) { std::transform(str.begin(), str.end(), str.begin(), tolower); }
 
 in_port_t getValidPort(const string& port)
 {
@@ -143,6 +99,12 @@ bool isDirectory(string& pathToFile)
 {
 	struct stat file;
 	return stat(pathToFile.c_str(), &file) != -1 && S_ISDIR(file.st_mode);
+}
+
+time_t getFileModificationDate(string& pathToFile)
+{
+	struct stat file;
+	return (stat(pathToFile.c_str(), &file) != -1) ? file.st_mtime : -1;
 }
 
 void printStringVector(const vector<string>& v)

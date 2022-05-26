@@ -1,25 +1,12 @@
 #include "Response.hpp"
 
-Response::Response()
-{
-
-	//    file.open(fileName, std::ios::binary | std::ios::ate);
-	//    try {
-	//        fileSize = file.tellg();
-	//    } catch (std::exception& e) {
-	//        std::cout << e.what() << std::endl;
-	//    }
-	//    file.seekg(0, std::ios::beg);
-}
+Response::Response() { }
 
 Response::~Response() { }
 
-//std::string Response::toString() const {
-//	return toSend;
-//}
 void Response::setProtocol(const string& protocol) { _protocol = protocol; }
 
-void Response::setStatus(string status) { _status = status; }
+void Response::setStatus(const string& status) { _status = status; }
 
 void Response::setContentType(const string& contentType) { _contentType = contentType; }
 

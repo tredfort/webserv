@@ -1,11 +1,5 @@
 #include "RequestHandler.hpp"
 
-#define NOTEXIST 0
-#define REGFILE 1
-#define ISFOLDER 2
-
-#define CGICODE -1
-
 RequestHandler::RequestHandler()
 {
 	types["aac"] = "audio/aac";
@@ -105,27 +99,12 @@ const std::string& RequestHandler::mimeType(const std::string& uri)
 	return types["bin"];
 }
 
-int checkWhatsThere(std::string const& path, time_t* lastModified)
-{
-	struct stat file;
-
-	if (stat(path.c_str(), &file) == -1) {
-		return NOTEXIST;
-	}
-	if (S_ISREG(file.st_mode)) {
-		if (lastModified)
-			*lastModified = file.st_mtime;
-		return REGFILE;
-	}
-	return ISFOLDER;
-}
-
 void RequestHandler::readfile(Response* response, const std::string& path)
 {
-	string exеtention = path.substr(path.find_last_of("/\\") + 1);
-	string fileExеtention = path.substr(path.find_last_of(".") + 1);
+	string extension = path.substr(path.find_last_of("/\\") + 1);
+	string fileExtension = path.substr(path.find_last_of(".") + 1);
 
-	response->setContentType(mimeType(exеtention));
+	response->setContentType(mimeType(extension));
 	try {
 		response->setBody(FileReader::readFile(path));
 	} catch (FileReader::FileNotFoundException& ex) {
@@ -159,7 +138,6 @@ void RequestHandler::doGet(Request* request, Response* response)
 	response->setProtocol("HTTP/1.1");
 
 	if (!isFileExists(pathToFile)) {
-		//		readfile(response, "resources/html_data/errorPages/index.html");
 		setResponseWithError(response, "404 Not Found");
 	} else if (isDirectory(pathToFile)) {
 		if (pathToFile.back() != '/') {
@@ -167,7 +145,8 @@ void RequestHandler::doGet(Request* request, Response* response)
 		}
 		if (!fillBodyFromIndexFile(response, pathToFile) && !autoindex) {
 			setResponseWithError(response, "403 Forbidden");
-		} else if (autoindex) {
+		}
+		if (response->getBody().empty() && autoindex) {
 			folderContents(response, pathToFile, request->getUri());
 		}
 		response->setContentType(mimeType(".html"));
@@ -178,12 +157,11 @@ void RequestHandler::doGet(Request* request, Response* response)
 
 bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pathToFile)
 {
-	time_t lastModified;
 	//	struct stat file;
 
-	for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
-		string indexFile = pathToFile + *it;
-		if (checkWhatsThere(indexFile, &lastModified) == REGFILE) {
+	for (int i = 0, size = index.size(); i < size; ++i) {
+		string indexFile = pathToFile + index[i];
+		if (isFileExists(indexFile) && !isDirectory(indexFile)) {
 			//			if (stat(indexFile.c_str(), &file) == -1 || file.st_mode & S_IRGRP) {
 			//				cout << "Нет прав на чтение" << endl;
 			//				return false;
@@ -226,7 +204,7 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 				if (S_ISDIR(file_stats.st_mode))
 					body.append("/");
 				body.append("</a>                                               ");
-				checkWhatsThere(tmp_path, &lastModified);
+				lastModified = getFileModificationDate(tmp_path);
 				string date = string(ctime(&lastModified));
 				date = date.substr(0, date.size() - 1);
 				body.append(date + "                   ");
@@ -241,6 +219,7 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	}
 	body.append("</pre><hr></body>\n"
 				"</html>\n");
+	response->setBody(body);
 	response->setStatus("200 OK");
 }
 
@@ -287,5 +266,4 @@ void RequestHandler::fillHeaders(Response* response)
 	response->setHeader("Content-Length: " + std::to_string(response->getBody().size()) + "\r\n");
 	response->setHeader("Connection: keep-alive\r\n\r\n");
 	response->setBuffer(response->getHeaders() + response->getBody());
-	cout << response->getBuffer() << endl;
 }
