@@ -1,11 +1,11 @@
 #ifndef REQUESTHANDLER_HPP
 #define REQUESTHANDLER_HPP
 
+#include <cstring>
 #include <dirent.h>
 #include <exception>
 #include <fstream>
 #include <map>
-#include <string>
 #include <sys/socket.h>
 #include <vector>
 

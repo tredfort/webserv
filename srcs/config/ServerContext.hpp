@@ -28,6 +28,7 @@ public:
 	bool isValid();
 
 	const vector<string>& getServerNames() const;
+	const vector<pair<string, int> >& getListeners() const;
 	void setServerNames(const vector<string>& serverNames);
 	bool isAutoIndex() const;
 	void setAutoIndex(bool autoIndex);
