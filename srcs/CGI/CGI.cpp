@@ -11,19 +11,15 @@ CGI::CGI(string pathToFile) :
 
 CGI::~CGI() { }
 
-bool	CGI::getPathToFileWithResult(string & path) {
-	try {
-		string biba = executeCgi();
-		path = biba;
-		cout << biba << endl << endl;
-	} catch (std::bad_alloc & e) {
-		cout << e.what() << endl;
-		return false;
-	} catch (std::exception & e) {
-		cout << e.what() << endl;
-		return false;
-	}
-	return (true);
+CGIModel	CGI::getPathToFileWithResult() {
+
+	ExecveArguments *arguments = constructExecveArguments();
+	if (!arguments)
+		return constructCGIResult(500, false, "");
+
+	CGIModel result = executeCgi(*arguments);
+	clearEverything(arguments);
+	return result;
 }
 
 bool	CGI::isFileShouldBeHandleByCGI() const {
@@ -40,17 +36,6 @@ bool	CGI::isFileShouldBeHandleByCGI() const {
 
 // Private methods
 
-void	CGI::validateFile() const {
-	cout << _pathToExecFile << endl;
-	if (!isFileExists(_pathToExecFile)) {
-		throw CGI::FileDoesNotExist();
-	}
-	string format = getFileFormat();
-	if (supportedFileFormats.find(format) == supportedFileFormats.end()) {
-		throw CGI::FileFormatUnsupported();
-	}
-}
-
 string	CGI::getFileFormat() const {
 	//нуужно сначала слово достатт из пути и потом точку искать
 	unsigned long i = 100;
@@ -61,45 +46,59 @@ string	CGI::getFileFormat() const {
 	return _pathToExecFile.substr(++i, _pathToExecFile.length());
 }
 
-// если делай throw то не забывай чистить все говно
-std::string CGI::executeCgi() {
+// TODO:: ADD env variable
+ExecveArguments *	CGI::constructExecveArguments() {
+
+	ExecveArguments *	arguments = new ExecveArguments[1];
 	char **args = configureArgumentsForComand();
 
-	if (!args)
-		throw CGI::BadAlloc();//переделай на нормальную ошибку
-	
-	if (!openOutputFile(rootWebserv + cgiFolder + "fileCgi.html"))
-		return "";
-	
+	if (!args) {
+		return NULL;
+	}
+	if (!openOutputFile(rootWebserv + cgiFolder + "fileCgi.html")) {
+		clearEverything(arguments);
+		return NULL;
+	}
 	string format = getFileFormat();
 	map<string, string>::iterator pathToExecutable = supportedFileFormats.find(format);
-	if (pathToExecutable == supportedFileFormats.end())
-		throw CGI::BadAlloc();//переделай на нормальную ошибку
+	if (pathToExecutable == supportedFileFormats.end()) {
+		clearEverything(arguments);
+		return NULL;	// TODO:: Узнай какую ошибку нужно возвращать
+													// если файл не поддерживается
+	}
+	arguments->args = args;
+	arguments->env = NULL;
+	arguments->pathToExecutable = strdup(const_cast<char *>(pathToExecutable->second.c_str()));
+	return arguments;
+}
+
+// если делай throw то не забывай чистить все говно
+CGIModel CGI::executeCgi(const ExecveArguments & execArguments) {
+	
 	int saveStdout = dup(STDOUT_FILENO);
 	pid_t pid = fork();
 
 	if (pid == -1) {
-		throw CGI::BadAlloc();//переделай на нормальную ошибку
+		return constructCGIResult(500, false, ""); //переделай на нормальную ошибку
 	} else if (!pid) {
 		dup2(_outputFileFd, STDOUT_FILENO);
-		if (execve(pathToExecutable->second.c_str(), args, nullptr) == -1)
-			throw CGI::BadAlloc(); //переделай на норм
+		if (execve(execArguments.pathToExecutable, execArguments.args, execArguments.env) == -1)
+			return constructCGIResult(500, false, ""); //переделай на норм
 	} else {
 		waitpid(-1, NULL, 0);
 		cout << "waiting" << endl;
 	}
-	dup2(saveStdout, STDOUT_FILENO);
-	clearEverything(args);
 	if (!pid)
 		exit(0);
-	return (rootWebserv + cgiFolder + "fileCgi.html");
+	dup2(saveStdout, STDOUT_FILENO);
+	return constructCGIResult(200, true, rootWebserv + cgiFolder + "fileCgi.html");
 }
 
-void	CGI::clearEverything(char** args) {
+void	CGI::clearEverything(ExecveArguments * arguments) {
 	close(_outputFileFd);
-	for (int i = 0; args[i]; i++)
-		delete[] args[i];
-	delete[] args;
+	if (arguments) {
+		delete[] arguments;
+	}
 }
 
 bool	CGI::openOutputFile(std::string file) {
@@ -125,6 +124,18 @@ char**	CGI::configureArgumentsForComand() const {
 		return NULL;
 	}
 	return args;
+}
+
+void	CGI::setPathToFile(string str) {
+	_pathToExecFile = str;
+}
+
+CGIModel	CGI::constructCGIResult(int code, bool isSuccessful, string path) {
+	CGIModel result = CGIModel();
+	result.code = code;
+	result.isSuccess = isSuccessful;
+	result.pathToFile = path;
+	return result;
 }
 
 const char *	CGI::FileDoesNotExist::what() const throw() {

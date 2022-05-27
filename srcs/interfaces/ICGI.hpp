@@ -2,11 +2,12 @@
 #define ICGI_HPP
 
 #include "../utils/usings.hpp"
+#include "../CGI/CGIModel.hpp"
 
 class ICGI {
 public:
 	virtual ~ICGI() { };
-	virtual bool	getPathToFileWithResult(string & path) = 0;
+	virtual CGIModel	getPathToFileWithResult() = 0;
 };
 
 #endif

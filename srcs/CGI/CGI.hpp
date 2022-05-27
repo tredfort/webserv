@@ -8,15 +8,17 @@
 #include "../utils/usings.hpp"
 #include "../interfaces/ICGI.hpp"
 #include "../utils/utils.hpp"
+#include "CGIModel.hpp"
 #include <stdio.h>
 #include <unistd.h>
 #include <fstream>
 #include <fcntl.h>
+#include <string.h>
 
 class CGI : public ICGI {
 
 private:
-	const string	_pathToExecFile;
+	string	_pathToExecFile;
 	map<string, string>	supportedFileFormats;
 	const string	rootWebserv;
 	const string		cgiFolder;
@@ -27,8 +29,9 @@ public:
 	~CGI();
 
 	// throws exceptions
-	bool	getPathToFileWithResult(string & path);
+	CGIModel	getPathToFileWithResult();
 	bool	isFileShouldBeHandleByCGI() const;
+	void	setPathToFile(string str);
 
 	struct FileDoesNotExist : public std::exception {
 		virtual const char *	what(void) const throw();
@@ -44,12 +47,13 @@ public:
 
 private:
 	// throws exceptions
-	void validateFile() const;
-	string getFileFormat() const;
-	string executeCgi();
-	char**	configureArgumentsForComand() const;
-	bool	openOutputFile(std::string file);
-	void	clearEverything(char** args);
+	string		getFileFormat() const;
+	CGIModel	executeCgi(const ExecveArguments & execArguments);
+	char**		configureArgumentsForComand() const;
+	bool		openOutputFile(std::string file);
+	void		clearEverything(ExecveArguments * arguments);
+	CGIModel	constructCGIResult(int code, bool isSuccessful, string path);
+	ExecveArguments *	constructExecveArguments();
 };
 
 #endif

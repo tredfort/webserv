@@ -13,7 +13,7 @@
 #include "../interfaces/IRequestHandler.hpp"
 #include "../model/Request.hpp"
 #include "../model/Response.hpp"
-#include "CGI.hpp"
+#include "../CGI/CGI.hpp"
 #include "FileReader.hpp"
 #include "../utils/usings.hpp"
 

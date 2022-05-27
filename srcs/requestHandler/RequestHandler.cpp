@@ -162,25 +162,27 @@ void RequestHandler::doGet(Request* request, Response* response)
 	// CGI
 	// создать свой фаайл записать в него результат компиляции файла и прописать путь в path to file
 	string path = pathToFile;
-			CGI cgi = CGI(pathToFile);
-		if (cgi.isFileShouldBeHandleByCGI()) {
-			cout << cgi.getPathToFileWithResult(pathToFile) << endl;
-		}
-	if (!isFileExists(pathToFile)) {
-		//		readfile(response, "resources/html_data/errorPages/index.html");
-		setResponseWithError(response, "404 Not Found");
-	} else if (isDirectory(pathToFile)) {
-		if (pathToFile.back() != '/') {
-			pathToFile.append("/");
-		}
-		if (!fillBodyFromIndexFile(response, pathToFile) && !autoindex) {
-			setResponseWithError(response, "403 Forbidden");
-		} else if (autoindex) {
-			folderContents(response, pathToFile, request->getUri());
-		}
-		response->setContentType(mimeType(".html"));
+	CGI cgi = CGI(pathToFile);
+	if (cgi.isFileShouldBeHandleByCGI()) {
+		CGIModel cgiResult = cgi.getPathToFileWithResult();
+		readfile(response, cgiResult.pathToFile);
 	} else {
-		readfile(response, pathToFile);
+		if (!isFileExists(pathToFile)) {
+			//		readfile(response, "resources/html_data/errorPages/index.html");
+			setResponseWithError(response, "404 Not Found");
+		} else if (isDirectory(pathToFile)) {
+			if (pathToFile.back() != '/') {
+				pathToFile.append("/");
+			}
+			if (!fillBodyFromIndexFile(response, pathToFile) && !autoindex) {
+				setResponseWithError(response, "403 Forbidden");
+			} else if (autoindex) {
+				folderContents(response, pathToFile, request->getUri());
+			}
+			response->setContentType(mimeType(".html"));
+		} else {
+			readfile(response, pathToFile);
+		}
 	}
 }
 
