@@ -6,7 +6,8 @@ CFLAGS = -Wall -Werror -Wextra -std=c++98 -g
 # For UNIX
 #CFLAGS = -Wall -Werror -Wextra -std=c++11 -g -DUNIX_OS
 
-SRC = srcs/main.cpp \
+SRC = \
+	srcs/main.cpp \
 	srcs/server/Server.cpp \
 	srcs/server/Socket.cpp \
 	srcs/config/Config.cpp \

@@ -130,7 +130,55 @@ void RequestHandler::formResponse(Request* request, Response* response)
 	fillHeaders(response);
 }
 
-void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
+void RequestHandler::doPost(Request* request, Response* response) {
+	(void)request, (void)response;
+//	std::string upload_dir = _server->GetRoot() + _response_location->GetUploadPath();
+//	if (!isDirectory(upload_dir))
+//		throw "500 no dir for upload in POST";
+//
+//	std::string boundary;
+//	std::string boundary_end;
+//	std::map<std::string, std::string>::iterator it_content = _requst_header.find("Content-Type");
+//	if (it_content != _requst_header.end() &&
+//		it_content->second.find("multipart/form-data") != std::string::npos)
+//	{
+//		if (it_content->second.find("boundary") == std::string::npos)
+//			throw "400 REQUEST ERROR! multipart/form-data have no boundery";
+//		std::string name_boundary = "boundary=";
+//		int name_boundary_len = name_boundary.length();
+//		int position_bounery_start = it_content->second.find(name_boundary) + name_boundary_len;
+//		int position_bounery_end = it_content->second.find("\r\n", position_bounery_start);
+//		boundary = "--" + it_content->second.substr(position_bounery_start, position_bounery_end - position_bounery_start);
+//		boundary_end = boundary + "--";
+//	}
+//	else
+//		throw "500 REQUEST ERROR! wrong form for upload";
+//
+//	std::string file_name;
+//	std::string path_file;
+//	if (_request_body.find("filename=", 0) == std::string::npos)
+//		throw "400 REQUEST ERROR! no File name in request";
+//	else
+//	{
+//		std::string tmp_name = "filename=\"";
+//		int tmp_name_len = tmp_name.length();
+//		int position_filename_start = _request_body.find(tmp_name) + tmp_name_len;
+//		int position_filename_end = _request_body.find("\"", position_filename_start);
+//		file_name = _request_body.substr(position_filename_start, position_filename_end - position_filename_start);
+//		path_file = upload_dir + "/" + file_name;
+//	}
+//
+//	_request_body = _request_body.substr(_request_body.find("\r\n\r\n") + 4);
+//	_request_body = _request_body.substr(0, _request_body.find(boundary));
+//
+//	std::ofstream tmp_file(path_file);
+//	if (!tmp_file.is_open())
+//		throw "500 cannot creat file in POST";
+//	tmp_file << _request_body;
+//	tmp_file.close();
+//	_CreateResponseBodyDirectory(upload_dir);
+//	_status_code = "200";
+}
 
 void RequestHandler::doGet(Request* request, Response* response)
 {
