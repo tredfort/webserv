@@ -7,11 +7,13 @@
 #include <fstream>
 #include <string>
 #include <utility>
+#include <set>
 
 using std::make_pair;
 using std::pair;
 using std::string;
 using std::vector;
+using std::set;
 
 const string LOCATION_CONTEXT_DIRECTIVES[]
 	= { "allowed_method", "autoindex", "cgi_extension", "cgi_path", "client_max_body_size", "error_page", "index", "redirect", "root", "upload_path", "" };
@@ -38,8 +40,10 @@ public:
 	const string& getRoot() const;
 	void setRoot(const string& root);
 
+	const set<string> &getAllowedMethods() const;
+
 private:
-	vector<string> _allowedMethods;
+	set<string> _allowedMethods;
 	bool _autoIndex;
 	string _cgiExtension;
 	string _cgiPath;

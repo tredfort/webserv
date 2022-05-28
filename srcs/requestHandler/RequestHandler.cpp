@@ -88,6 +88,7 @@ RequestHandler::RequestHandler(Config* config) : config(config)
 	location.setClientMaxBodySize(10240);
 	location.setIndex(index);
 	location.setRoot("resources/html_data");
+//	location.parseAllowedMethods("")
 }
 
 RequestHandler::~RequestHandler() { }
@@ -117,7 +118,7 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 	response->setStatus("200 OK");
 }
 
-bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol().empty(); }
+bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty(); }
 
 void RequestHandler::formResponse(WebClient* client)
 {
@@ -125,15 +126,20 @@ void RequestHandler::formResponse(WebClient* client)
 	Response* response = client->getResponse();
 //	LocationContext location = config->getLocationContext(client->getIp(), client->getPort(), request->getHeader("Host"), request->getUri());
 
+for (vector<string>::const_iterator it = location.getIndex().begin(), ite = location.getIndex().end(); it != ite; ++it) {
+
+	}
+
+
 	if (isBadRequest(request))
 		setResponseWithError(response, "400 Bad Request");
-	else if (request->getMethod() == POST)
+	else if (request->getMethod() == "POST")
 		doPost(request, response);
-	else if (request->getMethod() == GET)
+	else if (request->getMethod() == "GET")
 		doGet(request, response);
-	else if (request->getMethod() == PUT)
+	else if (request->getMethod() == "PUT")
 		doPut(request, response);
-	else if (request->getMethod() == DELETE)
+	else if (request->getMethod() == "DELETE")
 		doDelete(request, response);
 	fillHeaders(response);
 }

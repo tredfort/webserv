@@ -100,13 +100,13 @@ void LocationContext::parseAllowedMethods(vector<string> lineWords)
 	if (!_allowedMethods.empty())
 		fatalError("Failed to fill allowedMethods, already set!", 39);
 	if (std::find(lineWords.begin(), lineWords.end(), "GET") != lineWords.end())
-		_allowedMethods.push_back("GET");
+		_allowedMethods.insert("GET");
 	if (std::find(lineWords.begin(), lineWords.end(), "POST") != lineWords.end())
-		_allowedMethods.push_back("POST");
+		_allowedMethods.insert("POST");
 	if (std::find(lineWords.begin(), lineWords.end(), "PUT") != lineWords.end())
-		_allowedMethods.push_back("PUT");
+		_allowedMethods.insert("PUT");
 	if (std::find(lineWords.begin(), lineWords.end(), "DELETE") != lineWords.end())
-		_allowedMethods.push_back("DELETE");
+		_allowedMethods.insert("DELETE");
 }
 bool LocationContext::isAutoIndex() const { return _autoIndex; }
 void LocationContext::setAutoIndex(bool autoIndex) { _autoIndex = autoIndex; }
@@ -148,3 +148,7 @@ void LocationContext::setIndex(const vector<string>& index) { _index = index; }
 const string& LocationContext::getRoot() const { return _root; }
 void LocationContext::setRoot(const string& root) { _root = root; }
 LocationContext::LocationContext() { }
+
+const set <string> &LocationContext::getAllowedMethods() const {
+	return _allowedMethods;
+}

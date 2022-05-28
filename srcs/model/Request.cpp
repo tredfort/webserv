@@ -1,27 +1,16 @@
 #include "Request.hpp"
 
-Request::Request()
-	: _method(UNKNOWN_METHOD) { }
+Request::Request() { }
 
 Request::~Request() { }
 
-const Method& Request::getMethod() { return _method; }
+const string& Request::getMethod() { return _method; }
 
 const string& Request::getUri() { return _uri; }
 
 const string& Request::getProtocol() { return _protocol; }
 
-void Request::setMethod(const string& method)
-{
-	if (method == "POST")
-		_method = POST;
-	else if (method == "GET")
-		_method = GET;
-	else if (method == "PUT")
-		_method = PUT;
-	else if (method == "DELETE")
-		_method = DELETE;
-}
+void Request::setMethod(const string& method) { _method = method; }
 
 void Request::setUri(const string& uri) { _uri = uri; }
 
