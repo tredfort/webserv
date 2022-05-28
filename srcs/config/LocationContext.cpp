@@ -125,6 +125,7 @@ void LocationContext::printConfig()
 	cout << "CgiPath :" << _cgiPath << endl;
 	cout << "client_max_body_size :" << _clientMaxBodySize << endl;
 	cout << "index:" << endl;
+	printStringVector(_index);
 	cout << "redirect: " << _redirect.first << " " << _redirect.second << endl;
 	cout << "root: " << _root << endl;
 	cout << "upload path: " << _uploadPath << endl;

@@ -81,14 +81,21 @@ RequestHandler::RequestHandler(Config* config) : config(config)
 
 	//Временные переменные
 	vector<string> index;
-	index.push_back("index");
+	index.push_back("index.htm");
 	index.push_back("index.html");
+
+	vector<string> allowedMethods;
+//	allowedMethods.push_back("GET");
+	allowedMethods.push_back("POST");
+	allowedMethods.push_back("DELETE");
 
 	location.setAutoIndex(true);
 	location.setClientMaxBodySize(10240);
 	location.setIndex(index);
 	location.setRoot("resources/html_data");
-//	location.parseAllowedMethods("")
+	location.parseAllowedMethods(allowedMethods);
+//	cout << "***test***" << endl;
+//	location.printConfig();
 }
 
 RequestHandler::~RequestHandler() { }
@@ -118,21 +125,19 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 	response->setStatus("200 OK");
 }
 
-bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty(); }
+bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty() || request->getProtocol() != "HTTP/1.1"; }
 
 void RequestHandler::formResponse(WebClient* client)
 {
 	Request* request = client->getRequest();
 	Response* response = client->getResponse();
 //	LocationContext location = config->getLocationContext(client->getIp(), client->getPort(), request->getHeader("Host"), request->getUri());
-
-for (vector<string>::const_iterator it = location.getIndex().begin(), ite = location.getIndex().end(); it != ite; ++it) {
-
-	}
-
+	response->setProtocol("HTTP/1.1");
 
 	if (isBadRequest(request))
 		setResponseWithError(response, "400 Bad Request");
+	else if (!location.getAllowedMethods().count(request->getMethod()))
+		setResponseWithError(response, "405 Method Not Allowed");
 	else if (request->getMethod() == "POST")
 		doPost(request, response);
 	else if (request->getMethod() == "GET")
@@ -149,7 +154,6 @@ void RequestHandler::doPost(Request* request, Response* response) { (void)reques
 void RequestHandler::doGet(Request* request, Response* response)
 {
 	string pathToFile = location.getRoot() + request->getUri();
-	response->setProtocol("HTTP/1.1");
 
 	if (!isFileExists(pathToFile)) {
 		setResponseWithError(response, "404 Not Found");
