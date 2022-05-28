@@ -1,6 +1,6 @@
 #include "RequestHandler.hpp"
 
-RequestHandler::RequestHandler()
+RequestHandler::RequestHandler(Config* config) : config(config)
 {
 	types["aac"] = "audio/aac";
 	types["abw"] = "application/x-abiword";
@@ -119,8 +119,12 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 
 bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol().empty(); }
 
-void RequestHandler::formResponse(Request* request, Response* response)
+void RequestHandler::formResponse(WebClient* client)
 {
+	Request* request = client->getRequest();
+	Response* response = client->getResponse();
+//	LocationContext location = config->getLocationContext(client->getIp(), client->getPort(), request->getHeader("Host"), request->getUri());
+
 	if (isBadRequest(request))
 		setResponseWithError(response, "400 Bad Request");
 	else if (request->getMethod() == POST)

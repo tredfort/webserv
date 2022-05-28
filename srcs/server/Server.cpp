@@ -2,6 +2,7 @@
 
 Server::Server(Config* config)
 	: _config(config)
+	, _handler(config)
 {
 }
 
@@ -78,7 +79,7 @@ void Server::acceptNewClients(Socket* socket)
 			break;
 		}
 		_pollfds.push_back(fillPollfd(client_fd, POLLIN));
-		WebClient* client = new WebClient(client_fd, socket->getPort());
+		WebClient* client = new WebClient(client_fd, socket->getIp(), socket->getPort());
 		_clients.push_back(client);
 	}
 }
@@ -105,7 +106,7 @@ void Server::receiveRequest(WebClient* client, short& events)
 void Server::sendResponse(WebClient* client, short& events)
 {
 	if (client->getResponse()->getBuffer().empty()) {
-		_handler.formResponse(client->getRequest(), client->getResponse());
+		_handler.formResponse(client);
 	} else {
 		string buffer = client->getResponse()->getBuffer();
 		ssize_t sendBytes = send(client->getFd(), buffer.c_str(), buffer.size(), 0);

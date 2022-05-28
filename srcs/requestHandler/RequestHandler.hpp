@@ -11,16 +11,29 @@
 
 #include "../config/Config.hpp"
 #include "../interfaces/IRequestHandler.hpp"
-#include "../model/Request.hpp"
-#include "../model/Response.hpp"
+#include "../model/WebClient.hpp"
 #include "FileReader.hpp"
 
 class RequestHandler : public IRequestHandler {
-private:
+public:
+	Config* config;
+	//временные переменные
 	map<string, string> types;
-
-	//временная переменная
 	LocationContext location;
+
+	RequestHandler(Config* config);
+
+	~RequestHandler();
+
+	void formResponse(WebClient* client);
+
+	void doPost(Request* request, Response* response);
+
+	void doGet(Request* request, Response* response);
+
+	void doPut(Request* request, Response* response);
+
+	void doDelete(Request* request, Response* response);
 
 private:
 	const string& mimeType(const string& uri);
@@ -37,20 +50,6 @@ private:
 
 	void fillHeaders(Response* response);
 
-public:
-	RequestHandler();
-
-	~RequestHandler();
-
-	void formResponse(Request* request, Response* response);
-
-	void doPost(Request* request, Response* response);
-
-	void doGet(Request* request, Response* response);
-
-	void doPut(Request* request, Response* response);
-
-	void doDelete(Request* request, Response* response);
 };
 
 #endif

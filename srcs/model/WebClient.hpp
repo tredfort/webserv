@@ -7,12 +7,13 @@
 class WebClient {
 private:
 	int _fd;
-	int _port;
+	string _ip;
+	string _port;
 	Request* _request;
 	Response* _response;
 
 public:
-	WebClient(int fd, int port);
+	WebClient(int fd, const string& ip, const string& port);
 
 	WebClient(const WebClient& client);
 
@@ -26,7 +27,9 @@ public:
 
 	int getFd() const;
 
-	int getPort() const;
+	const string& getIp() const;
+
+	const string& getPort() const;
 
 	Request* getRequest() const;
 

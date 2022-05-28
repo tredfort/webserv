@@ -148,3 +148,12 @@ void Config::printConfig()
 		_servers[i].printConfig();
 	}
 }
+
+LocationContext Config::getLocationContext(const string& ip, const string& port, const string& host, const string& uri)
+{
+	(void)ip;
+	(void)port;
+	(void)host;
+	(void)uri;
+	return LocationContext();
+}
