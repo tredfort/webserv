@@ -80,10 +80,14 @@ RequestHandler::RequestHandler()
 	types["7z"] = "application/x-7z-compressed";
 
 	//Временные переменные
-	locationPath = "resources/html_data";
-	autoindex = false;
+	vector<string> index;
 	index.push_back("index");
 	index.push_back("index.html");
+
+	location.setAutoIndex(true);
+	location.setClientMaxBodySize(10240);
+	location.setIndex(index);
+	location.setRoot("resources/html_data");
 }
 
 RequestHandler::~RequestHandler() { }
@@ -134,7 +138,7 @@ void RequestHandler::doPost(Request* request, Response* response) { (void)reques
 
 void RequestHandler::doGet(Request* request, Response* response)
 {
-	string pathToFile = locationPath + request->getUri();
+	string pathToFile = location.getRoot() + request->getUri();
 	response->setProtocol("HTTP/1.1");
 
 	if (!isFileExists(pathToFile)) {
@@ -143,10 +147,10 @@ void RequestHandler::doGet(Request* request, Response* response)
 		if (pathToFile.back() != '/') {
 			pathToFile.append("/");
 		}
-		if (!fillBodyFromIndexFile(response, pathToFile) && !autoindex) {
+		if (!fillBodyFromIndexFile(response, pathToFile) && !location.isAutoIndex()) {
 			setResponseWithError(response, "403 Forbidden");
 		}
-		if (response->getBody().empty() && autoindex) {
+		if (response->getBody().empty() && location.isAutoIndex()) {
 			folderContents(response, pathToFile, request->getUri());
 		}
 		response->setContentType(mimeType(".html"));
@@ -159,8 +163,8 @@ bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pat
 {
 	//	struct stat file;
 
-	for (int i = 0, size = index.size(); i < size; ++i) {
-		string indexFile = pathToFile + index[i];
+	for (int i = 0, size = location.getIndex().size(); i < size; ++i) {
+		string indexFile = pathToFile + location.getIndex()[i];
 		if (isFileExists(indexFile) && !isDirectory(indexFile)) {
 			//			if (stat(indexFile.c_str(), &file) == -1 || file.st_mode & S_IRGRP) {
 			//				cout << "Нет прав на чтение" << endl;

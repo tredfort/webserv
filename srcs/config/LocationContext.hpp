@@ -19,6 +19,7 @@ const string LOCATION_CONTEXT_DIRECTIVES[]
 class LocationContext {
 
 public:
+	LocationContext();
 	LocationContext(const vector<string>& lineLocation, std::ifstream* fileSteam);
 	virtual ~LocationContext();
 	void parseAllowedMethods(vector<string> lineWords);
@@ -29,6 +30,13 @@ public:
 	const string& getCgiPath() const;
 	void setCgiPath(const string& cgiPath);
 	void printConfig();
+
+	size_t getClientMaxBodySize() const;
+	void setClientMaxBodySize(size_t clientMaxBodySize);
+	const vector<string>& getIndex() const;
+	void setIndex(const vector<string>& index);
+	const string& getRoot() const;
+	void setRoot(const string& root);
 
 private:
 	vector<string> _allowedMethods;

@@ -19,9 +19,8 @@ class RequestHandler : public IRequestHandler {
 private:
 	map<string, string> types;
 
-	vector<string> index;
-	bool autoindex;
-	string locationPath;
+	//временная переменная
+	LocationContext location;
 
 private:
 	const string& mimeType(const string& uri);

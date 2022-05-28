@@ -141,3 +141,10 @@ void LocationContext::printConfig()
 	cout << "Index: " << endl;
 	printStringVector(_index);
 }
+size_t LocationContext::getClientMaxBodySize() const { return _clientMaxBodySize; }
+void LocationContext::setClientMaxBodySize(size_t clientMaxBodySize) { _clientMaxBodySize = clientMaxBodySize; }
+const vector<string>& LocationContext::getIndex() const { return _index; }
+void LocationContext::setIndex(const vector<string>& index) { _index = index; }
+const string& LocationContext::getRoot() const { return _root; }
+void LocationContext::setRoot(const string& root) { _root = root; }
+LocationContext::LocationContext() { }
