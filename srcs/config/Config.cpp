@@ -149,11 +149,33 @@ void Config::printConfig()
 	}
 }
 
+// TODO:: сдлеать так чтобы не было взаимоисключающих полей, решить на этапе парсинга
 LocationContext Config::getLocationContext(const string& ip, const string& port, const string& host, const string& uri)
 {
+
+	// TODO:: first step by ip and port find server
+
+	//	ServerContext *servContext = NULL;
+	//	for(vector<ServerContext>::iterator itSrvCtx = this->_servers.begin(), ;)
+	//	this->_servers
+	// TODO:: by host find server with appropriate server_name
+	// TODO:: find specific location by uri
 	(void)ip;
 	(void)port;
 	(void)host;
 	(void)uri;
+
 	return LocationContext();
+}
+
+// This method returns unique values from all listeners.
+set<pair<string, int> > Config::getVirtualServersAddresses()
+{
+	set<pair<string, int> > result;
+	for (vector<ServerContext>::iterator it = this->_servers.begin(), ite = this->_servers.end(); it != ite; ++it) {
+		for (vector<pair<string, int> >::const_iterator itL = it->getListeners().begin(), iteL = it->getListeners().end(); itL != iteL; ++itL) {
+			result.insert(pair<string, int>(itL->first, itL->second));
+		}
+	}
+	return result;
 }

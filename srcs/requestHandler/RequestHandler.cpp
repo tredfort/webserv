@@ -1,6 +1,7 @@
 #include "RequestHandler.hpp"
 
-RequestHandler::RequestHandler(Config* config) : config(config)
+RequestHandler::RequestHandler(Config* config)
+	: config(config)
 {
 	types["aac"] = "audio/aac";
 	types["abw"] = "application/x-abiword";
@@ -85,7 +86,7 @@ RequestHandler::RequestHandler(Config* config) : config(config)
 	index.push_back("index.html");
 
 	vector<string> allowedMethods;
-//	allowedMethods.push_back("GET");
+	//	allowedMethods.push_back("GET");
 	allowedMethods.push_back("POST");
 	allowedMethods.push_back("DELETE");
 
@@ -94,8 +95,8 @@ RequestHandler::RequestHandler(Config* config) : config(config)
 	location.setIndex(index);
 	location.setRoot("resources/html_data");
 	location.parseAllowedMethods(allowedMethods);
-//	cout << "***test***" << endl;
-//	location.printConfig();
+	//	cout << "***test***" << endl;
+	//	location.printConfig();
 }
 
 RequestHandler::~RequestHandler() { }
@@ -125,13 +126,16 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 	response->setStatus("200 OK");
 }
 
-bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty() || request->getProtocol() != "HTTP/1.1"; }
+bool RequestHandler::isBadRequest(Request* request) const
+{
+	return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty() || request->getProtocol() != "HTTP/1.1";
+}
 
 void RequestHandler::formResponse(WebClient* client)
 {
 	Request* request = client->getRequest();
 	Response* response = client->getResponse();
-//	LocationContext location = config->getLocationContext(client->getIp(), client->getPort(), request->getHeader("Host"), request->getUri());
+	LocationContext location = config->getLocationContext(client->getIp(), client->getPort(), request->getHeader("Host"), request->getUri()); // TODO:: get location
 	response->setProtocol("HTTP/1.1");
 
 	if (isBadRequest(request))

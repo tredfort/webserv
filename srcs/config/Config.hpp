@@ -44,6 +44,7 @@ public:
 	void setErrorPages(const vector<pair<int, string> >& errorPages);
 	void printfConfig();
 	LocationContext getLocationContext(const string& ip, const string& port, const string& host, const string& uri);
+	set<pair<string, int> > getVirtualServersAddresses();
 
 private:
 	vector<pair<int, string> > _errorPages;
