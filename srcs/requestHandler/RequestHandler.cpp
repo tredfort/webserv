@@ -131,11 +131,6 @@ bool RequestHandler::isBadRequest(Request* request) const
 	return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty();
 }
 
-bool RequestHandler::isMethodSupported(const string& method) const
-{
-	return method == "GET" || method == "POST" || method == "DELETE" || method == "PUT";
-}
-
 bool RequestHandler::isProtocolSupported(const string& protocol) const
 {
 	return protocol == "HTTP/1.1";
@@ -150,8 +145,6 @@ void RequestHandler::formResponse(WebClient* client)
 
 	if (isBadRequest(request))
 		setResponseWithError(response, "400 Bad Request");
-	else if (!isMethodSupported(request->getMethod()))
-		setResponseWithError(response, "501 Not Implemented");
 	else if (!isProtocolSupported(request->getProtocol()))
 		setResponseWithError(response, "505 HTTP Version Not Supported");
 	else if (!_location.getAllowedMethods().count(request->getMethod()))
@@ -164,6 +157,8 @@ void RequestHandler::formResponse(WebClient* client)
 		doDelete(request, response);
 	else if (request->getMethod() == "PUT")
 		doPut(request, response);
+	else
+		setResponseWithError(response, "501 Not Implemented");
 	fillHeaders(response);
 }
 

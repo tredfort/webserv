@@ -40,8 +40,6 @@ private:
 
 	bool isBadRequest(Request* request) const;
 
-	bool isMethodSupported(const string& method) const;
-
 	bool isProtocolSupported(const string& protocol) const;
 
 	void readfile(Response* response, const string&);
