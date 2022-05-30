@@ -10,9 +10,8 @@
 using std::make_pair;
 using std::map;
 using std::string;
-using std::vector;
 
-class Request : public IHeader {
+class Request {
 private:
 	string _method;
 	string _uri;
@@ -25,11 +24,11 @@ public:
 
 	~Request();
 
-	const string& getMethod();
+	const string& getMethod() const;
 
-	const string& getUri();
+	const string& getUri() const;
 
-	const string& getProtocol();
+	const string& getProtocol() const;
 
 	const string& getBuffer() const;
 
@@ -45,7 +44,7 @@ public:
 
 	string getHeader(const string&) const;
 
-	void setHeader(string key, string value);
+	void setHeader(const string& key, const string& value);
 
 	bool emptyHeader() const;
 };

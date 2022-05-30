@@ -118,7 +118,7 @@ void Server::sendResponse(WebClient* client, short& events)
 
 		client->getResponse()->setBuffer(buffer.substr(sendBytes));
 		if (client->getResponse()->getBuffer().empty()) {
-			client->update();
+			client->clear();
 			events = POLLIN;
 		}
 	}

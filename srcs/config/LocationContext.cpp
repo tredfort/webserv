@@ -150,6 +150,6 @@ const string& LocationContext::getRoot() const { return _root; }
 void LocationContext::setRoot(const string& root) { _root = root; }
 LocationContext::LocationContext() { }
 
-const set <string> &LocationContext::getAllowedMethods() const {
+const set<string> &LocationContext::getAllowedMethods() const {
 	return _allowedMethods;
 }

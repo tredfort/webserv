@@ -21,10 +21,6 @@ public:
 
 	~WebClient();
 
-	void setRequest(Request* request);
-
-	void setResponse(Response* response);
-
 	int getFd() const;
 
 	const string& getIp() const;
@@ -35,7 +31,11 @@ public:
 
 	Response* getResponse() const;
 
-	void update();
+	void setRequest(Request* request);
+
+	void setResponse(Response* response);
+
+	void clear();
 
 private:
 	WebClient();

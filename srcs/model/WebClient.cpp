@@ -50,7 +50,8 @@ const string& WebClient::getPort() const { return _port; }
 Request* WebClient::getRequest() const { return _request; }
 
 Response* WebClient::getResponse() const { return _response; }
-void WebClient::update()
+
+void WebClient::clear()
 {
 	delete _request;
 	delete _response;

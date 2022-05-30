@@ -86,15 +86,15 @@ RequestHandler::RequestHandler(Config* config)
 	index.push_back("index.html");
 
 	vector<string> allowedMethods;
-	//	allowedMethods.push_back("GET");
+	allowedMethods.push_back("GET");
 	allowedMethods.push_back("POST");
 	allowedMethods.push_back("DELETE");
 
-	location.setAutoIndex(true);
-	location.setClientMaxBodySize(10240);
-	location.setIndex(index);
-	location.setRoot("resources/html_data");
-	location.parseAllowedMethods(allowedMethods);
+	_location.setAutoIndex(true);
+	_location.setClientMaxBodySize(10240);
+	_location.setIndex(index);
+	_location.setRoot("resources/html_data");
+	_location.parseAllowedMethods(allowedMethods);
 	//	cout << "***test***" << endl;
 	//	location.printConfig();
 }
@@ -128,34 +128,48 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 
 bool RequestHandler::isBadRequest(Request* request) const
 {
-	return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty() || request->getProtocol() != "HTTP/1.1";
+	return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty();
+}
+
+bool RequestHandler::isMethodSupported(const string& method) const
+{
+	return method == "GET" || method == "POST" || method == "DELETE" || method == "PUT";
+}
+
+bool RequestHandler::isProtocolSupported(const string& protocol) const
+{
+	return protocol == "HTTP/1.1";
 }
 
 void RequestHandler::formResponse(WebClient* client)
 {
-	Request* request = client->getRequest();
 	Response* response = client->getResponse();
-	LocationContext location = config->getLocationContext(client->getIp(), client->getPort(), request->getHeader("Host"), request->getUri()); // TODO:: get location
+	Request* request = client->getRequest();
+//	LocationContext location = config->getLocationContext(client->getIp(), client->getPort(), request->getHeader("Host"), request->getUri()); // TODO:: get location
 	response->setProtocol("HTTP/1.1");
 
 	if (isBadRequest(request))
 		setResponseWithError(response, "400 Bad Request");
-	else if (!location.getAllowedMethods().count(request->getMethod()))
+	else if (!isMethodSupported(request->getMethod()))
+		setResponseWithError(response, "501 Not Implemented");
+	else if (!isProtocolSupported(request->getProtocol()))
+		setResponseWithError(response, "505 HTTP Version Not Supported");
+	else if (!_location.getAllowedMethods().count(request->getMethod()))
 		setResponseWithError(response, "405 Method Not Allowed");
+	else if (request->getMethod() == "GET")
+		doGet(_location, request, response);
 	else if (request->getMethod() == "POST")
 		doPost(request, response);
-	else if (request->getMethod() == "GET")
-		doGet(request, response);
-	else if (request->getMethod() == "PUT")
-		doPut(request, response);
 	else if (request->getMethod() == "DELETE")
 		doDelete(request, response);
+	else if (request->getMethod() == "PUT")
+		doPut(request, response);
 	fillHeaders(response);
 }
 
 void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::doGet(Request* request, Response* response)
+void RequestHandler::doGet(const LocationContext& location, Request* request, Response* response)
 {
 	string pathToFile = location.getRoot() + request->getUri();
 
@@ -173,6 +187,7 @@ void RequestHandler::doGet(Request* request, Response* response)
 		}
 		response->setContentType(mimeType(".html"));
 	} else {
+		//TODO: add error handling 413 and 415
 		readfile(response, pathToFile);
 	}
 }
@@ -181,8 +196,8 @@ bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pat
 {
 	//	struct stat file;
 
-	for (int i = 0, size = location.getIndex().size(); i < size; ++i) {
-		string indexFile = pathToFile + location.getIndex()[i];
+	for (int i = 0, size = _location.getIndex().size(); i < size; ++i) {
+		string indexFile = pathToFile + _location.getIndex()[i];
 		if (isFileExists(indexFile) && !isDirectory(indexFile)) {
 			//			if (stat(indexFile.c_str(), &file) == -1 || file.st_mode & S_IRGRP) {
 			//				cout << "Нет прав на чтение" << endl;
@@ -265,8 +280,6 @@ void RequestHandler::setResponseWithError(Response* response, string errorMessag
 		  "        <h1>"
 		+ errorMessage
 		+ "</h1>\n"
-		  "        <br>\n"
-		  "        <img src=\"./errorPages/mem.gif\" height=\"413px\" width=\"504px\">\n"
 		  "    </div>\n"
 		  "</div>\n"
 		  "</body>\n"

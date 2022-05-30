@@ -4,21 +4,11 @@ Request::Request() { }
 
 Request::~Request() { }
 
-const string& Request::getMethod() { return _method; }
+const string& Request::getMethod() const { return _method; }
 
-const string& Request::getUri() { return _uri; }
+const string& Request::getUri() const { return _uri; }
 
-const string& Request::getProtocol() { return _protocol; }
-
-void Request::setMethod(const string& method) { _method = method; }
-
-void Request::setUri(const string& uri) { _uri = uri; }
-
-void Request::setProtocol(const string& protocol)
-{
-	if (protocol == "HTTP/1.1")
-		_protocol = protocol;
-}
+const string& Request::getProtocol() const { return _protocol; }
 
 string Request::getHeader(const string& key) const
 {
@@ -28,9 +18,19 @@ string Request::getHeader(const string& key) const
 	return it->second;
 }
 
+void Request::setMethod(const string& method) { _method = method; }
+
+void Request::setUri(const string& uri) { _uri = uri; }
+
+void Request::setProtocol(const string& protocol)
+{
+	if (!strncmp(protocol.c_str(), "HTTP/", 5))
+		_protocol = protocol;
+}
+
 bool Request::emptyHeader() const { return _headers.empty(); }
 
-void Request::setHeader(string key, string value) { _headers.insert(make_pair(key, value)); }
+void Request::setHeader(const string& key, const string& value) { _headers.insert(make_pair(key, value)); }
 
 const string& Request::getBuffer() const { return _buffer; }
 
