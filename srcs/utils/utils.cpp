@@ -145,7 +145,6 @@ bool isFileExists(const string& pathToFile)
 	return file.is_open();
 }
 
-
 bool isDirectory(string& pathToFile)
 {
 	struct stat file;

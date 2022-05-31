@@ -5,8 +5,8 @@ CGI::CGI(string pathToFile, Env & env) :
 	_cgiFolder("resources/html_data/cgi/"),
 	_env(env)
 {
-	supportedFileFormats["py"] = "/usr/bin/python";
-	supportedFileFormats["php"] = "/usr/bin/php";
+	supportedFileFormats["py"] = "python";
+	supportedFileFormats["php"] = "php";
 }
 
 CGI::~CGI() { }
@@ -37,7 +37,6 @@ bool	CGI::isFileShouldBeHandleByCGI() const {
 // Private methods
 
 string	CGI::getFileFormat() const {
-	//нуужно сначала слово достатт из пути и потом точку искать
 	unsigned long i = 100;
 	cout << _pathToExecFile.size() << endl;
 	for (i = _pathToExecFile.size(); i > 0 && _pathToExecFile[i] != '.'; i--) { }
@@ -60,14 +59,20 @@ ExecveArguments *	CGI::constructExecveArguments() {
 		return NULL;
 	}
 	string format = getFileFormat();
-	map<string, string>::iterator pathToExecutable = supportedFileFormats.find(format);
-	if (pathToExecutable == supportedFileFormats.end()) {
+	map<string, string>::iterator fileFormat = supportedFileFormats.find(format);
+	if (fileFormat == supportedFileFormats.end()) {
+		clearEverything(arguments);
+		return NULL;
+	}
+	string pathToExecutable = constructExecutablePath(fileFormat->second);
+	if (pathToExecutable.empty()) {
 		clearEverything(arguments);
 		return NULL;
 	}
 	arguments->args = args;
 	arguments->env = NULL;
-	arguments->pathToExecutable = strdup(const_cast<char *>(pathToExecutable->second.c_str()));
+	arguments->pathToExecutable = strdup(const_cast<char *>(pathToExecutable.c_str()));
+	// arguments->pathToExecutable = strdup("/usr/bin/python");
 	return arguments;
 }
 
@@ -75,21 +80,30 @@ ExecveArguments *	CGI::constructExecveArguments() {
 CGIModel CGI::executeCgi(const ExecveArguments & execArguments) {
 	
 	int saveStdout = dup(STDOUT_FILENO);
-	pid_t pid = fork();
 
+	if (!createSharedMemory()) {
+		return constructCGIResult(500, false, "");
+	}
+	_sharedMemory[0] = 1;
+	pid_t pid = fork();
 	if (pid == -1) {
-		return constructCGIResult(500, false, ""); //переделай на нормальную ошибку
+		return constructCGIResult(500, false, "");
 	} else if (!pid) {
 		dup2(_outputFileFd, STDOUT_FILENO);
-		if (execve(execArguments.pathToExecutable, execArguments.args, execArguments.env) == -1)
-			return constructCGIResult(500, false, ""); //переделай на норм
+		if (execve(execArguments.pathToExecutable, execArguments.args, execArguments.env) == -1) {
+			_sharedMemory[0] = 0;
+			exit(1);
+		}
 	} else {
 		waitpid(-1, NULL, 0);
-		cout << "waiting" << endl;
 	}
 	if (!pid)
 		exit(0);
 	dup2(saveStdout, STDOUT_FILENO);
+	int	execResult = _sharedMemory[0];
+	freeSharedMemory();
+	if (execResult == 0)
+		return constructCGIResult(500, false, "");
 	return constructCGIResult(200, true, _cgiFolder + "fileCgi.html");
 }
 
@@ -134,6 +148,35 @@ CGIModel	CGI::constructCGIResult(int code, bool isSuccessful, string path) {
 	result.isSuccess = isSuccessful;
 	result.pathToFile = path;
 	return result;
+}
+
+string		CGI::constructExecutablePath(string format) {
+	vector<string> paths = _env.getPaths();
+	for (unsigned int i = 0; i < paths.size(); i++) {
+		string fullPath = paths[i] + "/" + format;
+		if (isFileExists(fullPath)) {
+			return fullPath;
+		}
+	}
+	return "";
+}
+
+bool		CGI::createSharedMemory() {
+	_shmFd = shm_open("exec_result", O_CREAT | O_EXCL | O_RDWR, S_IRWXU | S_IRWXG);
+	if (_shmFd < 0)
+		return false;
+	ftruncate(_shmFd, sizeof(int));
+	_sharedMemory = (int *) mmap(NULL, sizeof(int), PROT_READ | PROT_WRITE, MAP_SHARED, _shmFd, 0);
+	if (_sharedMemory == NULL) {
+		close(_shmFd);
+		return false;
+	}
+	return true;
+}
+
+void		CGI::freeSharedMemory() {
+	shm_unlink("exec_result");
+	close(_shmFd);
 }
 
 const char *	CGI::FileDoesNotExist::what() const throw() {

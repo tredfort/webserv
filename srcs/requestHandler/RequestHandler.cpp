@@ -164,8 +164,13 @@ void RequestHandler::doGet(Request* request, Response* response, Env& env)
 	string path = pathToFile;
 	CGI cgi = CGI(pathToFile, env);
 	if (cgi.isFileShouldBeHandleByCGI()) {
+		cout << "CGIIIIII" << endl;
 		CGIModel cgiResult = cgi.getPathToFileWithResult();
-		readfile(response, cgiResult.pathToFile);
+		if (cgiResult.isSuccess) {
+			readfile(response, cgiResult.pathToFile);
+		} else {
+			setResponseWithError(response, "500 Server Error");
+		}
 	} else {
 		if (!isFileExists(pathToFile)) {
 			//		readfile(response, "resources/html_data/errorPages/index.html");

@@ -15,15 +15,18 @@
 #include <fcntl.h>
 #include <string.h>
 #include "../server/Env.hpp"
+#include <sys/mman.h>
 
 class CGI : public ICGI {
 
 private:
-	string	_pathToExecFile;
+	string				_pathToExecFile;
 	map<string, string>	supportedFileFormats;
 	const string	_cgiFolder;
 	int				_outputFileFd;
-	Env	_env;
+	Env				_env;
+	int				_shmFd;
+	int*			_sharedMemory;
 
 public:
 	CGI(string pathToFile, Env& env);
@@ -55,6 +58,9 @@ private:
 	void		clearEverything(ExecveArguments * arguments);
 	CGIModel	constructCGIResult(int code, bool isSuccessful, string path);
 	ExecveArguments *	constructExecveArguments();
+	string		constructExecutablePath(string format);
+	bool		createSharedMemory();
+	void		freeSharedMemory();
 };
 
 #endif
