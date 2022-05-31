@@ -3,7 +3,6 @@
 //
 
 #include "Socket.hpp"
-#include "../utils/utils.hpp"
 
 Socket::Socket() { }
 
@@ -22,7 +21,7 @@ int Socket::getBacklog() const { return _backlog; }
 
 const string& Socket::getIp() const { return _ip; }
 
-const string& Socket::getPort() const { return _port; }
+int Socket::getPort() const { return _port; }
 
 const sockaddr_in& Socket::getAddress() const { return _address; }
 
@@ -39,10 +38,10 @@ void Socket::setNonblockMode()
 	testConnection(result);
 }
 
-void Socket::bindToAddress(const string& ip, const string& port)
+void Socket::bindToAddress(const string& ip, int port)
 {
 	_address.sin_family = AF_INET;
-	_address.sin_port = getValidPort(port);
+	_address.sin_port = htons(port);
 	if (inet_aton(ip.c_str(), &_address.sin_addr) == 0) {
 		cerr << "ERROR: Invalid ip address!" << endl;
 		exit(EXIT_FAILURE);
