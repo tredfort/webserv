@@ -136,14 +136,14 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 
 bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol().empty(); }
 
-void RequestHandler::formResponse(Request* request, Response* response)
+void RequestHandler::formResponse(Request* request, Response* response, Env& env)
 {
 	if (isBadRequest(request))
 		setResponseWithError(response, "400 Bad Request");
 	else if (request->getMethod() == POST)
 		doPost(request, response);
 	else if (request->getMethod() == GET)
-		doGet(request, response);
+		doGet(request, response, env);
 	else if (request->getMethod() == PUT)
 		doPut(request, response);
 	else if (request->getMethod() == DELETE)
@@ -153,7 +153,7 @@ void RequestHandler::formResponse(Request* request, Response* response)
 
 void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::doGet(Request* request, Response* response)
+void RequestHandler::doGet(Request* request, Response* response, Env& env)
 {
 	string pathToFile = locationPath + request->getUri();
 	response->setProtocol("HTTP/1.1");
@@ -162,7 +162,7 @@ void RequestHandler::doGet(Request* request, Response* response)
 	// CGI
 	// создать свой фаайл записать в него результат компиляции файла и прописать путь в path to file
 	string path = pathToFile;
-	CGI cgi = CGI(pathToFile);
+	CGI cgi = CGI(pathToFile, env);
 	if (cgi.isFileShouldBeHandleByCGI()) {
 		CGIModel cgiResult = cgi.getPathToFileWithResult();
 		readfile(response, cgiResult.pathToFile);

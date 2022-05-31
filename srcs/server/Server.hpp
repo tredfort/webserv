@@ -7,6 +7,7 @@
 #include "../requestParser/RequestParser.hpp"
 #include "../utils/constants.hpp"
 #include "../utils/utils.hpp"
+#include "Env.hpp"
 #include "Socket.hpp"
 #include <cstring>
 #include <iostream>
@@ -33,9 +34,10 @@ private:
 	vector<Socket*> _sockets;
 	vector<WebClient*> _clients;
 	vector<struct pollfd> _pollfds;
+	Env	_env;
 
 public:
-	Server(Config* config);
+	Server(Config* config, Env &env);
 
 	~Server();
 

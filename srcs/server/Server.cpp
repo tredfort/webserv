@@ -1,7 +1,9 @@
 #include "Server.hpp"
 
-Server::Server(Config* config)
-	: _config(config)
+Server::Server(Config* config, Env &env)
+	:
+	_config(config),
+	_env(env)
 {
 }
 
@@ -106,7 +108,8 @@ void Server::receiveRequest(WebClient* client, short& events)
 void Server::sendResponse(WebClient* client, short& events)
 {
 	if (client->getResponse()->getBuffer().empty()) {
-		_handler.formResponse(client->getRequest(), client->getResponse());
+		// A почему тут только формируется респонс, но не отправляется сразу
+		_handler.formResponse(client->getRequest(), client->getResponse(), _env);
 	}
 	else {
 		string buffer = client->getResponse()->getBuffer();

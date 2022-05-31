@@ -45,11 +45,11 @@ public:
 
 	~RequestHandler();
 
-	void formResponse(Request* request, Response* response);
+	void formResponse(Request* request, Response* response, Env& env);
 
 	void doPost(Request* request, Response* response);
 
-	void doGet(Request* request, Response* response);
+	void doGet(Request* request, Response* response, Env& env);
 
 	void doPut(Request* request, Response* response);
 

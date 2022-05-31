@@ -1,9 +1,9 @@
 #include "CGI.hpp"
 
-CGI::CGI(string pathToFile) :
+CGI::CGI(string pathToFile, Env & env) :
 	_pathToExecFile(pathToFile),
-	rootWebserv("/Users/chudapak/code/42/webserv/webserv/"),
-	cgiFolder("resources/html_data/cgi/")
+	_cgiFolder("resources/html_data/cgi/"),
+	_env(env)
 {
 	supportedFileFormats["py"] = "/usr/bin/python";
 	supportedFileFormats["php"] = "/usr/bin/php";
@@ -55,7 +55,7 @@ ExecveArguments *	CGI::constructExecveArguments() {
 	if (!args) {
 		return NULL;
 	}
-	if (!openOutputFile(rootWebserv + cgiFolder + "fileCgi.html")) {
+	if (!openOutputFile(_cgiFolder + "fileCgi.html")) {
 		clearEverything(arguments);
 		return NULL;
 	}
@@ -63,8 +63,7 @@ ExecveArguments *	CGI::constructExecveArguments() {
 	map<string, string>::iterator pathToExecutable = supportedFileFormats.find(format);
 	if (pathToExecutable == supportedFileFormats.end()) {
 		clearEverything(arguments);
-		return NULL;	// TODO:: Узнай какую ошибку нужно возвращать
-													// если файл не поддерживается
+		return NULL;
 	}
 	arguments->args = args;
 	arguments->env = NULL;
@@ -91,7 +90,7 @@ CGIModel CGI::executeCgi(const ExecveArguments & execArguments) {
 	if (!pid)
 		exit(0);
 	dup2(saveStdout, STDOUT_FILENO);
-	return constructCGIResult(200, true, rootWebserv + cgiFolder + "fileCgi.html");
+	return constructCGIResult(200, true, _cgiFolder + "fileCgi.html");
 }
 
 void	CGI::clearEverything(ExecveArguments * arguments) {
@@ -110,14 +109,13 @@ bool	CGI::openOutputFile(std::string file) {
 
 char**	CGI::configureArgumentsForComand() const {
 	char **args = NULL;
-	string fullPathToFile = rootWebserv + _pathToExecFile;
 
 	try {
 		args = new char*[3];
 		args[0] = new char[1];
 		args[0] = strcpy(args[0], "");
-		args[1] = new char[fullPathToFile.size() + 1];
-		args[1] = strcpy(args[1], fullPathToFile.c_str());
+		args[1] = new char[_pathToExecFile.size() + 1];
+		args[1] = strcpy(args[1], _pathToExecFile.c_str());
 		args[2] = NULL;
 	} catch (std::bad_alloc &e) {
 		std::cerr << "CGI, configureArgumentsForComand - " << e.what() << std::endl;

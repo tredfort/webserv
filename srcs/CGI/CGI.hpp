@@ -14,18 +14,19 @@
 #include <fstream>
 #include <fcntl.h>
 #include <string.h>
+#include "../server/Env.hpp"
 
 class CGI : public ICGI {
 
 private:
 	string	_pathToExecFile;
 	map<string, string>	supportedFileFormats;
-	const string	rootWebserv;
-	const string		cgiFolder;
+	const string	_cgiFolder;
 	int				_outputFileFd;
+	Env	_env;
 
 public:
-	CGI(string pathToFile);
+	CGI(string pathToFile, Env& env);
 	~CGI();
 
 	// throws exceptions
