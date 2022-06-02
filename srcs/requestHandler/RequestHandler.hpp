@@ -13,11 +13,12 @@
 #include "../interfaces/IRequestHandler.hpp"
 #include "../model/Request.hpp"
 #include "../model/Response.hpp"
+#include "../utils/constants.hpp"
 #include "FileReader.hpp"
 
 class RequestHandler : public IRequestHandler {
 private:
-	map<string, string> types;
+	map<string, string> _types;
 
 	vector<string> index;
 	bool autoindex;
