@@ -148,3 +148,37 @@ void Config::printConfig()
 		_servers[i].printConfig();
 	}
 }
+
+ServerContext* Config::getServersByIpPortAndHost(const string& ip, const string& port, const string& host)
+{
+	vector<ServerContext*> result;
+	for (vector<ServerContext>::iterator it = _servers.begin(), ite = _servers.end(); it != ite; ++it) {
+		const vector<pair<string, int> > listeners = it->getListeners();
+		for (vector<pair<string, int> >::const_iterator itListeners = listeners.begin(), iteListeners = listeners.end(); itListeners != iteListeners; ++itListeners) {
+			if (itListeners->first == ip && std::to_string(itListeners->second) == port) {
+				result.push_back(&(*it));
+			}
+		}
+	}
+	for (vector<ServerContext*>::iterator it = result.begin(), ite = result.end(); it != ite; ++it) {
+		vector<string> serverNames = (*it)->getServerNames();
+		for (vector<string>::iterator itServerName = serverNames.begin(), iteServerName = serverNames.end(); itServerName != iteServerName; ++itServerName) {
+			if (*itServerName == host)
+				return *it;
+		}
+	}
+	return result.empty() ? NULL : result[0];
+}
+
+// TODO:: сдлеать так чтобы не было взаимоисключающих полей, решить на этапе парсинга
+LocationContext* Config::getLocationContext(const string& ip, const string& port, const string& host, const string& uri)
+{
+	ServerContext* server = getServersByIpPortAndHost(ip, port, host);
+
+	vector<LocationContext> locations = server->getLocationContexts();
+	for (vector<LocationContext>::iterator it = locations.begin(), ite = locations.end(); it != ite; ++it) {
+		if (it->getLocation() == uri)
+			return &(*it);
+	}
+	return NULL;
+}

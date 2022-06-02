@@ -4,6 +4,7 @@
 #include "../utils/utils.hpp"
 #include "LocationContext.hpp"
 #include "ServerContext.hpp"
+#include <cstring>
 #include <fstream>
 #include <string>
 #include <utility>
@@ -43,6 +44,8 @@ public:
 	const vector<pair<int, string> >& getErrorPages() const;
 	void setErrorPages(const vector<pair<int, string> >& errorPages);
 	void printfConfig();
+	LocationContext* getLocationContext(const string& ip, const string& port, const string& host, const string& uri);
+	ServerContext* getServersByIpPortAndHost(const string& ip, const string& port, const string& host);
 
 private:
 	vector<pair<int, string> > _errorPages;

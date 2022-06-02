@@ -30,6 +30,7 @@ public:
 	const vector<string>& getServerNames() const;
 	const vector<pair<string, int> >& getListeners() const;
 	void setServerNames(const vector<string>& serverNames);
+	vector<string> getServerNames();
 	bool isAutoIndex() const;
 	void setAutoIndex(bool autoIndex);
 	void addPortListener(string value);
@@ -38,6 +39,7 @@ public:
 	vector<pair<int, string> >& getErrorPages();
 	vector<string>& getIndex();
 	void printConfig();
+	vector<LocationContext> getLocationContexts();
 
 private:
 	bool _autoIndex; // false by default

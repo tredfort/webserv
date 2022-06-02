@@ -29,6 +29,8 @@ public:
 	const string& getCgiPath() const;
 	void setCgiPath(const string& cgiPath);
 	void printConfig();
+	const string& getLocation();
+	const string& getModificator();
 
 private:
 	vector<string> _allowedMethods;

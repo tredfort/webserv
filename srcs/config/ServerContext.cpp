@@ -145,3 +145,6 @@ void ServerContext::printConfig()
 	}
 	cout << endl;
 }
+vector<string> ServerContext::getServerNames() { return _serverNames; }
+
+vector<LocationContext> ServerContext::getLocationContexts() { return _locations; }

@@ -141,3 +141,6 @@ void LocationContext::printConfig()
 	cout << "Index: " << endl;
 	printStringVector(_index);
 }
+const string& LocationContext::getLocation() { return _location; }
+
+const string& LocationContext::getModificator() { return _modificator; }
