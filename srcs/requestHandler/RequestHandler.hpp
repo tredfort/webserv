@@ -11,22 +11,36 @@
 
 #include "../config/Config.hpp"
 #include "../interfaces/IRequestHandler.hpp"
-#include "../model/Request.hpp"
-#include "../model/Response.hpp"
+#include "../model/WebClient.hpp"
 #include "FileReader.hpp"
 
-class RequestHandler : public IRequestHandler {
-private:
+class RequestHandler {
+public:
+	Config* config;
+	//временные переменные
 	map<string, string> types;
+	LocationContext _location;
 
-	vector<string> index;
-	bool autoindex;
-	string locationPath;
+	RequestHandler(Config* config);
+
+	~RequestHandler();
+
+	void formResponse(WebClient* client);
+
+	void doPost(Request* request, Response* response);
+
+	void doGet(const LocationContext& location, Request* request, Response* response);
+
+	void doPut(Request* request, Response* response);
+
+	void doDelete(Request* request, Response* response);
 
 private:
 	const string& mimeType(const string& uri);
 
 	bool isBadRequest(Request* request) const;
+
+	bool isProtocolSupported(const string& protocol) const;
 
 	void readfile(Response* response, const string&);
 
@@ -38,20 +52,6 @@ private:
 
 	void fillHeaders(Response* response);
 
-public:
-	RequestHandler();
-
-	~RequestHandler();
-
-	void formResponse(Request* request, Response* response);
-
-	void doPost(Request* request, Response* response);
-
-	void doGet(Request* request, Response* response);
-
-	void doPut(Request* request, Response* response);
-
-	void doDelete(Request* request, Response* response);
 };
 
 #endif

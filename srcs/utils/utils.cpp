@@ -107,13 +107,14 @@ time_t getFileModificationDate(string& pathToFile)
 	return (stat(pathToFile.c_str(), &file) != -1) ? file.st_mtime : -1;
 }
 
-void printStringVector(const vector<string>& v)
-{
-	for (vector<string>::const_iterator it = v.begin(); it != v.end(); ++it) {
-		cout << *it << endl;
-	}
-	cout << endl;
-}
+
+//void printStringVector(const set<string>& v)
+//{
+//	for (set<string>::const_iterator it = v.begin(); it != v.end(); ++it) {
+//		cout << *it << endl;
+//	}
+//	cout << endl;
+//}
 
 string removeAfter(string s, char c)
 {
