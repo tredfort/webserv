@@ -11,6 +11,7 @@
 #include <sys/poll.h>
 #include <sys/stat.h>
 #include <vector>
+#include <set>
 
 using std::cout;
 using std::endl;
@@ -19,6 +20,7 @@ using std::istringstream;
 using std::string;
 using std::stringstream;
 using std::vector;
+using std::set;
 
 /**
  * split string with delimiter. It skips empty strings
@@ -73,7 +75,16 @@ bool isDirectory(string& pathToFile);
 
 time_t getFileModificationDate(string& pathToFile);
 
-void printStringVector(const vector<string>&);
+//void printStringVector(const set<string>&);
+
+template<class T>
+void printStringVector(T& v)
+{
+	for (typename T::const_iterator it = v.begin(); it != v.end(); ++it) {
+		cout << *it << endl;
+	}
+	cout << endl;
+}
 
 string removeAfter(string, char);
 
