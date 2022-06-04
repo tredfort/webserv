@@ -1,14 +1,27 @@
 #include "RequestHandler.hpp"
 
-RequestHandler::RequestHandler()
+RequestHandler::RequestHandler(Config* config)
+	: config(config)
 {
 	fillTypes(_types);
 
 	//Временные переменные
-	locationPath = "resources/html_data";
-	autoindex = false;
-	index.push_back("index");
+	vector<string> index;
+	index.push_back("index.htm");
 	index.push_back("index.html");
+
+	vector<string> allowedMethods;
+	allowedMethods.push_back("GET");
+	allowedMethods.push_back("POST");
+	allowedMethods.push_back("DELETE");
+
+	_location.setAutoIndex(true);
+	_location.setClientMaxBodySize(10240);
+	_location.setIndex(index);
+	_location.setRoot("resources/html_data");
+	_location.parseAllowedMethods(allowedMethods);
+	//	cout << "***test***" << endl;
+	//	location.printConfig();
 }
 
 RequestHandler::~RequestHandler() { }
@@ -38,29 +51,47 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 	response->setStatus("200 OK");
 }
 
-bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol().empty(); }
-
-void RequestHandler::formResponse(Request* request, Response* response)
+bool RequestHandler::isBadRequest(Request* request) const
 {
+	return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty();
+}
+
+bool RequestHandler::isProtocolSupported(const string& protocol) const
+{
+	return protocol == "HTTP/1.1";
+}
+
+void RequestHandler::formResponse(WebClient* client)
+{
+	Response* response = client->getResponse();
+	Request* request = client->getRequest();
+//	LocationContext location = config->getLocationContext(client->getIp(), client->getPort(), request->getHeader("Host"), request->getUri()); // TODO:: get location
+	response->setProtocol("HTTP/1.1");
+
 	if (isBadRequest(request))
 		setResponseWithError(response, "400 Bad Request");
-	else if (request->getMethod() == POST)
+	else if (!isProtocolSupported(request->getProtocol()))
+		setResponseWithError(response, "505 HTTP Version Not Supported");
+	else if (!_location.getAllowedMethods().count(request->getMethod()))
+		setResponseWithError(response, "405 Method Not Allowed");
+	else if (request->getMethod() == "GET")
+		doGet(_location, request, response);
+	else if (request->getMethod() == "POST")
 		doPost(request, response);
-	else if (request->getMethod() == GET)
-		doGet(request, response);
-	else if (request->getMethod() == PUT)
-		doPut(request, response);
-	else if (request->getMethod() == DELETE)
+	else if (request->getMethod() == "DELETE")
 		doDelete(request, response);
+	else if (request->getMethod() == "PUT")
+		doPut(request, response);
+	else
+		setResponseWithError(response, "501 Not Implemented");
 	fillHeaders(response);
 }
 
 void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::doGet(Request* request, Response* response)
+void RequestHandler::doGet(const LocationContext& location, Request* request, Response* response)
 {
-	string pathToFile = locationPath + request->getUri();
-	response->setProtocol("HTTP/1.1");
+	string pathToFile = location.getRoot() + request->getUri();
 
 	if (!isFileExists(pathToFile)) {
 		setResponseWithError(response, "404 Not Found");
@@ -68,14 +99,15 @@ void RequestHandler::doGet(Request* request, Response* response)
 		if (pathToFile.back() != '/') {
 			pathToFile.append("/");
 		}
-		if (!fillBodyFromIndexFile(response, pathToFile) && !autoindex) {
+		if (!fillBodyFromIndexFile(response, pathToFile) && !location.isAutoIndex()) {
 			setResponseWithError(response, "403 Forbidden");
 		}
-		if (response->getBody().empty() && autoindex) {
+		if (response->getBody().empty() && location.isAutoIndex()) {
 			folderContents(response, pathToFile, request->getUri());
 		}
 		response->setContentType(mimeType(".html"));
 	} else {
+		//TODO: add error handling 413 and 415
 		readfile(response, pathToFile);
 	}
 }
@@ -84,8 +116,8 @@ bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pat
 {
 	//	struct stat file;
 
-	for (int i = 0, size = index.size(); i < size; ++i) {
-		string indexFile = pathToFile + index[i];
+	for (int i = 0, size = _location.getIndex().size(); i < size; ++i) {
+		string indexFile = pathToFile + _location.getIndex()[i];
 		if (isFileExists(indexFile) && !isDirectory(indexFile)) {
 			//			if (stat(indexFile.c_str(), &file) == -1 || file.st_mode & S_IRGRP) {
 			//				cout << "Нет прав на чтение" << endl;
@@ -168,8 +200,6 @@ void RequestHandler::setResponseWithError(Response* response, string errorMessag
 		  "        <h1>"
 		+ errorMessage
 		+ "</h1>\n"
-		  "        <br>\n"
-		  "        <img src=\"./errorPages/mem.gif\" height=\"413px\" width=\"504px\">\n"
 		  "    </div>\n"
 		  "</div>\n"
 		  "</body>\n"

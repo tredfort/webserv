@@ -3,7 +3,6 @@
 
 #include "../interfaces/IHeader.hpp"
 #include "../interfaces/IRequest.hpp"
-#include "Method.hpp"
 #include <iostream>
 #include <map>
 #include <vector>
@@ -11,11 +10,10 @@
 using std::make_pair;
 using std::map;
 using std::string;
-using std::vector;
 
-class Request : public IHeader {
+class Request {
 private:
-	Method _method;
+	string _method;
 	string _uri;
 	string _protocol;
 	string _buffer;
@@ -26,15 +24,15 @@ public:
 
 	~Request();
 
-	const Method& getMethod();
+	const string& getMethod() const;
 
-	const string& getUri();
+	const string& getUri() const;
 
-	const string& getProtocol();
+	const string& getProtocol() const;
 
 	const string& getBuffer() const;
 
-	void setMethod(const string&);
+	void setMethod(const string& method);
 
 	void setUri(const string&);
 
@@ -46,7 +44,7 @@ public:
 
 	string getHeader(const string&) const;
 
-	void setHeader(string key, string value);
+	void setHeader(const string& key, const string& value);
 
 	bool emptyHeader() const;
 };

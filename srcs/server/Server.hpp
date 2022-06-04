@@ -35,7 +35,7 @@ private:
 	vector<struct pollfd> _pollfds;
 
 public:
-	Server(Config* config);
+	explicit Server(Config* config);
 
 	~Server();
 
