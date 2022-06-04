@@ -1,9 +1,9 @@
 #include "WebClient.hpp"
 
-WebClient::WebClient(int fd, const string& ip, const string& port)
+WebClient::WebClient(int fd, const string& ip, int port)
 	: _fd(fd)
-	, _ip(ip)
 	, _port(port)
+	, _ip(ip)
 	, _request(new Request())
 	, _response(new Response())
 {
@@ -11,8 +11,8 @@ WebClient::WebClient(int fd, const string& ip, const string& port)
 
 WebClient::WebClient(const WebClient& other)
 	: _fd(other._fd)
-	, _ip(other._ip)
 	, _port(other._port)
+	, _ip(other._ip)
 	, _request(other._request)
 	, _response(other._response)
 {
@@ -45,7 +45,7 @@ int WebClient::getFd() const { return _fd; }
 
 const string& WebClient::getIp() const { return _ip; }
 
-const string& WebClient::getPort() const { return _port; }
+int WebClient::getPort() const { return _port; }
 
 Request* WebClient::getRequest() const { return _request; }
 

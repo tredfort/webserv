@@ -10,14 +10,18 @@ Server::~Server() { delete _config; }
 
 void Server::createSockets()
 {
-	Socket* socket = new Socket(AF_INET, SOCK_STREAM, 0);
+	set<pair<string, int> > addresses = _config->getVirtualServersAddresses();
+	for (set<pair<string, int> >::const_iterator it = addresses.begin(), ite = addresses.end(); it != ite; ++it) {
+		Socket* socket = new Socket(AF_INET, SOCK_STREAM, 0);
+		socket->setAddressReuseMode();
+		socket->setNonblockMode();
+//		socket->bindToAddress("127.0.0.1", "8080");
+		socket->bindToAddress(it->first, it->second);
+		socket->startListening(SOMAXCONN);
+		_sockets.push_back(socket);
+		_pollfds.push_back(fillPollfd(socket->getSockfd(), POLLIN));
+	}
 
-	socket->setAddressReuseMode();
-	socket->setNonblockMode();
-	socket->bindToAddress("127.0.0.1", "8080");
-	socket->startListening(SOMAXCONN);
-	_sockets.push_back(socket);
-	_pollfds.push_back(fillPollfd(socket->getSockfd(), POLLIN));
 }
 
 /**
