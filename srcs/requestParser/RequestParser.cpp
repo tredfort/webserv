@@ -54,21 +54,42 @@ void RequestParser::fillHeaders(Request* request, vector<string> headers)
 	}
 }
 
-void RequestParser::parseBodyHeaders(Request* request) {
+void RequestParser::parseBodyHeaders(Request* request)
+{
 	string contentType = request->getHeader("Content-Type");
-	string boundary;
 	if (strncmp(contentType.c_str(), "multipart/form-data", 19) == 0) {
-		size_t start = contentType.find("; boundary=");
-		if (start != std::string::npos)
-			boundary = contentType.substr(start + 11);
+		size_t pos = request->getBuffer().find("\r\n\r\n");
+		if (pos != std::string::npos && request->emptyBodyHeader()) {
+			size_t start = contentType.find("; boundary=");
+			if (start != std::string::npos) {
+				string boundary = contentType.substr(start + 11);
+				vector<string> bodyHeaders = ft_split(request->getBuffer().substr(0, pos), "\r\n");
+				request->setBuffer(request->getBuffer().substr(pos + 4));
+				cout << "***Body headers***" << endl;
+				for (size_t i = 1; i < bodyHeaders.size(); ++i) {
+					pos = bodyHeaders[i].find(": ");
+					if (pos != std::string::npos) {
+						std::string key = bodyHeaders[i].substr(0, pos);
+						std::string value = bodyHeaders[i].substr(pos + 2);
+						request->setBodyHeader(key, value);
+						cout << "key: " << key << " value: " << value << endl;
+					} else {
+						cout << "boundary: " << boundary << endl;
+						cout << "str: " << bodyHeaders[i] << endl;
+					}
+				}
+			}
+		}
 	}
-	size_t pos = request->getBuffer().find("\r\n\r\n");
-
-	if (pos == std::string::npos)
-		return;
-
-	std::string buffer = request->getBuffer().substr(0, pos);
-	request->setBuffer(request->getBuffer().substr(pos + 4));
+	cout << "Left: " << endl;
+	cout << request->getBuffer() << endl;
+//	size_t pos = request->getBuffer().find("\r\n\r\n");
+//
+//	if (pos == std::string::npos)
+//		return;
+//
+//	std::string buffer = request->getBuffer().substr(0, pos);
+//	request->setBuffer(request->getBuffer().substr(pos + 4));
 
 	// TODO: написать этот метод
 }
@@ -78,12 +99,9 @@ bool RequestParser::isReadyRequest(Request* request)
 	if (request->getMethod() == "GET") {
 		request->setBuffer("");
 		return true;
-	}
-	else if (request->getMethod() == "POST") {
+	} else if (request->getMethod() == "POST") {
 
-	}
-	else if (request->getMethod() == "DELETE") {
-
+	} else if (request->getMethod() == "DELETE") {
 	}
 
 	return false;

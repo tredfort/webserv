@@ -18,6 +18,7 @@ private:
 	string _protocol;
 	string _buffer;
 	map<string, string> _headers;
+	map<string, string> _bodyHeaders;
 
 public:
 	Request();
@@ -44,9 +45,15 @@ public:
 
 	string getHeader(const string&) const;
 
+	string getBodyHeader(const string&) const;
+
 	void setHeader(const string& key, const string& value);
 
+	void setBodyHeader(const string& key, const string& value);
+
 	bool emptyHeader() const;
+
+	bool emptyBodyHeader() const;
 };
 
 #endif
