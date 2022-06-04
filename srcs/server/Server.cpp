@@ -2,6 +2,7 @@
 
 Server::Server(Config* config)
 	: _config(config)
+	, _handler(config)
 {
 }
 
@@ -9,14 +10,18 @@ Server::~Server() { delete _config; }
 
 void Server::createSockets()
 {
-	Socket* socket = new Socket(AF_INET, SOCK_STREAM, 0);
+	set<pair<string, int> > addresses = _config->getVirtualServersAddresses();
+	for (set<pair<string, int> >::const_iterator it = addresses.begin(), ite = addresses.end(); it != ite; ++it) {
+		Socket* socket = new Socket(AF_INET, SOCK_STREAM, 0);
+		socket->setAddressReuseMode();
+		socket->setNonblockMode();
+//		socket->bindToAddress("127.0.0.1", "8080");
+		socket->bindToAddress(it->first, it->second);
+		socket->startListening(SOMAXCONN);
+		_sockets.push_back(socket);
+		_pollfds.push_back(fillPollfd(socket->getSockfd(), POLLIN));
+	}
 
-	socket->setAddressReuseMode();
-	socket->setNonblockMode();
-	socket->bindToAddress("127.0.0.1", "8080");
-	socket->startListening(SOMAXCONN);
-	_sockets.push_back(socket);
-	_pollfds.push_back(fillPollfd(socket->getSockfd(), POLLIN));
 }
 
 /**
@@ -78,7 +83,7 @@ void Server::acceptNewClients(Socket* socket)
 			break;
 		}
 		_pollfds.push_back(fillPollfd(client_fd, POLLIN));
-		WebClient* client = new WebClient(client_fd, socket->getPort());
+		WebClient* client = new WebClient(client_fd, socket->getIp(), socket->getPort());
 		_clients.push_back(client);
 	}
 }
@@ -105,7 +110,7 @@ void Server::receiveRequest(WebClient* client, short& events)
 void Server::sendResponse(WebClient* client, short& events)
 {
 	if (client->getResponse()->getBuffer().empty()) {
-		_handler.formResponse(client->getRequest(), client->getResponse());
+		_handler.formResponse(client);
 	} else {
 		string buffer = client->getResponse()->getBuffer();
 		ssize_t sendBytes = send(client->getFd(), buffer.c_str(), buffer.size(), 0);
@@ -117,7 +122,7 @@ void Server::sendResponse(WebClient* client, short& events)
 
 		client->getResponse()->setBuffer(buffer.substr(sendBytes));
 		if (client->getResponse()->getBuffer().empty()) {
-			client->update();
+			client->clear();
 			events = POLLIN;
 		}
 	}

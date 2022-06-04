@@ -1,22 +1,27 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Particles</title>
- <link rel="stylesheet" href="./style.css">
+    <meta charset="utf-8"/>
+    <title>Download files</title>
+    <style>
+        h1 {
+            font-size: 500%;
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            color: #333366;
+        }
 
+        h6 {
+            font-size: 200%;
+            font-family: Verdana, Arial, Helvetica, sans-serif;
+            color: #333366;
+        }
+    </style>
 </head>
 <body>
-<!-- Hello world! -->
-<!-- partial:index.partial.html -->
-<!-- particles.js container -->
-<div id="particles-js"></div>
-
-<!-- stats - count particles -->
-
-<!-- particles.js lib (JavaScript CodePen settings): https://github.com/VincentGarreau/particles.js -->
-<!-- partial -->
- <script src='./particles.min.js'></script>
-<script  src="./script.js"></script>
+<form enctype="multipart/form-data" method="post">
+    <h6 align="center">Upload your photo to the site</h6>
+    <h6 align="center"><input type="file" name="photo" accept="image/*,image/jpeg">
+        <input type="submit" value="Submit"></h6>
+</form>
 </body>
 </html>

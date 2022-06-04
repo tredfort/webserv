@@ -16,7 +16,7 @@ void RequestParser::processRequest(Request* request)
 		fillHeaders(request, headers);
 	}
 
-	if (request->getMethod() == POST) {
+	if (request->getMethod() == "POST") {
 		parseBodyHeaders(request);
 	}
 }
@@ -69,14 +69,14 @@ void RequestParser::parseBodyHeaders(Request* request)
 
 bool RequestParser::isReadyRequest(Request* request)
 {
-	if (request->getMethod() == GET) {
+	if (request->getMethod() == "GET") {
 		request->setBuffer("");
 		return true;
 	}
-	else if (request->getMethod() == POST) {
+	else if (request->getMethod() == "POST") {
 
 	}
-	else if (request->getMethod() == DELETE) {
+	else if (request->getMethod() == "DELETE") {
 
 	}
 

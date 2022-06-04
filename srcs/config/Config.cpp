@@ -149,6 +149,18 @@ void Config::printConfig()
 	}
 }
 
+// This method returns unique values from all listeners.
+set<pair<string, int> > Config::getVirtualServersAddresses()
+{
+	set<pair<string, int> > result;
+	for (vector<ServerContext>::iterator it = this->_servers.begin(), ite = this->_servers.end(); it != ite; ++it) {
+		for (vector<pair<string, int> >::const_iterator itL = it->getListeners().begin(), iteL = it->getListeners().end(); itL != iteL; ++itL) {
+			result.insert(pair<string, int>(itL->first, itL->second));
+		}
+	}
+	return result;
+}
+
 ServerContext* Config::getServersByIpPortAndHost(const string& ip, const string& port, const string& host)
 {
 	vector<ServerContext*> result;
