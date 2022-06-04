@@ -1,10 +1,11 @@
 #include "RequestParser.hpp"
 
-RequestParser::RequestParser() {}
+RequestParser::RequestParser() { }
 
-RequestParser::~RequestParser() {}
+RequestParser::~RequestParser() { }
 
-void RequestParser::processRequest(Request *request) {
+void RequestParser::processRequest(Request* request)
+{
 	size_t pos = request->getBuffer().find("\r\n\r\n");
 
 	if (pos != std::string::npos && request->emptyHeader()) {
@@ -15,12 +16,13 @@ void RequestParser::processRequest(Request *request) {
 		fillHeaders(request, headers);
 	}
 
-	if (request->getMethod() == POST) {
+	if (request->getMethod() == "POST") {
 		parseBodyHeaders(request);
 	}
 }
 
-void RequestParser::parseStartLine(Request *request, string &startLine) {
+void RequestParser::parseStartLine(Request* request, string& startLine)
+{
 	size_t start;
 	size_t end = startLine.find(' ');
 	if (end == std::string::npos)
@@ -39,7 +41,8 @@ void RequestParser::parseStartLine(Request *request, string &startLine) {
 	request->setProtocol(startLine.substr(start));
 }
 
-void RequestParser::fillHeaders(Request *request, vector<string> headers) {
+void RequestParser::fillHeaders(Request* request, vector<string> headers)
+{
 	size_t pos;
 	for (size_t i = 1; i < headers.size(); ++i) {
 		pos = headers[i].find(": ");
@@ -51,7 +54,7 @@ void RequestParser::fillHeaders(Request *request, vector<string> headers) {
 	}
 }
 
-void RequestParser::parseBodyHeaders(Request *request) {
+void RequestParser::parseBodyHeaders(Request* request) {
 	string contentType = request->getHeader("Content-Type");
 	string boundary;
 	if (strncmp(contentType.c_str(), "multipart/form-data", 19) == 0) {
@@ -70,13 +73,16 @@ void RequestParser::parseBodyHeaders(Request *request) {
 	// TODO: написать этот метод
 }
 
-bool RequestParser::isReadyRequest(Request *request) {
-	if (request->getMethod() == GET) {
+bool RequestParser::isReadyRequest(Request* request)
+{
+	if (request->getMethod() == "GET") {
 		request->setBuffer("");
 		return true;
-	} else if (request->getMethod() == POST) {
+	}
+	else if (request->getMethod() == "POST") {
 
-	} else if (request->getMethod() == DELETE) {
+	}
+	else if (request->getMethod() == "DELETE") {
 
 	}
 

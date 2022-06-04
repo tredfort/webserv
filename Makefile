@@ -2,9 +2,9 @@ NAME=webserv
 
 CC = clang++
 
-CFLAGS = -Wall -Werror -Wextra -std=c++98 -g
+#CFLAGS = -Wall -Werror -Wextra -std=c++98 -g
 # For UNIX
-#CFLAGS = -Wall -Werror -Wextra -std=c++11 -g -DUNIX_OS
+CFLAGS = -Wall -Werror -Wextra -std=c++11 -g -DUNIX_OS
 
 SRC = \
 	srcs/main.cpp \
@@ -14,6 +14,7 @@ SRC = \
 	srcs/config/LocationContext.cpp \
 	srcs/config/ServerContext.cpp \
 	srcs/utils/utils.cpp \
+	srcs/utils/constants.cpp \
 	srcs/model/WebClient.cpp \
 	srcs/model/Request.cpp \
 	srcs/model/Response.cpp \
