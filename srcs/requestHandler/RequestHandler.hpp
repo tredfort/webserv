@@ -10,15 +10,15 @@
 #include <vector>
 
 #include "../config/Config.hpp"
-#include "../interfaces/IRequestHandler.hpp"
+#include "../utils/constants.hpp"
 #include "../model/WebClient.hpp"
 #include "FileReader.hpp"
 
 class RequestHandler {
 public:
 	Config* config;
-	//временные переменные
-	map<string, string> types;
+  map<string, string> _types;
+	//tmp
 	LocationContext _location;
 
 	RequestHandler(Config* config);

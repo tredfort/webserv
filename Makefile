@@ -13,6 +13,7 @@ SRC = srcs/main.cpp \
 	srcs/config/LocationContext.cpp \
 	srcs/config/ServerContext.cpp \
 	srcs/utils/utils.cpp \
+	srcs/utils/constants.cpp \
 	srcs/model/WebClient.cpp \
 	srcs/model/Request.cpp \
 	srcs/model/Response.cpp \
