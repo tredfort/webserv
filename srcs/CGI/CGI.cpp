@@ -1,7 +1,6 @@
 #include "CGI.hpp"
 
-CGI::CGI(string pathToFile, Env & env) :
-	_pathToExecFile(pathToFile),
+CGI::CGI(Env & env) :
 	_cgiFolder("resources/html_data/cgi/"),
 	_env(env)
 {
@@ -11,9 +10,9 @@ CGI::CGI(string pathToFile, Env & env) :
 
 CGI::~CGI() { }
 
-CGIModel	CGI::getPathToFileWithResult() {
+CGIModel	CGI::getPathToFileWithResult(string pathToExecFile) {
 
-	ExecveArguments *arguments = constructExecveArguments();
+	ExecveArguments *arguments = constructExecveArguments(pathToExecFile);
 	if (!arguments)
 		return constructCGIResult(500, false, "");
 
@@ -22,11 +21,12 @@ CGIModel	CGI::getPathToFileWithResult() {
 	return result;
 }
 
-bool	CGI::isFileShouldBeHandleByCGI() const {
-	if (!isFileExists(_pathToExecFile)) {
+bool	CGI::isFileShouldBeHandleByCGI(string pathToExecFile) const {
+	// TODO: Переделай так как нужно проверять еще на индексные файлы
+	if (!isFileExists(pathToExecFile)) {
 		return false;
 	}
-	string format = getFileFormat();
+	string format = getFileFormat(pathToExecFile);
 	if (supportedFileFormats.find(format) == supportedFileFormats.end()) {
 		return false;
 	}
@@ -36,20 +36,20 @@ bool	CGI::isFileShouldBeHandleByCGI() const {
 
 // Private methods
 
-string	CGI::getFileFormat() const {
+string	CGI::getFileFormat(string pathToExecFile) const {
 	unsigned long i = 100;
-	cout << _pathToExecFile.size() << endl;
-	for (i = _pathToExecFile.size(); i > 0 && _pathToExecFile[i] != '.'; i--) { }
-	if (_pathToExecFile[i] != '.' && i != _pathToExecFile.length())
+	cout << pathToExecFile.size() << endl;
+	for (i = pathToExecFile.size(); i > 0 && pathToExecFile[i] != '.'; i--) { }
+	if (pathToExecFile[i] != '.' && i != pathToExecFile.length())
 		return "";
-	return _pathToExecFile.substr(++i, _pathToExecFile.length());
+	return pathToExecFile.substr(++i, pathToExecFile.length());
 }
 
 // TODO:: ADD env variable
-ExecveArguments *	CGI::constructExecveArguments() {
+ExecveArguments *	CGI::constructExecveArguments(string pathToExecFile) {
 
 	ExecveArguments *	arguments = new ExecveArguments[1];
-	char **args = configureArgumentsForComand();
+	char **args = configureArgumentsForComand(pathToExecFile);
 
 	if (!args) {
 		return NULL;
@@ -58,7 +58,7 @@ ExecveArguments *	CGI::constructExecveArguments() {
 		clearEverything(arguments);
 		return NULL;
 	}
-	string format = getFileFormat();
+	string format = getFileFormat(pathToExecFile);
 	map<string, string>::iterator fileFormat = supportedFileFormats.find(format);
 	if (fileFormat == supportedFileFormats.end()) {
 		clearEverything(arguments);
@@ -74,6 +74,12 @@ ExecveArguments *	CGI::constructExecveArguments() {
 	arguments->pathToExecutable = strdup(const_cast<char *>(pathToExecutable.c_str()));
 	// arguments->pathToExecutable = strdup("/usr/bin/python");
 	return arguments;
+}
+
+// TODO: This method
+char	**CGI::getEnvAsCstrArray() const {
+	char	**env;
+	return env;
 }
 
 // если делай throw то не забывай чистить все говно
@@ -121,25 +127,21 @@ bool	CGI::openOutputFile(std::string file) {
 	return (true);
 }
 
-char**	CGI::configureArgumentsForComand() const {
+char**	CGI::configureArgumentsForComand(string pathToExecFile) const {
 	char **args = NULL;
 
 	try {
 		args = new char*[3];
 		args[0] = new char[1];
 		args[0] = strcpy(args[0], "");
-		args[1] = new char[_pathToExecFile.size() + 1];
-		args[1] = strcpy(args[1], _pathToExecFile.c_str());
+		args[1] = new char[pathToExecFile.size() + 1];
+		args[1] = strcpy(args[1], pathToExecFile.c_str());
 		args[2] = NULL;
 	} catch (std::bad_alloc &e) {
 		std::cerr << "CGI, configureArgumentsForComand - " << e.what() << std::endl;
 		return NULL;
 	}
 	return args;
-}
-
-void	CGI::setPathToFile(string str) {
-	_pathToExecFile = str;
 }
 
 CGIModel	CGI::constructCGIResult(int code, bool isSuccessful, string path) {

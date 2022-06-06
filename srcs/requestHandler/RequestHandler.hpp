@@ -24,6 +24,7 @@ private:
 	vector<string> index;
 	bool autoindex;
 	string locationPath;
+	CGI		cgi;
 
 private:
 	const string& mimeType(const string& uri);
@@ -41,15 +42,15 @@ private:
 	void fillHeaders(Response* response);
 
 public:
-	RequestHandler();
+	RequestHandler(Env &env);
 
 	~RequestHandler();
 
-	void formResponse(Request* request, Response* response, Env& env);
+	void formResponse(Request* request, Response* response);
 
 	void doPost(Request* request, Response* response);
 
-	void doGet(Request* request, Response* response, Env& env);
+	void doGet(Request* request, Response* response);
 
 	void doPut(Request* request, Response* response);
 

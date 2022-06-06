@@ -9,11 +9,11 @@ class IRequestHandler {
 public:
 	~IRequestHandler() {};
 
-	virtual void formResponse(Request* request, Response* response, Env& env) = 0;
+	virtual void formResponse(Request* request, Response* response) = 0;
 
 	virtual void doPost(Request* request, Response* response) = 0;
 
-	virtual void doGet(Request* request, Response* response, Env& env) = 0;
+	virtual void doGet(Request* request, Response* response) = 0;
 
 	virtual void doPut(Request* request, Response* response) = 0;
 

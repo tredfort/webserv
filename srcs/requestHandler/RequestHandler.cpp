@@ -6,7 +6,8 @@
 
 #define CGICODE -1
 
-RequestHandler::RequestHandler()
+RequestHandler::RequestHandler(Env & env) :
+	cgi(CGI(env))
 {
 	types["aac"] = "audio/aac";
 	types["abw"] = "application/x-abiword";
@@ -136,14 +137,14 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 
 bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol().empty(); }
 
-void RequestHandler::formResponse(Request* request, Response* response, Env& env)
+void RequestHandler::formResponse(Request* request, Response* response)
 {
 	if (isBadRequest(request))
 		setResponseWithError(response, "400 Bad Request");
 	else if (request->getMethod() == POST)
 		doPost(request, response);
 	else if (request->getMethod() == GET)
-		doGet(request, response, env);
+		doGet(request, response);
 	else if (request->getMethod() == PUT)
 		doPut(request, response);
 	else if (request->getMethod() == DELETE)
@@ -153,7 +154,7 @@ void RequestHandler::formResponse(Request* request, Response* response, Env& env
 
 void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::doGet(Request* request, Response* response, Env& env)
+void RequestHandler::doGet(Request* request, Response* response)
 {
 	string pathToFile = locationPath + request->getUri();
 	response->setProtocol("HTTP/1.1");
@@ -162,10 +163,9 @@ void RequestHandler::doGet(Request* request, Response* response, Env& env)
 	// CGI
 	// создать свой фаайл записать в него результат компиляции файла и прописать путь в path to file
 	string path = pathToFile;
-	CGI cgi = CGI(pathToFile, env);
-	if (cgi.isFileShouldBeHandleByCGI()) {
+	if (cgi.isFileShouldBeHandleByCGI(path)) {
 		cout << "CGIIIIII" << endl;
-		CGIModel cgiResult = cgi.getPathToFileWithResult();
+		CGIModel cgiResult = cgi.getPathToFileWithResult(path);
 		if (cgiResult.isSuccess) {
 			readfile(response, cgiResult.pathToFile);
 		} else {

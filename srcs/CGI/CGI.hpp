@@ -20,7 +20,6 @@
 class CGI : public ICGI {
 
 private:
-	string				_pathToExecFile;
 	map<string, string>	supportedFileFormats;
 	const string	_cgiFolder;
 	int				_outputFileFd;
@@ -29,13 +28,12 @@ private:
 	int*			_sharedMemory;
 
 public:
-	CGI(string pathToFile, Env& env);
+	CGI(Env& env);
 	~CGI();
 
 	// throws exceptions
-	CGIModel	getPathToFileWithResult();
-	bool	isFileShouldBeHandleByCGI() const;
-	void	setPathToFile(string str);
+	CGIModel	getPathToFileWithResult(string pathToExecFile);
+	bool	isFileShouldBeHandleByCGI(string pathToExecFile) const;
 
 	struct FileDoesNotExist : public std::exception {
 		virtual const char *	what(void) const throw();
@@ -51,16 +49,17 @@ public:
 
 private:
 	// throws exceptions
-	string		getFileFormat() const;
+	string		getFileFormat(string pathToExecFile) const;
 	CGIModel	executeCgi(const ExecveArguments & execArguments);
-	char**		configureArgumentsForComand() const;
+	char**		configureArgumentsForComand(string pathToExecFile) const;
 	bool		openOutputFile(std::string file);
 	void		clearEverything(ExecveArguments * arguments);
 	CGIModel	constructCGIResult(int code, bool isSuccessful, string path);
-	ExecveArguments *	constructExecveArguments();
+	ExecveArguments *	constructExecveArguments(string pathToExecFile);
 	string		constructExecutablePath(string format);
 	bool		createSharedMemory();
 	void		freeSharedMemory();
+	char**		getEnvAsCstrArray() const;
 };
 
 #endif

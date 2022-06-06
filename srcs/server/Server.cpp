@@ -3,6 +3,7 @@
 Server::Server(Config* config, Env &env)
 	:
 	_config(config),
+	_handler(RequestHandler(env)),
 	_env(env)
 {
 }
@@ -109,7 +110,7 @@ void Server::sendResponse(WebClient* client, short& events)
 {
 	if (client->getResponse()->getBuffer().empty()) {
 		// A почему тут только формируется респонс, но не отправляется сразу
-		_handler.formResponse(client->getRequest(), client->getResponse(), _env);
+		_handler.formResponse(client->getRequest(), client->getResponse());
 	}
 	else {
 		string buffer = client->getResponse()->getBuffer();

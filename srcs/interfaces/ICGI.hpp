@@ -7,7 +7,7 @@
 class ICGI {
 public:
 	virtual ~ICGI() { };
-	virtual CGIModel	getPathToFileWithResult() = 0;
+	virtual CGIModel	getPathToFileWithResult(string pathToExecFile) = 0;
 };
 
 #endif
