@@ -78,8 +78,8 @@ ExecveArguments *	CGI::constructExecveArguments(string pathToExecFile) {
 
 // TODO: This method
 char	**CGI::getEnvAsCstrArray() const {
-	char	**env;
-	return env;
+	// char	**env;
+	return NULL;
 }
 
 // если делай throw то не забывай чистить все говно
