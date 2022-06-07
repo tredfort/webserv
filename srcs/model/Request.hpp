@@ -3,6 +3,7 @@
 
 #include "../interfaces/IHeader.hpp"
 #include "../interfaces/IRequest.hpp"
+#include <cstring>
 #include <iostream>
 #include <map>
 #include <vector>
