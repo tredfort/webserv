@@ -7,8 +7,6 @@
 #include <map>
 #include <vector>
 
-//using std::make_pair;
-//using std::map;
 using std::string;
 using std::vector;
 
@@ -18,27 +16,17 @@ private:
 	string _status;
 	string _contentType;
 	string _buffer;
-//	vector<string> _headers;
 	string _headers;
 	string _body;
-
-public:
-	//    std::string fileName;
-	//    std::ifstream file;
-	//    long fileSize;
-	//    bool headersSent;
-//	string toSend;
 
 public:
 	Response();
 
 	~Response();
 
-//	string toString() const;
-
 	void setProtocol(const string& protocol);
 
-	void setStatus(string status);
+	void setStatus(const string& status);
 
 	void setContentType(const string& contentType);
 
