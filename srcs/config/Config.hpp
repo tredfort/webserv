@@ -16,6 +16,7 @@ using std::make_pair;
 using std::pair;
 using std::string;
 using std::vector;
+using std::set;
 
 const string MAIN_CONTEXT_DIRECTIVES[] = { "error_page", "server", "" };
 

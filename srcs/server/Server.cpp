@@ -3,7 +3,7 @@
 Server::Server(Config* config, Env &env)
 	:
 	_config(config),
-	_handler(RequestHandler(env)),
+	_handler(RequestHandler(config, env)),
 	_env(env)
 {
 }

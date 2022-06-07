@@ -26,18 +26,19 @@ public:
 	//tmp
 	LocationContext _location;
 
-	RequestHandler(Config* config);
+	RequestHandler(Config* config, Env &env);
 
 	~RequestHandler();
 
 	void formResponse(WebClient* client);
 
+
+private:
 	vector<string> index;
 	bool autoindex;
 	string locationPath;
 	CGI		cgi;
 
-private:
 	const string& mimeType(const string& uri);
 
 	bool isBadRequest(Request* request) const;
@@ -55,15 +56,10 @@ private:
 	void fillHeaders(Response* response);
 
 public:
-	RequestHandler(Env &env);
-
-	~RequestHandler();
-
-	void formResponse(Request* request, Response* response);
 
 	void doPost(Request* request, Response* response);
 
-	void doGet(Request* request, Response* response);
+	void doGet(const LocationContext& location, Request* request, Response* response);
 
 	void doPut(Request* request, Response* response);
 
