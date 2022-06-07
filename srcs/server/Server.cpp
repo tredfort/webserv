@@ -12,14 +12,18 @@ Server::~Server() { delete _config; }
 
 void Server::createSockets()
 {
-	Socket* socket = new Socket(AF_INET, SOCK_STREAM, 0);
+	set<pair<string, int> > addresses = _config->getVirtualServersAddresses();
+	for (set<pair<string, int> >::const_iterator it = addresses.begin(), ite = addresses.end(); it != ite; ++it) {
+		Socket* socket = new Socket(AF_INET, SOCK_STREAM, 0);
+		socket->setAddressReuseMode();
+		socket->setNonblockMode();
+//		socket->bindToAddress("127.0.0.1", "8080");
+		socket->bindToAddress(it->first, it->second);
+		socket->startListening(SOMAXCONN);
+		_sockets.push_back(socket);
+		_pollfds.push_back(fillPollfd(socket->getSockfd(), POLLIN));
+	}
 
-	socket->setAddressReuseMode();
-	socket->setNonblockMode();
-	socket->bindToAddress("127.0.0.1", "8080");
-	socket->startListening(SOMAXCONN);
-	_sockets.push_back(socket);
-	_pollfds.push_back(fillPollfd(socket->getSockfd(), POLLIN));
 }
 
 /**
@@ -81,7 +85,7 @@ void Server::acceptNewClients(Socket* socket)
 			break;
 		}
 		_pollfds.push_back(fillPollfd(client_fd, POLLIN));
-		WebClient* client = new WebClient(client_fd, socket->getPort());
+		WebClient* client = new WebClient(client_fd, socket->getIp(), socket->getPort());
 		_clients.push_back(client);
 	}
 }
@@ -93,10 +97,10 @@ void Server::receiveRequest(WebClient* client, short& events)
 	cout << "User listens:" << endl;
 	ssize_t bytesRead = recv(client->getFd(), buffer, sizeof(buffer), 0);
 
-	//	if (bytesRead <= 0) {
-	//		cout << "Client ended the _userfd!" << client->getFd() << endl;
-	//		return false;
-	//	}
+	if (bytesRead < 0) {
+		cout << "Client ended the userfd!" << client->getFd() << endl;
+		//		return false;
+	}
 
 	client->getRequest()->appendBuffer(string(buffer, bytesRead));
 	cout << client->getRequest()->getBuffer() << endl;
@@ -109,22 +113,19 @@ void Server::receiveRequest(WebClient* client, short& events)
 void Server::sendResponse(WebClient* client, short& events)
 {
 	if (client->getResponse()->getBuffer().empty()) {
-		// A почему тут только формируется респонс, но не отправляется сразу
-		_handler.formResponse(client->getRequest(), client->getResponse());
-	}
-	else {
+		_handler.formResponse(client);
+	} else {
 		string buffer = client->getResponse()->getBuffer();
 		ssize_t sendBytes = send(client->getFd(), buffer.c_str(), buffer.size(), 0);
 
-		//		if (sendBytes <= 0) {
-		//			cout << "Client ended the _userfd!" << client->getFd() << endl;
-		//			return false;
-		//		}
+		if (sendBytes < 0) {
+			cout << "Client ended the userfd!" << client->getFd() << endl;
+			//					return false;
+		}
 
 		client->getResponse()->setBuffer(buffer.substr(sendBytes));
-		std::cout << "Sent " << sendBytes << " bytes to fd: " << client->getFd() << std::endl;
 		if (client->getResponse()->getBuffer().empty()) {
-			client->update();
+			client->clear();
 			events = POLLIN;
 		}
 	}

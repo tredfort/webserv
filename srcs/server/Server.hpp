@@ -37,7 +37,7 @@ private:
 	Env	_env;
 
 public:
-	Server(Config* config, Env &env);
+	explicit Server(Config* config, Env &env);
 
 	~Server();
 

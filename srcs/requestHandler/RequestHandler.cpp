@@ -6,91 +6,29 @@
 
 #define CGICODE -1
 
-RequestHandler::RequestHandler(Env & env) :
+RequestHandler::RequestHandler(Config* config, Env & env)
+	: config(config),
 	cgi(CGI(env))
 {
-	types["aac"] = "audio/aac";
-	types["abw"] = "application/x-abiword";
-	types["arc"] = "application/x-freearc";
-	types["avi"] = "video/x-msvideo";
-	types["azw"] = "application/vnd.amazon.ebook";
-	types["bin"] = "application/octet-stream";
-	types["bmp"] = "image/bmp";
-	types["bz"] = "application/x-bzip";
-	types["bz2"] = "application/x-bzip2";
-	types["cda"] = "application/x-cdf";
-	types["csh"] = "application/x-csh";
-	types["css"] = "text/css";
-	types["csv"] = "text/csv";
-	types["doc"] = "application/msword";
-	types["docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-	types["eot"] = "application/vnd.ms-fontobject";
-	types["epub"] = "application/epub+zip";
-	types["gz"] = "application/gzip";
-	types["gif"] = "image/gif";
-	types["htm"] = "text/html";
-	types["html"] = "text/html";
-	types["ico"] = "image/vnd.microsoft.icon";
-	types["ics"] = "text/calendar";
-	types["jar"] = "application/java-archive";
-	types["jpeg"] = "image/jpeg";
-	types["jpg"] = "image/jpeg";
-	types["js"] = "text/javascript";
-	types["json"] = "application/json";
-	types["jsonld"] = "application/ld+json";
-	types["mid"] = "audio/midi audio/x-midi";
-	types["midi"] = "audio/midi audio/x-midi";
-	types["mjs"] = "text/javascript";
-	types["mp3"] = "audio/mpeg";
-	types["mp4"] = "video/mp4";
-	types["mpeg"] = "video/mpeg";
-	types["mpkg"] = "application/vnd.apple.installer+xml";
-	types["odp"] = "application/vnd.oasis.opendocument.presentation";
-	types["ods"] = "application/vnd.oasis.opendocument.spreadsheet";
-	types["odt"] = "application/vnd.oasis.opendocument.text";
-	types["oga"] = "audio/ogg";
-	types["ogv"] = "video/ogg";
-	types["ogx"] = "application/ogg";
-	types["opus"] = "audio/opus";
-	types["otf"] = "font/otf";
-	types["png"] = "image/png";
-	types["pdf"] = "application/pdf";
-	types["php"] = "application/x-httpd-php";
-	types["ppt"] = "application/vnd.ms-powerpoint";
-	types["pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
-	types["rar"] = "application/vnd.rar";
-	types["rtf"] = "application/rtf";
-	types["sh"] = "application/x-sh";
-	types["svg"] = "image/svg+xml";
-	types["swf"] = "application/x-shockwave-flash";
-	types["tar"] = "application/x-tar";
-	types["tif"] = "image/tiff";
-	types["tiff"] = "image/tiff";
-	types["ts"] = "video/mp2t";
-	types["ttf"] = "font/ttf";
-	types["txt"] = "text/plain";
-	types["vsd"] = "application/vnd.visio";
-	types["wav"] = "audio/wav";
-	types["weba"] = "audio/webm";
-	types["webm"] = "video/webm";
-	types["webp"] = "image/webp";
-	types["woff"] = "font/woff";
-	types["woff2"] = "font/woff2";
-	types["xhtml"] = "application/xhtml+xml";
-	types["xls"] = "application/vnd.ms-excel";
-	types["xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-	types["xml"] = "application/xml if not readable from casual users";
-	types["xul"] = "application/vnd.mozilla.xul+xml";
-	types["zip"] = "application/zip";
-	types["3gp"] = "video/3gpp audio/3gpp if it doesn't contain video";
-	types["3g2"] = "video/3gpp2 audio/3gpp2 if it doesn't contain video";
-	types["7z"] = "application/x-7z-compressed";
+	fillTypes(_types);
 
 	//Временные переменные
-	locationPath = "resources/html_data";
-	autoindex = false;
-	index.push_back("index");
+	vector<string> index;
+	index.push_back("index.htm");
 	index.push_back("index.html");
+
+	vector<string> allowedMethods;
+	allowedMethods.push_back("GET");
+	allowedMethods.push_back("POST");
+	allowedMethods.push_back("DELETE");
+
+	_location.setAutoIndex(true);
+	_location.setClientMaxBodySize(10240);
+	_location.setIndex(index);
+	_location.setRoot("resources/html_data");
+	_location.parseAllowedMethods(allowedMethods);
+	//	cout << "***test***" << endl;
+	//	location.printConfig();
 }
 
 RequestHandler::~RequestHandler() { }
@@ -99,34 +37,19 @@ const std::string& RequestHandler::mimeType(const std::string& uri)
 {
 	std::string::size_type found = uri.find_last_of('.');
 	if (found == std::string::npos)
-		return types["txt"];
+		return _types["txt"];
 	std::string extension = uri.substr(found + 1);
-	if (types.find(extension) != types.end())
-		return types[extension];
-	return types["bin"];
-}
-
-int checkWhatsThere(std::string const& path, time_t* lastModified)
-{
-	struct stat file;
-
-	if (stat(path.c_str(), &file) == -1) {
-		return NOTEXIST;
-	}
-	if (S_ISREG(file.st_mode)) {
-		if (lastModified)
-			*lastModified = file.st_mtime;
-		return REGFILE;
-	}
-	return ISFOLDER;
+	if (_types.find(extension) != _types.end())
+		return _types[extension];
+	return _types["bin"];
 }
 
 void RequestHandler::readfile(Response* response, const std::string& path)
 {
-	string exеtention = path.substr(path.find_last_of("/\\") + 1);
-	string fileExеtention = path.substr(path.find_last_of(".") + 1);
+	string extension = path.substr(path.find_last_of("/\\") + 1);
+	string fileExtension = path.substr(path.find_last_of(".") + 1);
 
-	response->setContentType(mimeType(exеtention));
+	response->setContentType(mimeType(extension));
 	try {
 		response->setBody(FileReader::readFile(path));
 	} catch (FileReader::FileNotFoundException& ex) {
@@ -135,29 +58,47 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 	response->setStatus("200 OK");
 }
 
-bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod() == UNKNOWN_METHOD || request->getUri().empty() || request->getProtocol().empty(); }
-
-void RequestHandler::formResponse(Request* request, Response* response)
+bool RequestHandler::isBadRequest(Request* request) const
 {
+	return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty();
+}
+
+bool RequestHandler::isProtocolSupported(const string& protocol) const
+{
+	return protocol == "HTTP/1.1";
+}
+
+void RequestHandler::formResponse(WebClient* client)
+{
+	Response* response = client->getResponse();
+	Request* request = client->getRequest();
+//	LocationContext location = config->getLocationContext(client->getIp(), client->getPort(), request->getHeader("Host"), request->getUri()); // TODO:: get location
+	response->setProtocol("HTTP/1.1");
+
 	if (isBadRequest(request))
 		setResponseWithError(response, "400 Bad Request");
-	else if (request->getMethod() == POST)
+	else if (!isProtocolSupported(request->getProtocol()))
+		setResponseWithError(response, "505 HTTP Version Not Supported");
+	else if (!_location.getAllowedMethods().count(request->getMethod()))
+		setResponseWithError(response, "405 Method Not Allowed");
+	else if (request->getMethod() == "GET")
+		doGet(_location, request, response);
+	else if (request->getMethod() == "POST")
 		doPost(request, response);
-	else if (request->getMethod() == GET)
-		doGet(request, response);
-	else if (request->getMethod() == PUT)
-		doPut(request, response);
-	else if (request->getMethod() == DELETE)
+	else if (request->getMethod() == "DELETE")
 		doDelete(request, response);
+	else if (request->getMethod() == "PUT")
+		doPut(request, response);
+	else
+		setResponseWithError(response, "501 Not Implemented");
 	fillHeaders(response);
 }
 
 void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::doGet(Request* request, Response* response)
+void RequestHandler::doGet(const LocationContext& location, Request* request, Response* response)
 {
-	string pathToFile = locationPath + request->getUri();
-	response->setProtocol("HTTP/1.1");
+	string pathToFile = location.getRoot() + request->getUri();
 
 	// Check files extension
 	// CGI
@@ -193,12 +134,11 @@ void RequestHandler::doGet(Request* request, Response* response)
 
 bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pathToFile)
 {
-	time_t lastModified;
 	//	struct stat file;
 
-	for (std::vector<std::string>::iterator it = index.begin(); it != index.end(); it++) {
-		string indexFile = pathToFile + *it;
-		if (checkWhatsThere(indexFile, &lastModified) == REGFILE) {
+	for (int i = 0, size = _location.getIndex().size(); i < size; ++i) {
+		string indexFile = pathToFile + _location.getIndex()[i];
+		if (isFileExists(indexFile) && !isDirectory(indexFile)) {
 			//			if (stat(indexFile.c_str(), &file) == -1 || file.st_mode & S_IRGRP) {
 			//				cout << "Нет прав на чтение" << endl;
 			//				return false;
@@ -241,7 +181,7 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 				if (S_ISDIR(file_stats.st_mode))
 					body.append("/");
 				body.append("</a>                                               ");
-				checkWhatsThere(tmp_path, &lastModified);
+				lastModified = getFileModificationDate(tmp_path);
 				string date = string(ctime(&lastModified));
 				date = date.substr(0, date.size() - 1);
 				body.append(date + "                   ");
@@ -256,6 +196,7 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	}
 	body.append("</pre><hr></body>\n"
 				"</html>\n");
+	response->setBody(body);
 	response->setStatus("200 OK");
 }
 
@@ -279,8 +220,6 @@ void RequestHandler::setResponseWithError(Response* response, string errorMessag
 		  "        <h1>"
 		+ errorMessage
 		+ "</h1>\n"
-		  "        <br>\n"
-		  "        <img src=\"./errorPages/mem.gif\" height=\"413px\" width=\"504px\">\n"
 		  "    </div>\n"
 		  "</div>\n"
 		  "</body>\n"
@@ -302,5 +241,4 @@ void RequestHandler::fillHeaders(Response* response)
 	response->setHeader("Content-Length: " + std::to_string(response->getBody().size()) + "\r\n");
 	response->setHeader("Connection: keep-alive\r\n\r\n");
 	response->setBuffer(response->getHeaders() + response->getBody());
-	// cout << response->getBuffer() << endl;
 }

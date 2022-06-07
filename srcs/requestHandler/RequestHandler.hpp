@@ -14,12 +14,23 @@
 #include "../model/Request.hpp"
 #include "../model/Response.hpp"
 #include "../CGI/CGI.hpp"
+#include "../utils/constants.hpp"
+#include "../model/WebClient.hpp"
 #include "FileReader.hpp"
 #include "../utils/usings.hpp"
 
-class RequestHandler : public IRequestHandler {
-private:
-	map<string, string> types;
+class RequestHandler {
+public:
+	Config* config;
+  	map<string, string> _types;
+	//tmp
+	LocationContext _location;
+
+	RequestHandler(Config* config);
+
+	~RequestHandler();
+
+	void formResponse(WebClient* client);
 
 	vector<string> index;
 	bool autoindex;
@@ -30,6 +41,8 @@ private:
 	const string& mimeType(const string& uri);
 
 	bool isBadRequest(Request* request) const;
+
+	bool isProtocolSupported(const string& protocol) const;
 
 	void readfile(Response* response, const string&);
 
