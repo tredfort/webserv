@@ -17,7 +17,8 @@ int main(int argc, char** argv, char **env)
 
 	Config* config = new Config(configPath);
 	//	config->printConfig();
-	Server* app = new Server(config);
+	Env enviroment(env); 
+	Server* app = new Server(config, enviroment);
 
 	app->start();
 	delete app;
