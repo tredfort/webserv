@@ -16,16 +16,7 @@ int main(int argc, char** argv)
 		configPath = argv[1];
 
 	Config* config = new Config(configPath);
-	config->printConfig();
-//	LocationContext* lc = config->getLocationContext("127.0.0.1", "8080", "class", "/");
-//	cout << "founded Location" << endl;
-//	if (lc == NULL)
-//		cout << "not Location" << endl;
-//	else {
-//		lc->printConfig();
-//		return 0;
-//	}
-
+	//	config->printConfig();
 	Server* app = new Server(config);
 
 	app->start();
