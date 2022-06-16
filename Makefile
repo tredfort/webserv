@@ -2,9 +2,9 @@ NAME=webserv
 
 CC = clang++
 
-#CFLAGS = -Wall -Werror -Wextra -std=c++98 -g
+CFLAGS = -Wall -Werror -Wextra -std=c++98 -g
 # For UNIX
-CFLAGS = -Wall -Werror -Wextra -std=c++11 -g -DUNIX_OS
+#CFLAGS = -Wall -Werror -Wextra -std=c++11 -g -DUNIX_OS -lrt
 
 SRC = srcs/main.cpp \
 	srcs/server/Server.cpp \
@@ -60,5 +60,8 @@ fclean: clean
 
 format:
 	find . -iname srcs/*.hpp -o -iname srcs/*.cpp | xargs clang-format -i -style=file
+
+sandbox:
+
 
 re: fclean all
