@@ -3,8 +3,8 @@
 
 #include "../utils/utils.hpp"
 #include "LocationContext.hpp"
+#include <cstring>
 #include <fstream>
-#include <string>
 #include <utility>
 #include <vector>
 
@@ -39,7 +39,8 @@ public:
 	vector<pair<int, string> >& getErrorPages();
 	vector<string>& getIndex();
 	void printConfig();
-	vector<LocationContext> getLocationContexts();
+	vector<LocationContext*> getLocationContexts();
+	vector<LocationContext*> getLocationContexts(const string&);
 
 private:
 	bool _autoIndex; // false by default
@@ -48,7 +49,7 @@ private:
 	vector<string> _index;
 	vector<pair<string, int> > _listenes;
 	vector<string> _serverNames;
-	vector<LocationContext> _locations;
+	vector<LocationContext*> _locations;
 	void checkDefaultValues();
 };
 

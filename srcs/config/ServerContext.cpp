@@ -50,7 +50,7 @@ ServerContext::ServerContext(std::ifstream* fileStream)
 		case 6: // location
 			if (lineWords.size() < 3 || lineWords.size() > 4 || lineWords[lineWords.size() - 1] != "{")
 				fatalError("Failed to parse location directive!", 25);
-			_locations.push_back(LocationContext(lineWords, fileStream));
+			_locations.push_back(new LocationContext(lineWords, fileStream));
 			break;
 		case -1:
 		default:
@@ -139,12 +139,23 @@ void ServerContext::printConfig()
 	cout << endl;
 
 	cout << "locations:" << endl;
-	for (vector<LocationContext>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
+	for (vector<LocationContext*>::iterator it = _locations.begin(); it != _locations.end(); ++it) {
 		cout << endl;
-		it->printConfig();
+		(*it)->printConfig();
 	}
 	cout << endl;
 }
 vector<string> ServerContext::getServerNames() { return _serverNames; }
 
-vector<LocationContext> ServerContext::getLocationContexts() { return _locations; }
+vector<LocationContext*> ServerContext::getLocationContexts() { return _locations; }
+
+vector<LocationContext*> ServerContext::getLocationContexts(const string& pattern)
+{
+	vector<LocationContext*> result;
+
+	for (vector<LocationContext*>::iterator it = _locations.begin(), ite = _locations.end(); it != ite; ++it) {
+		if (startsWith(pattern, (*it)->getLocation()))
+			result.push_back(*it);
+	}
+	return result;
+}

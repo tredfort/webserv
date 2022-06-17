@@ -3,10 +3,9 @@
 
 std::string FileReader::readFile(const std::string& fileName)
 {
-
 	std::ifstream inFile(fileName, std::ios::binary);
-
 	std::string result;
+
 	inFile.seekg(0, std::ios::end);
 	try {
 		result.resize(inFile.tellg());
