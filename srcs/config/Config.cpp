@@ -160,7 +160,7 @@ ServerContext* Config::getServersByIpPortAndHost(const string& ip, const int& po
 	for (vector<ServerContext*>::iterator it = _servers.begin(), ite = _servers.end(); it != ite; ++it) {
 		const vector<pair<string, int> > listeners = (*it)->getListeners();
 		for (vector<pair<string, int> >::const_iterator itListeners = listeners.begin(), iteListeners = listeners.end(); itListeners != iteListeners; ++itListeners) {
-			if (itListeners->first == ip && itListeners->second == port) {
+			if ((itListeners->first.empty() || itListeners->first == "*" || itListeners->first == ip) && itListeners->second == port) {
 				possibleResults.push_back(*it);
 			}
 		}
