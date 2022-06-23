@@ -14,9 +14,9 @@ using std::fstream;
 using std::ifstream;
 using std::make_pair;
 using std::pair;
+using std::set;
 using std::string;
 using std::vector;
-using std::set;
 
 const string MAIN_CONTEXT_DIRECTIVES[] = { "error_page", "server", "" };
 
@@ -44,14 +44,13 @@ public:
 
 	const vector<pair<int, string> >& getErrorPages() const;
 	void setErrorPages(const vector<pair<int, string> >& errorPages);
-	void printfConfig();
 	set<pair<string, int> > getVirtualServersAddresses();
-	LocationContext* getLocationContext(const string& ip, const string& port, const string& host, const string& uri);
-	ServerContext* getServersByIpPortAndHost(const string& ip, const string& port, const string& host);
+	LocationContext* getLocationContext(const string& ip, const int& port, const string& host, const string& uri);
+	ServerContext* getServersByIpPortAndHost(const string& ip, const int& port, const string& host);
 
 private:
 	vector<pair<int, string> > _errorPages;
-	vector<ServerContext> _servers;
+	vector<ServerContext*> _servers;
 	ssize_t getParseLine(
 		ifstream* fileStream, bool isMainContext, vector<string>* wordsLine, const std::basic_string<char, std::char_traits<char>, std::allocator<char> >* CONTEXT_DIRECTIVE);
 	void checkDefaultValues();

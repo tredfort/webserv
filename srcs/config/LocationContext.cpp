@@ -68,14 +68,10 @@ LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstre
 			}
 			break;
 		case 8: // root
-			if (!isFileExists(lineWords[1]))
-				fatalError("Failed to find file specified in root directive!", 39);
 			_root = lineWords[1];
 			break;
 		case 9: // upload_path doesn't exist in nginx.
 			// From subject :Make the route able to accept uploaded files and configure where they should be saved.
-			if (!isFileExists(lineWords[1])) // TODO:: check for directory
-				fatalError("Failed to find file specified in upload_path directive!", 30);
 			_uploadPath = lineWords[1];
 			break;
 		case -1:
@@ -150,9 +146,7 @@ const string& LocationContext::getRoot() const { return _root; }
 void LocationContext::setRoot(const string& root) { _root = root; }
 LocationContext::LocationContext() { }
 
-const set<string> &LocationContext::getAllowedMethods() const {
-	return _allowedMethods;
-}
+const set<string>& LocationContext::getAllowedMethods() const { return _allowedMethods; }
 const string& LocationContext::getLocation() { return _location; }
 
 const string& LocationContext::getModificator() { return _modificator; }

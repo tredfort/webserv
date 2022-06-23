@@ -44,7 +44,7 @@ Config::Config(const string& filename)
 
 	fileStream.open(filename);
 	if (!fileStream.is_open()) {
-		fatalError("Failed to open fail", 10);
+		fatalError("Failed to open file", 10);
 	}
 	while ((directiveIndex = Config::getParsedLine(&fileStream, true, &lineWords, MAIN_CONTEXT_DIRECTIVES)) != -1) {
 		switch (directiveIndex) {
@@ -55,7 +55,7 @@ Config::Config(const string& filename)
 			if (lineWords.size() != 2 && trim(lineWords[1]) != "{") {
 				fatalError("Failed to parse server", 12);
 			}
-			_servers.push_back(ServerContext(&fileStream));
+			_servers.push_back(new ServerContext(&fileStream));
 			break;
 		case -1: // not found
 		default:
@@ -97,9 +97,6 @@ void Config::addErrorPage(const vector<string>& lineWords, vector<pair<int, std:
 
 	string pathToFile = lineWords[2];
 	std::ifstream errorPageFile(pathToFile);
-	if (!errorPageFile.is_open()) {
-		fatalError("Specified error page doesn't exist! not able to find a file with: " + pathToFile, 22);
-	}
 	errorPages.push_back(std::make_pair(code, pathToFile));
 }
 
@@ -128,10 +125,6 @@ void Config::parseClientMaxBodySize(string toParseValue, size_t* value)
 void Config::parseIndex(const vector<string>& lineWords, vector<string>& index)
 {
 	for (size_t i = 1; i < lineWords.size(); ++i) {
-		std::ifstream indexFile(lineWords[i]);
-		if (!indexFile.is_open()) {
-			fatalError("Failed to open file specified in index directive!", 26);
-		}
 		index.push_back(lineWords[i]);
 	}
 }
@@ -145,7 +138,7 @@ void Config::printConfig()
 	}
 	cout << endl;
 	for (size_t i = 0; i < _servers.size(); ++i) {
-		_servers[i].printConfig();
+		_servers[i]->printConfig();
 	}
 }
 
@@ -153,44 +146,56 @@ void Config::printConfig()
 set<pair<string, int> > Config::getVirtualServersAddresses()
 {
 	set<pair<string, int> > result;
-	for (vector<ServerContext>::iterator it = this->_servers.begin(), ite = this->_servers.end(); it != ite; ++it) {
-		for (vector<pair<string, int> >::const_iterator itL = it->getListeners().begin(), iteL = it->getListeners().end(); itL != iteL; ++itL) {
+	for (vector<ServerContext*>::iterator it = this->_servers.begin(), ite = this->_servers.end(); it != ite; ++it) {
+		for (vector<pair<string, int> >::const_iterator itL = (*it)->getListeners().begin(), iteL = (*it)->getListeners().end(); itL != iteL; ++itL) {
 			result.insert(pair<string, int>(itL->first, itL->second));
 		}
 	}
 	return result;
 }
 
-ServerContext* Config::getServersByIpPortAndHost(const string& ip, const string& port, const string& host)
+ServerContext* Config::getServersByIpPortAndHost(const string& ip, const int& port, const string& host)
 {
-	vector<ServerContext*> result;
-	for (vector<ServerContext>::iterator it = _servers.begin(), ite = _servers.end(); it != ite; ++it) {
-		const vector<pair<string, int> > listeners = it->getListeners();
+	vector<ServerContext*> possibleResults;
+	for (vector<ServerContext*>::iterator it = _servers.begin(), ite = _servers.end(); it != ite; ++it) {
+		const vector<pair<string, int> > listeners = (*it)->getListeners();
 		for (vector<pair<string, int> >::const_iterator itListeners = listeners.begin(), iteListeners = listeners.end(); itListeners != iteListeners; ++itListeners) {
-			if (itListeners->first == ip && std::to_string(itListeners->second) == port) {
-				result.push_back(&(*it));
+			if ((itListeners->first.empty() || itListeners->first == "*" || itListeners->first == ip) && itListeners->second == port) {
+				possibleResults.push_back(*it);
 			}
 		}
 	}
-	for (vector<ServerContext*>::iterator it = result.begin(), ite = result.end(); it != ite; ++it) {
+
+	for (vector<ServerContext*>::iterator it = possibleResults.begin(), ite = possibleResults.end(); it != ite; ++it) {
 		vector<string> serverNames = (*it)->getServerNames();
 		for (vector<string>::iterator itServerName = serverNames.begin(), iteServerName = serverNames.end(); itServerName != iteServerName; ++itServerName) {
 			if (*itServerName == host)
 				return *it;
 		}
 	}
-	return result.empty() ? NULL : result[0];
+
+	// if server wasn't found nginx just use first server
+	return possibleResults.empty() ? (*_servers.begin()) : possibleResults[0];
 }
 
 // TODO:: сдлеать так чтобы не было взаимоисключающих полей, решить на этапе парсинга
-LocationContext* Config::getLocationContext(const string& ip, const string& port, const string& host, const string& uri)
+/**
+ * Get single location by ip, port, host and uri
+ * @param ip
+ * @param port
+ * @param host
+ * @param uri
+ * @return location
+ */
+LocationContext* Config::getLocationContext(const string& ip, const int& port, const string& host, const string& uri)
 {
 	ServerContext* server = getServersByIpPortAndHost(ip, port, host);
 
-	vector<LocationContext> locations = server->getLocationContexts();
-	for (vector<LocationContext>::iterator it = locations.begin(), ite = locations.end(); it != ite; ++it) {
-		if (it->getLocation() == uri)
-			return &(*it);
+	vector<LocationContext*> locations = server->getLocationContexts(uri);
+	LocationContext* result = *locations.begin();
+	for (vector<LocationContext*>::iterator it = locations.begin(), ite = locations.end(); it != ite; ++it) {
+		if (result->getLocation().length() < (*it)->getLocation().length())
+			result = *it;
 	}
-	return NULL;
+	return result;
 }
