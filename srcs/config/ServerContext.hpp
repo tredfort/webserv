@@ -15,7 +15,7 @@ using std::string;
 using std::vector;
 
 const string SERVER_CONTEXT_DIRECTIVES[] = { //
-	"server_name", "listen", "autoindex", "client_max_body_size", "error_page", "index", "location", ""
+	"server_name", "listen", "autoindex", "client_max_body_size", "error_page", "index", "location", "root", ""
 };
 
 class LocationContext;
@@ -41,6 +41,10 @@ public:
 	void printConfig();
 	vector<LocationContext*> getLocationContexts();
 	vector<LocationContext*> getLocationContexts(const string&);
+	const string& getRoot();
+	void setRoot(string);
+
+	void setDefaultDirectives();
 
 private:
 	bool _autoIndex; // false by default
@@ -49,6 +53,7 @@ private:
 	vector<string> _index;
 	vector<pair<string, int> > _listenes;
 	vector<string> _serverNames;
+	string _root;
 	vector<LocationContext*> _locations;
 	void checkDefaultValues();
 };
