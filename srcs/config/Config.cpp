@@ -57,6 +57,9 @@ Config::Config(const string& filename)
 			}
 			_servers.push_back(new ServerContext(&fileStream));
 			break;
+		case 2: // root
+			Config::parseRoot(lineWords, _root);
+			break;
 		case -1: // not found
 		default:
 			fatalError("Unexpected value in switch!", 13);
@@ -65,6 +68,7 @@ Config::Config(const string& filename)
 	}
 	fileStream.close();
 	checkDefaultValues();
+	setDefaultDirectives();
 }
 
 void Config::checkDefaultValues()
@@ -127,6 +131,14 @@ void Config::parseIndex(const vector<string>& lineWords, vector<string>& index)
 	for (size_t i = 1; i < lineWords.size(); ++i) {
 		index.push_back(lineWords[i]);
 	}
+}
+
+void Config::parseRoot(const vector<string>& lineWords, string& root)
+{
+	if (lineWords.size() != 2) {
+		fatalError("Failed to parse root directive invalid number of arguments root!", 26);
+	}
+	root = lineWords[1];
 }
 
 void Config::printConfig()
@@ -198,4 +210,23 @@ LocationContext* Config::getLocationContext(const string& ip, const int& port, c
 			result = *it;
 	}
 	return result;
+}
+
+/**
+ * set default directives
+ * @param location
+ * @param server
+ */
+void Config::setDefaultDirectives()
+{
+	// set default values for root
+	if (_root.empty())
+		_root = ROOT_DEFAULT;
+	// set default values for servers
+	for (vector<ServerContext*>::iterator it = _servers.begin(), ite = _servers.end(); it != ite; ++it) {
+		if ((*it)->getRoot().empty())
+			(*it)->setRoot(_root);
+		// set default values for location
+		(*it)->setDefaultDirectives();
+	}
 }

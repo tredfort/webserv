@@ -52,6 +52,9 @@ ServerContext::ServerContext(std::ifstream* fileStream)
 				fatalError("Failed to parse location directive!", 25);
 			_locations.push_back(new LocationContext(lineWords, fileStream));
 			break;
+		case 7: // root
+			Config::parseRoot(lineWords, _root);
+			break;
 		case -1:
 		default:
 			fatalError("Unexpected value in switch!", 29);
@@ -158,4 +161,16 @@ vector<LocationContext*> ServerContext::getLocationContexts(const string& patter
 			result.push_back(*it);
 	}
 	return result;
+}
+
+const string& ServerContext::getRoot() { return _root; }
+
+void ServerContext::setRoot(string root) { _root = root; }
+
+void ServerContext::setDefaultDirectives()
+{
+	for (vector<LocationContext*>::iterator it = _locations.begin(), ite = _locations.end(); it != ite; ++it) {
+		if ((*it)->getRoot().empty())
+			(*it)->setRoot(_root);
+	}
 }

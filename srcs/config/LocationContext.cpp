@@ -68,7 +68,7 @@ LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstre
 			}
 			break;
 		case 8: // root
-			_root = lineWords[1];
+			Config::parseRoot(lineWords, _root);
 			break;
 		case 9: // upload_path doesn't exist in nginx.
 			// From subject :Make the route able to accept uploaded files and configure where they should be saved.
