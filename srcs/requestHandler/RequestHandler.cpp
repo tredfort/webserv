@@ -134,17 +134,22 @@ void RequestHandler::doGet(LocationContext* location, Request* request, Response
 /**
  * Берёт из локейшен индекс файлы, если находит файл то заносит его в ответ иначе возвращает false и ничего не делает
  * @param response
- * @param pathToFile
+ * @param pathToDir
  * @return Возвращает true, если файл успешно считан
  */
-bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pathToFile, const LocationContext* location)
+bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pathToDir, const LocationContext* location)
 {
 	const vector<string> indexes = location->getIndex();
 
 	for (vector<string>::const_iterator it = indexes.begin(), ite = indexes.end(); it != ite; ++it) {
-		string indexFile = pathToFile + *it;
-		if (isFileExists(indexFile) && !isDirectory(indexFile) && !access(indexFile.c_str(), W_OK)) {
-			readfile(response, indexFile);
+		string pathToIndexFile;
+		if ((*it)[0] == '/') {
+			pathToIndexFile = location->getRoot() + *it;
+		} else {
+			pathToIndexFile = pathToDir + *it;
+		}
+		if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
+			readfile(response, pathToIndexFile);
 			return true;
 		}
 	}
