@@ -13,7 +13,8 @@ void RequestParser::processRequest(Request* request)
 		request->setBuffer(request->getBuffer().substr(pos + 4));
 		vector<string> headers = ft_split(buffer, "\r\n");
 		parseStartLine(request, headers[0]);
-		fillHeaders(request, headers);
+		setHeaders(request, headers);
+		setHost(request);
 	}
 
 	if (request->getMethod() == "POST") {
@@ -41,7 +42,7 @@ void RequestParser::parseStartLine(Request* request, string& startLine)
 	request->setProtocol(startLine.substr(start));
 }
 
-void RequestParser::fillHeaders(Request* request, vector<string> headers)
+void RequestParser::setHeaders(Request* request, vector<string> headers)
 {
 	size_t pos;
 	for (size_t i = 1; i < headers.size(); ++i) {
@@ -65,6 +66,16 @@ void RequestParser::parseBodyHeaders(Request* request)
 	request->setBuffer(request->getBuffer().substr(pos + 4));
 
 	// TODO: написать этот метод
+}
+
+void RequestParser::setHost(Request* request) {
+	string host = request->getHeader("Host");
+	size_t pos = host.find(':');
+	if (pos != std::string::npos) {
+		request->setHost(host.substr(0, pos));
+	} else {
+		request->setHost(host);
+	}
 }
 
 bool RequestParser::isReadyRequest(Request* request)

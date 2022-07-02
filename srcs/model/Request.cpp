@@ -10,6 +10,8 @@ const string& Request::getUri() const { return _uri; }
 
 const string& Request::getProtocol() const { return _protocol; }
 
+const string& Request::getHost() const { return _host; }
+
 string Request::getHeader(const string& key) const
 {
 	map<string, string>::const_iterator it = _headers.find(key);
@@ -27,6 +29,8 @@ void Request::setProtocol(const string& protocol)
 	if (!strncmp(protocol.c_str(), "HTTP/", 5))
 		_protocol = protocol;
 }
+
+void Request::setHost(const string& host) { _host = host; }
 
 bool Request::emptyHeader() const { return _headers.empty(); }
 
