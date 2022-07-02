@@ -4,7 +4,7 @@ CC = clang++
 
 CFLAGS = -Wall -Werror -Wextra -std=c++98 -g
 # For UNIX
-#CFLAGS = -Wall -Werror -Wextra -std=c++11 -g -DUNIX_OS -lrt
+#CFLAGS = -Wall -Wextra -std=c++11 -g -DUNIX_OS -lrt -D_GLIBCXX_DEBUG
 
 SRC = srcs/main.cpp \
 	srcs/server/Server.cpp \

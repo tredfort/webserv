@@ -89,19 +89,13 @@ int getStringIndexFromArray(const string& str, const string* array)
 
 bool isOnlyDigits(const std::string& str) { return str.find_first_not_of("0123456789") == std::string::npos; }
 
-bool isFileExists(string& pathToFile)
-{
-	std::ifstream file(pathToFile);
-	return file.is_open();
-}
-
 bool isFileExists(const string& pathToFile)
 {
 	std::ifstream file(pathToFile);
 	return file.is_open();
 }
 
-bool isDirectory(string& pathToFile)
+bool isDirectory(const string& pathToFile)
 {
 	struct stat file;
 	return stat(pathToFile.c_str(), &file) != -1 && S_ISDIR(file.st_mode);
@@ -113,14 +107,13 @@ time_t getFileModificationDate(string& pathToFile)
 	return (stat(pathToFile.c_str(), &file) != -1) ? file.st_mtime : -1;
 }
 
-
-//void printStringVector(const set<string>& v)
+// void printStringVector(const set<string>& v)
 //{
 //	for (set<string>::const_iterator it = v.begin(); it != v.end(); ++it) {
 //		cout << *it << endl;
 //	}
 //	cout << endl;
-//}
+// }
 
 string removeAfter(string s, char c)
 {
@@ -137,3 +130,5 @@ bool isAccessRights(string& pathToFile)
 
 	return stat(pathToFile.c_str(), &file) != -1 && file.st_mode & S_IROTH;
 }
+
+bool startsWith(const string& str, const string& pattern) { return str.find(pattern.c_str(), 0, pattern.length()) != string::npos; }

@@ -31,14 +31,16 @@ private:
 	int _shmFd;
 	int* _sharedMemory;
 	map<string, string>	_cgiEnv;
+	string pathToFile;
+	string format;
 
 public:
-	CGI(Request & request, Config & config, Env &env);
+	CGI(Request & request, string path, Env &env);
 	~CGI();
 
 	// throws exceptions
-	CGIModel getPathToFileWithResult(string pathToExecFile);
-	bool isFileShouldBeHandleByCGI(string pathToExecFile) const;
+	CGIModel getPathToFileWithResult();
+	bool isFileShouldBeHandleByCGI() const;
 
 	struct FileDoesNotExist : public std::exception {
 		virtual const char* what(void) const throw();
@@ -54,18 +56,20 @@ public:
 
 private:
 	// throws exceptions
-	void initCgiEnv(Request & request, Config & config);
+	void initCgiEnv(Request & request, string path);
 	char **getEnvAsCstrArray() const;
 	string getFileFormat(string pathToExecFile) const;
 	CGIModel executeCgi(const ExecveArguments& execArguments);
-	char** configureArgumentsForComand(string pathToExecFile) const;
+	char** configureArgumentsForComand() const;
 	bool openOutputFile(std::string file);
 	void clearEverything(ExecveArguments* arguments);
 	CGIModel constructCGIResult(int code, bool isSuccessful, string path);
-	ExecveArguments* constructExecveArguments(string pathToExecFile);
+	ExecveArguments* constructExecveArguments();
 	string constructExecutablePath(string format);
 	bool createSharedMemory();
 	void freeSharedMemory();
+	string getPathInfo(string pathToExecFile) const;
+	string getPathToFile(string path);
 };
 
 #endif

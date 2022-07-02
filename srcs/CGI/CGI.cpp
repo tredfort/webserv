@@ -1,20 +1,20 @@
 #include "CGI.hpp"
 
-CGI::CGI(Request & request, Config & config, Env &env) :
+CGI::CGI(Request & request,  string path, Env &env) :
 	_cgiFolder("resources/html_data/cgi/"),
 	_env(env)
 {
-	supportedFileFormats["py"] = "python";
+	supportedFileFormats["py"] = "python3";
 	supportedFileFormats["php"] = "php";
-	initCgiEnv(request, config);
+	pathToFile = getPathToFile(path);
+	initCgiEnv(request, path);
 }
 
 CGI::~CGI() { }
 
-CGIModel	CGI::getPathToFileWithResult(string pathToExecFile) {
+CGIModel	CGI::getPathToFileWithResult() {
 
-	ExecveArguments *arguments = constructExecveArguments(pathToExecFile);
-	cout << endl << pathToExecFile << endl << endl;
+	ExecveArguments *arguments = constructExecveArguments();
 	if (!arguments)
 		return constructCGIResult(500, false, "");
 
@@ -23,13 +23,9 @@ CGIModel	CGI::getPathToFileWithResult(string pathToExecFile) {
 	return result;
 }
 
-bool	CGI::isFileShouldBeHandleByCGI(string pathToExecFile) const {
+bool	CGI::isFileShouldBeHandleByCGI() const {
 	// TODO: Переделай так как нужно проверять еще на индексные файлы
-	if (!isFileExists(pathToExecFile)) {
-		return false;
-	}
-	string format = getFileFormat(pathToExecFile);
-	if (supportedFileFormats.find(format) == supportedFileFormats.end()) {
+	if (pathToFile.empty() || !isFileExists(pathToFile)) {
 		return false;
 	}
 	// TODO: think of other cases
@@ -38,14 +34,15 @@ bool	CGI::isFileShouldBeHandleByCGI(string pathToExecFile) const {
 
 // Private methods
 
-void CGI::initCgiEnv(Request & request, Config & config) {
-	(void)config;
+void CGI::initCgiEnv(Request & request, string path) {
+	// посмотри какие хедеры можно еще добавить
 	_cgiEnv["REDIRECT_STATUS"] = "200";
 	_cgiEnv["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_cgiEnv["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_cgiEnv["SERVER_SOFTWARE"] = "Webserv/1.0";
 	_cgiEnv["REQUEST_METHOD"] = request.getMethod();
 	_cgiEnv["REQUEST_URI"] = request.getUri();
+	_cgiEnv["PATH_INFO"] = getPathInfo(path);
 	string header = request.getHeader("Authorization");
 	if (!header.empty()) {
 		_cgiEnv["AUTH_TYPE"] = header;
@@ -89,11 +86,43 @@ string	CGI::getFileFormat(string pathToExecFile) const {
 	return pathToExecFile.substr(++i, pathToExecFile.length());
 }
 
+string	CGI::getPathInfo(string fullPath) const {
+	if (fullPath.size() > pathToFile.size()) {
+		string pathInfo = fullPath.erase(0, pathToFile.size());
+		return pathInfo;
+	}
+	return "";
+}
+
+string	CGI::getPathToFile(string path) {
+	for (map<string, string>::iterator it = supportedFileFormats.begin(); it != supportedFileFormats.end(); it++) {
+		size_t i = 0;
+		string toFind = "." + it->first;
+		while (i != string::npos) {
+			if (i == 0) {
+				i = path.find(toFind, i);
+			} else {
+				i = path.find(toFind, i + toFind.size());
+			}
+			if (i != string::npos) {
+				unsigned int size = toFind.size();
+				cout << path[i + size] << endl;
+				if (path[i + size] == '\0' || path[i + size] == '?' || path[i + size] == '/') {
+					string pathToFile = path.erase(i + size, path.size());
+					format = it->second;
+					return pathToFile;
+				}
+			}
+		}
+	}
+	return "";
+}
+
 // TODO:: ADD env variable
-ExecveArguments *	CGI::constructExecveArguments(string pathToExecFile) {
+ExecveArguments *	CGI::constructExecveArguments() {
 
 	ExecveArguments *	arguments = new ExecveArguments[1];
-	char **args = configureArgumentsForComand(pathToExecFile);
+	char **args = configureArgumentsForComand();
 
 	if (!args) {
 		return NULL;
@@ -102,13 +131,7 @@ ExecveArguments *	CGI::constructExecveArguments(string pathToExecFile) {
 		clearEverything(arguments);
 		return NULL;
 	}
-	string format = getFileFormat(pathToExecFile);
-	map<string, string>::iterator fileFormat = supportedFileFormats.find(format);
-	if (fileFormat == supportedFileFormats.end()) {
-		clearEverything(arguments);
-		return NULL;
-	}
-	string pathToExecutable = constructExecutablePath(fileFormat->second);
+	string pathToExecutable = constructExecutablePath(format);
 	if (pathToExecutable.empty()) {
 		clearEverything(arguments);
 		return NULL;
@@ -164,15 +187,15 @@ bool	CGI::openOutputFile(std::string file) {
 	return (true);
 }
 
-char**	CGI::configureArgumentsForComand(string pathToExecFile) const {
+char**	CGI::configureArgumentsForComand() const {
 	char **args = NULL;
 
 	try {
 		args = new char*[3];
 		args[0] = new char[1];
 		args[0] = strcpy(args[0], "");
-		args[1] = new char[pathToExecFile.size() + 1];
-		args[1] = strcpy(args[1], pathToExecFile.c_str());
+		args[1] = new char[pathToFile.size() + 1];
+		args[1] = strcpy(args[1], pathToFile.c_str());
 		args[2] = NULL;
 	} catch (std::bad_alloc &e) {
 		std::cerr << "CGI, configureArgumentsForComand - " << e.what() << std::endl;

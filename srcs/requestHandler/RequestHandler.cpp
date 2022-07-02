@@ -58,21 +58,21 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 	response->setStatus("200 OK");
 }
 
-bool RequestHandler::isBadRequest(Request* request) const
-{
-	return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty();
-}
+bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty(); }
 
-bool RequestHandler::isProtocolSupported(const string& protocol) const
-{
-	return protocol == "HTTP/1.1";
-}
+bool RequestHandler::isProtocolSupported(const string& protocol) const { return protocol == "HTTP/1.1"; }
 
 void RequestHandler::formResponse(WebClient* client)
 {
 	Response* response = client->getResponse();
 	Request* request = client->getRequest();
-//	LocationContext location = config->getLocationContext(client->getIp(), client->getPort(), request->getHeader("Host"), request->getUri()); // TODO:: get location
+	LocationContext* location = config->getLocationContext(client->getIp(), client->getPort(), request->getHeader("Host"), request->getUri());
+	if (!location) {
+		location = &_location;
+	} else {
+		cout << "using not null location" << endl;
+		location->printConfig();
+	}
 	response->setProtocol("HTTP/1.1");
 
 	if (isBadRequest(request))
@@ -82,7 +82,7 @@ void RequestHandler::formResponse(WebClient* client)
 	else if (!_location.getAllowedMethods().count(request->getMethod()))
 		setResponseWithError(response, "405 Method Not Allowed");
 	else if (request->getMethod() == "GET")
-		doGet(_location, request, response);
+		doGet(location, request, response);
 	else if (request->getMethod() == "POST")
 		doPost(request, response);
 	else if (request->getMethod() == "DELETE")
@@ -96,54 +96,55 @@ void RequestHandler::formResponse(WebClient* client)
 
 void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::doGet(const LocationContext& location, Request* request, Response* response)
+void RequestHandler::doGet(LocationContext* location, Request* request, Response* response)
 {
-	string pathToFile = location.getRoot() + request->getUri();
+	string pathToFile = location->getRoot() + request->getUri();
 
 	// Check files extension
 	// CGI
 	// создать свой фаайл записать в него результат компиляции файла и прописать путь в path to file
 	string path = pathToFile;
-	CGI cgi(*request, *config, _env);
-	if (cgi.isFileShouldBeHandleByCGI(path)) {
+	CGI cgi(*request, path, _env);
+	if (cgi.isFileShouldBeHandleByCGI()) {
 		cout << "CGIIIIII" << endl;
-		CGIModel cgiResult = cgi.getPathToFileWithResult(path);
+		CGIModel cgiResult = cgi.getPathToFileWithResult();
 		if (cgiResult.isSuccess) {
 			readfile(response, cgiResult.pathToFile);
 		} else {
 			setResponseWithError(response, "500 Server Error");
 		}
 	} else {
-		if (!isFileExists(pathToFile)) {
-			//		readfile(response, "resources/html_data/errorPages/index.html");
-			setResponseWithError(response, "404 Not Found");
-		} else if (isDirectory(pathToFile)) {
-			if (pathToFile.back() != '/') {
-				pathToFile.append("/");
-			}
-			if (!fillBodyFromIndexFile(response, pathToFile) && !autoindex) {
-				setResponseWithError(response, "403 Forbidden");
-			} else if (autoindex) {
-				folderContents(response, pathToFile, request->getUri());
+		if (pathToFile.back() == '/' && isDirectory(pathToFile.substr(0, pathToFile.size() - 1))) {
+			const bool isBodyFilledFromIndexFile = fillBodyFromIndexFile(response, pathToFile, location);
+			if (!isBodyFilledFromIndexFile) {
+				if (location->isAutoIndex()) {
+					folderContents(response, pathToFile, request->getUri());
+				} else {
+					setResponseWithError(response, "403 Forbidden");
+				}
 			}
 			response->setContentType(mimeType(".html"));
-		} else {
+		} else if (isFileExists(pathToFile)) {
 			readfile(response, pathToFile);
+		} else {
+			setResponseWithError(response, "404 Not Found");
 		}
 	}
 }
 
-bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pathToFile)
+/**
+ * Берёт из локейшен индекс файлы, если находит файл то заносит его в ответ иначе возвращает false и ничего не делает
+ * @param response
+ * @param pathToFile
+ * @return Возвращает true, если файл успешно считан
+ */
+bool RequestHandler::fillBodyFromIndexFile(Response* response, const string& pathToFile, const LocationContext* location)
 {
-	//	struct stat file;
+	const vector<string> indexes = location->getIndex();
 
-	for (int i = 0, size = _location.getIndex().size(); i < size; ++i) {
-		string indexFile = pathToFile + _location.getIndex()[i];
-		if (isFileExists(indexFile) && !isDirectory(indexFile)) {
-			//			if (stat(indexFile.c_str(), &file) == -1 || file.st_mode & S_IRGRP) {
-			//				cout << "Нет прав на чтение" << endl;
-			//				return false;
-			//			}
+	for (vector<string>::const_iterator it = indexes.begin(), ite = indexes.end(); it != ite; ++it) {
+		string indexFile = pathToFile + *it;
+		if (isFileExists(indexFile) && !isDirectory(indexFile) && !access(indexFile.c_str(), W_OK)) {
 			readfile(response, indexFile);
 			return true;
 		}

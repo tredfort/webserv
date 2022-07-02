@@ -6,12 +6,12 @@
 #include <fstream>
 #include <iostream>
 #include <netinet/in.h>
+#include <set>
 #include <sstream>
 #include <string>
 #include <sys/poll.h>
 #include <sys/stat.h>
 #include <vector>
-#include <set>
 
 #include "usings.hpp"
 
@@ -49,7 +49,6 @@ template <class Container> typename Container::value_type getPopFront(Container 
 
 bool StarCmp(const char* str, const char* mask);
 
-
 in_port_t getValidPort(const string& port);
 
 void fatalError(const string& errorMessage, int errorCode = 1);
@@ -62,17 +61,15 @@ void fatalError(const string& errorMessage, int errorCode = 1);
  */
 int getStringIndexFromArray(const string& str, const string* array);
 
-bool isFileExists(string& pathToFile);
 bool isFileExists(const string& pathToFile);
 
-bool isDirectory(string& pathToFile);
+bool isDirectory(const string& pathToFile);
 
 time_t getFileModificationDate(string& pathToFile);
 
-//void printStringVector(const set<string>&);
+// void printStringVector(const set<string>&);
 
-template<class T>
-void printStringVector(T& v)
+template <class T> void printStringVector(T& v)
 {
 	for (typename T::const_iterator it = v.begin(); it != v.end(); ++it) {
 		cout << *it << endl;
@@ -83,5 +80,23 @@ void printStringVector(T& v)
 string removeAfter(string, char);
 
 bool isAccessRights(string& pathToFile);
+
+bool startsWith(const string&, const string&);
+
+/**
+ * Create new iteratable class where each element return true by filterFunction
+ * @tparam T container Type
+ * @param c container
+ * @return
+ */
+template <class T> T filter(T& c, bool (*function)(typename T::value_type))
+{
+	T result;
+	for (typename T::const_iterator it = c.begin(); it != c.end(); ++it) {
+		if (function(*it))
+			result.push_back(*it);
+	}
+	return result;
+}
 
 #endif

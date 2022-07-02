@@ -9,33 +9,31 @@
 #include <sys/socket.h>
 #include <vector>
 
+#include "../CGI/CGI.hpp"
 #include "../config/Config.hpp"
 #include "../interfaces/IRequestHandler.hpp"
 #include "../model/Request.hpp"
 #include "../model/Response.hpp"
-#include "../CGI/CGI.hpp"
-#include "../utils/constants.hpp"
 #include "../model/WebClient.hpp"
-#include "FileReader.hpp"
+#include "../utils/constants.hpp"
 #include "../utils/usings.hpp"
+#include "FileReader.hpp"
 
 class RequestHandler {
 public:
 	Config* config;
-  	map<string, string> _types;
-	//tmp
+	map<string, string> _types;
+	// tmp
 	LocationContext _location;
 
-	RequestHandler(Config* config, Env &env);
+	RequestHandler(Config* config, Env& env);
 
 	~RequestHandler();
 
 	void formResponse(WebClient* client);
 
-
 private:
 	vector<string> index;
-	bool autoindex;
 	string locationPath;
 	Env	_env;
 
@@ -49,17 +47,16 @@ private:
 
 	void folderContents(Response* response, const string&, const string&);
 
-	bool fillBodyFromIndexFile(Response* response, const string&);
+	bool fillBodyFromIndexFile(Response*, const string&, const LocationContext*);
 
 	void setResponseWithError(Response* response, string errorMessage);
 
 	void fillHeaders(Response* response);
 
 public:
-
 	void doPost(Request* request, Response* response);
 
-	void doGet(const LocationContext& location, Request* request, Response* response);
+	void doGet(LocationContext* location, Request* request, Response* response);
 
 	void doPut(Request* request, Response* response);
 
