@@ -2,10 +2,6 @@
 
 Env::Env(char** env) {
 	parseEnv(env);
-	for (unsigned int i = 0; i < _paths.size(); i++)
-		cout << _paths[i] << endl;
-	for (map<string, string>::iterator	it = _arguments.begin(); it != _arguments.end(); it++)
-		cout <<	it->first << " " << it->second << endl;
 }
 
 Env::~Env() { }

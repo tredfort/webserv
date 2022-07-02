@@ -1,11 +1,12 @@
 #include "CGI.hpp"
 
-CGI::CGI(Env & env) :
+CGI::CGI(Request & request, Config & config, Env &env) :
 	_cgiFolder("resources/html_data/cgi/"),
 	_env(env)
 {
 	supportedFileFormats["py"] = "python";
 	supportedFileFormats["php"] = "php";
+	initCgiEnv(request, config);
 }
 
 CGI::~CGI() { }
@@ -13,6 +14,7 @@ CGI::~CGI() { }
 CGIModel	CGI::getPathToFileWithResult(string pathToExecFile) {
 
 	ExecveArguments *arguments = constructExecveArguments(pathToExecFile);
+	cout << endl << pathToExecFile << endl << endl;
 	if (!arguments)
 		return constructCGIResult(500, false, "");
 
@@ -35,6 +37,48 @@ bool	CGI::isFileShouldBeHandleByCGI(string pathToExecFile) const {
 }
 
 // Private methods
+
+void CGI::initCgiEnv(Request & request, Config & config) {
+	(void)config;
+	_cgiEnv["REDIRECT_STATUS"] = "200";
+	_cgiEnv["GATEWAY_INTERFACE"] = "CGI/1.1";
+	_cgiEnv["SERVER_PROTOCOL"] = "HTTP/1.1";
+	_cgiEnv["SERVER_SOFTWARE"] = "Webserv/1.0";
+	_cgiEnv["REQUEST_METHOD"] = request.getMethod();
+	_cgiEnv["REQUEST_URI"] = request.getUri();
+	string header = request.getHeader("Authorization");
+	if (!header.empty()) {
+		_cgiEnv["AUTH_TYPE"] = header;
+	}
+	header = request.getHeader("Content-Type");
+	if (!header.empty()) {
+		_cgiEnv["CONTENT_TYPE"] = header;
+	}
+	_cgiEnv["SERVER_NAME"] = request.getHeader("Host");
+	
+	cout << endl << "           ENV              " << endl; 
+	for (map<string, string>::iterator i = _cgiEnv.begin(); i != _cgiEnv.end(); i++) {
+		cout << i->first << " = " << i->second << endl;
+	}
+	cout << endl << "                         " << endl; 
+	for (map<string, string>::iterator i = request._headers.begin(); i != request._headers.end(); i++) {
+		cout << i->first << " = " << i->second << endl;
+	}
+	cout << endl << "                         " << endl; 
+}
+
+char **CGI::getEnvAsCstrArray() const {
+	char	**env = new char*[_cgiEnv.size() + 1];
+	int	j = 0;
+	for (std::map<std::string, std::string>::const_iterator i = this->_cgiEnv.begin(); i != this->_cgiEnv.end(); i++) {
+		std::string	element = i->first + "=" + i->second;
+		env[j] = new char[element.size() + 1];
+		env[j] = strcpy(env[j], (const char*)element.c_str());
+		j++;
+	}
+	env[j] = NULL;
+	return env;
+}
 
 string	CGI::getFileFormat(string pathToExecFile) const {
 	unsigned long i = 100;
@@ -70,16 +114,9 @@ ExecveArguments *	CGI::constructExecveArguments(string pathToExecFile) {
 		return NULL;
 	}
 	arguments->args = args;
-	arguments->env = NULL;
+	arguments->env = getEnvAsCstrArray();
 	arguments->pathToExecutable = strdup(const_cast<char *>(pathToExecutable.c_str()));
-	// arguments->pathToExecutable = strdup("/usr/bin/python");
 	return arguments;
-}
-
-// TODO: This method
-char	**CGI::getEnvAsCstrArray() const {
-	// char	**env;
-	return NULL;
 }
 
 // если делай throw то не забывай чистить все говно

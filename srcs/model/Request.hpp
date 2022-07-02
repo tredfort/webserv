@@ -18,9 +18,9 @@ private:
 	string _uri;
 	string _protocol;
 	string _buffer;
-	map<string, string> _headers;
 
 public:
+	map<string, string> _headers;
 	Request();
 
 	~Request();

@@ -37,7 +37,7 @@ private:
 	vector<string> index;
 	bool autoindex;
 	string locationPath;
-	CGI		cgi;
+	Env	_env;
 
 	const string& mimeType(const string& uri);
 

@@ -5,6 +5,8 @@
 #include "../server/Env.hpp"
 #include "../utils/usings.hpp"
 #include "../utils/utils.hpp"
+#include "../model/Request.hpp"
+#include "../config/Config.hpp"
 #include "CGIModel.hpp"
 #include <exception>
 #include <fcntl.h>
@@ -28,9 +30,10 @@ private:
 	Env _env;
 	int _shmFd;
 	int* _sharedMemory;
+	map<string, string>	_cgiEnv;
 
 public:
-	CGI(Env& env);
+	CGI(Request & request, Config & config, Env &env);
 	~CGI();
 
 	// throws exceptions
@@ -51,6 +54,8 @@ public:
 
 private:
 	// throws exceptions
+	void initCgiEnv(Request & request, Config & config);
+	char **getEnvAsCstrArray() const;
 	string getFileFormat(string pathToExecFile) const;
 	CGIModel executeCgi(const ExecveArguments& execArguments);
 	char** configureArgumentsForComand(string pathToExecFile) const;
@@ -61,7 +66,6 @@ private:
 	string constructExecutablePath(string format);
 	bool createSharedMemory();
 	void freeSharedMemory();
-	char** getEnvAsCstrArray() const;
 };
 
 #endif

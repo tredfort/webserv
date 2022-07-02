@@ -6,9 +6,9 @@
 
 #define CGICODE -1
 
-RequestHandler::RequestHandler(Config* config, Env & env)
+RequestHandler::RequestHandler(Config* config, Env &env)
 	: config(config),
-	cgi(CGI(env))
+	_env(env)
 {
 	fillTypes(_types);
 
@@ -104,6 +104,7 @@ void RequestHandler::doGet(const LocationContext& location, Request* request, Re
 	// CGI
 	// создать свой фаайл записать в него результат компиляции файла и прописать путь в path to file
 	string path = pathToFile;
+	CGI cgi(*request, *config, _env);
 	if (cgi.isFileShouldBeHandleByCGI(path)) {
 		cout << "CGIIIIII" << endl;
 		CGIModel cgiResult = cgi.getPathToFileWithResult(path);
