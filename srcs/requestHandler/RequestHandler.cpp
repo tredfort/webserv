@@ -66,7 +66,7 @@ void RequestHandler::formResponse(WebClient* client)
 {
 	Response* response = client->getResponse();
 	Request* request = client->getRequest();
-	LocationContext* location = config->getLocationContext(client->getIp(), client->getPort(), request->getHeader("Host"), request->getUri());
+	LocationContext* location = config->getLocationContext(client->getIp(), client->getPort(), request->getHost(), request->getUri());
 	if (!location) {
 		location = &_location;
 	} else {

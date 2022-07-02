@@ -26,7 +26,9 @@ private:
 
 	void parseStartLine(Request* request, string& startLine);
 
-	void fillHeaders(Request* request, vector<string> headers);
+	void setHeaders(Request* request, vector<string> headers);
+
+	void setHost(Request* request);
 
 	void parseBodyHeaders(Request* request);
 };
