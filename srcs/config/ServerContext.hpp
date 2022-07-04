@@ -46,6 +46,9 @@ public:
 
 	void setDefaultDirectives();
 
+	void setErrorPagesFromConfigContext(vector<pair<int, string> >& vector1);
+	string getErrorPage(int code);
+
 private:
 	bool _autoIndex; // false by default
 	size_t _clientMaxBodySize; // client_max_body_size default 1m which is 10 ^ 6 bytes

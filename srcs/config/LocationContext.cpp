@@ -150,3 +150,23 @@ const set<string>& LocationContext::getAllowedMethods() const { return _allowedM
 const string& LocationContext::getLocation() { return _location; }
 
 const string& LocationContext::getModificator() { return _modificator; }
+
+string LocationContext::getErrorPage(int code)
+{
+	for (vector<pair<int, string> >::iterator it = _errorPages.begin(), ite = _errorPages.end(); it != ite; ++it) {
+		if (code == it->first) {
+			return it->second;
+		}
+	}
+	return "";
+}
+
+void LocationContext::setErrorPagesFromServerContext(vector<pair<int, string> >& serverErrorPages)
+{
+	for (vector<pair<int, string> >::iterator it = serverErrorPages.begin(), ite = serverErrorPages.end(); it != ite; ++it) {
+		const string configErrorPage = it->second;
+		if (this->getErrorPage(it->first).empty()) {
+			this->_errorPages.push_back(pair<int, string>(it->first, it->second));
+		}
+	}
+}

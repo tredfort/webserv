@@ -115,6 +115,16 @@ void ServerContext::addAddressListener(string value)
 }
 vector<pair<int, string> >& ServerContext::getErrorPages() { return _errorPages; }
 
+string ServerContext::getErrorPage(int code)
+{
+	for (vector<pair<int, string> >::iterator it = _errorPages.begin(), ite = _errorPages.end(); it != ite; ++it) {
+		if (code == it->first) {
+			return it->second;
+		}
+	}
+	return "";
+}
+
 vector<string>& ServerContext::getIndex() { return _index; }
 
 void ServerContext::printConfig()
@@ -172,5 +182,17 @@ void ServerContext::setDefaultDirectives()
 	for (vector<LocationContext*>::iterator it = _locations.begin(), ite = _locations.end(); it != ite; ++it) {
 		if ((*it)->getRoot().empty())
 			(*it)->setRoot(_root);
+
+		(*it)->setErrorPagesFromServerContext(_errorPages);
+	}
+}
+
+void ServerContext::setErrorPagesFromConfigContext(vector<pair<int, string> >& configErrorPages)
+{
+	for (vector<pair<int, string> >::iterator it = configErrorPages.begin(), ite = configErrorPages.end(); it != ite; ++it) {
+		const string configErrorPage = it->second;
+		if (this->getErrorPage(it->first).empty()) {
+			this->_errorPages.push_back(pair<int, string>(it->first, it->second));
+		}
 	}
 }

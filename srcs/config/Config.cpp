@@ -226,6 +226,7 @@ void Config::setDefaultDirectives()
 	for (vector<ServerContext*>::iterator it = _servers.begin(), ite = _servers.end(); it != ite; ++it) {
 		if ((*it)->getRoot().empty())
 			(*it)->setRoot(_root);
+		(*it)->setErrorPagesFromConfigContext(_errorPages);
 		// set default values for location
 		(*it)->setDefaultDirectives();
 	}
