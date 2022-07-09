@@ -75,12 +75,13 @@ void RequestHandler::formResponse(WebClient* client)
 		location->printConfig();
 	}
 	response->setProtocol("HTTP/1.1");
+	const set<string> allowedMethods = location->getAllowedMethods();
 
 	if (isBadRequest(request))
 		setResponseWithError(response, "400 Bad Request", location->getErrorPagePath(400));
 	else if (!isProtocolSupported(request->getProtocol()))
 		setResponseWithError(response, "505 HTTP Version Not Supported", location->getErrorPagePath(505));
-	else if (!_location.getAllowedMethods().count(request->getMethod()))
+	else if (!allowedMethods.empty() && !location->getAllowedMethods().count(request->getMethod()))
 		setResponseWithError(response, "405 Method Not Allowed", location->getErrorPagePath(405));
 	else if (request->getMethod() == "GET")
 		doGet(location, request, response);
