@@ -21,6 +21,7 @@ std::string FileReader::readFile(const std::string& fileName)
 FileReader::~FileReader() { }
 
 FileReader::FileReader() { }
+
 #ifdef UNIX_OS
 FileReader::FileNotFoundException::~FileNotFoundException() { }
 

@@ -16,7 +16,7 @@ using std::string;
 
 #define HOSTNAME "localhost"
 
-#define ROOT_DEFAULT "html"
+#define ROOT_DEFAULT "html/"
 
 void fillTypes(map<string, string>& types);
 

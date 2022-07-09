@@ -130,7 +130,7 @@ void LocationContext::printConfig()
 	printStringVector(_allowedMethods);
 
 	cout << endl << "Error pages:" << endl;
-	for (vector<pair<int, string> >::iterator it = _errorPages.begin(); it != _errorPages.end(); ++it) {
+	for (map<int, string>::iterator it = _errorPages.begin(); it != _errorPages.end(); ++it) {
 		cout << it->first << " " << it->second << endl;
 	}
 	cout << endl;
@@ -150,3 +150,35 @@ const set<string>& LocationContext::getAllowedMethods() const { return _allowedM
 const string& LocationContext::getLocation() { return _location; }
 
 const string& LocationContext::getModificator() { return _modificator; }
+
+string LocationContext::getErrorPagePath(int code)
+{
+	string fileName = getErrorPage(code);
+	if (fileName.empty())
+		return "";
+	if (fileName[0] == '/') {
+		return getRoot() + fileName;
+	} else {
+		return getRoot() + getLocation() + fileName;
+	}
+}
+
+string LocationContext::getErrorPage(int code)
+{
+	for (map<int, string>::iterator it = _errorPages.begin(), ite = _errorPages.end(); it != ite; ++it) {
+		if (code == it->first) {
+			return it->second;
+		}
+	}
+	return "";
+}
+
+void LocationContext::setErrorPagesFromServerContext(map<int, string>& serverErrorPages)
+{
+	for (map<int, string>::iterator it = serverErrorPages.begin(), ite = serverErrorPages.end(); it != ite; ++it) {
+		const string configErrorPage = it->second;
+		if (this->getErrorPage(it->first).empty()) {
+			this->_errorPages[it->first] = it->second;
+		}
+	}
+}

@@ -52,10 +52,11 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 	response->setContentType(mimeType(extension));
 	try {
 		response->setBody(FileReader::readFile(path));
+		response->setStatus("200 OK");
 	} catch (FileReader::FileNotFoundException& ex) {
-		response->setBody(FileReader::readFile("resources/errorPages/404.html"));
+		response->setBody(getErrorPageBody("ДОБРО ПОЖАЛОВАТЬ НА СТРАНИЦУ 404!"));
+		response->setStatus("404 NOT FOUND");
 	}
-	response->setStatus("200 OK");
 }
 
 bool RequestHandler::isBadRequest(Request* request) const { return request->getMethod().empty() || request->getUri().empty() || request->getProtocol().empty(); }
@@ -76,11 +77,11 @@ void RequestHandler::formResponse(WebClient* client)
 	response->setProtocol("HTTP/1.1");
 
 	if (isBadRequest(request))
-		setResponseWithError(response, "400 Bad Request");
+		setResponseWithError(response, "400 Bad Request", location->getErrorPagePath(400));
 	else if (!isProtocolSupported(request->getProtocol()))
-		setResponseWithError(response, "505 HTTP Version Not Supported");
+		setResponseWithError(response, "505 HTTP Version Not Supported", location->getErrorPagePath(505));
 	else if (!_location.getAllowedMethods().count(request->getMethod()))
-		setResponseWithError(response, "405 Method Not Allowed");
+		setResponseWithError(response, "405 Method Not Allowed", location->getErrorPagePath(405));
 	else if (request->getMethod() == "GET")
 		doGet(location, request, response);
 	else if (request->getMethod() == "POST")
@@ -90,7 +91,7 @@ void RequestHandler::formResponse(WebClient* client)
 	else if (request->getMethod() == "PUT")
 		doPut(request, response);
 	else
-		setResponseWithError(response, "501 Not Implemented");
+		setResponseWithError(response, "501 Not Implemented", location->getErrorPagePath(501));
 	fillHeaders(response);
 }
 
@@ -110,7 +111,7 @@ void RequestHandler::doGet(LocationContext* location, Request* request, Response
 		if (cgiResult.isSuccess) {
 			readfile(response, cgiResult.pathToFile);
 		} else {
-			setResponseWithError(response, "500 Server Error");
+			setResponseWithError(response, "500 Server Error", location->getErrorPagePath(500));
 		}
 	} else {
 		if (pathToFile.back() == '/' && isDirectory(pathToFile.substr(0, pathToFile.size() - 1))) {
@@ -119,14 +120,14 @@ void RequestHandler::doGet(LocationContext* location, Request* request, Response
 				if (location->isAutoIndex()) {
 					folderContents(response, pathToFile, request->getUri());
 				} else {
-					setResponseWithError(response, "403 Forbidden");
+					setResponseWithError(response, "403 Forbidden", location->getErrorPagePath(403));
 				}
 			}
 			response->setContentType(mimeType(".html"));
 		} else if (isFileExists(pathToFile)) {
 			readfile(response, pathToFile);
 		} else {
-			setResponseWithError(response, "404 Not Found");
+			setResponseWithError(response, "404 Not Found", location->getErrorPagePath(404));
 		}
 	}
 }
@@ -210,29 +211,25 @@ void RequestHandler::doPut(Request* request, Response* response) { (void)request
 
 void RequestHandler::doDelete(Request* request, Response* response) { (void)request, (void)response; }
 
-void RequestHandler::setResponseWithError(Response* response, string errorMessage)
+void RequestHandler::setResponseWithError(Response* response, string errorMessage, string pathToErrorPage)
 {
-	string body = "<html>\n"
-				  "<head>\n"
-				  "    <title>Error "
-		+ errorMessage
-		+ "</title>\n"
-		  "    <link href=\"https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap\" rel=\"stylesheet\">\n"
-		  "    <link rel=\"stylesheet\" href=\"./errorPages/style.css\">\n"
-		  "</head>\n"
-		  "<body>\n"
-		  "<div id=\"main\">\n"
-		  "    <div class=\"msg\">\n"
-		  "        <h1>"
-		+ errorMessage
-		+ "</h1>\n"
-		  "    </div>\n"
-		  "</div>\n"
-		  "</body>\n"
-		  "</html>\n";
+	if (!pathToErrorPage.empty()) {
+		string extension = pathToErrorPage.substr(pathToErrorPage.find_last_of("/\\") + 1);
+		string fileExtension = pathToErrorPage.substr(pathToErrorPage.find_last_of(".") + 1);
 
-	response->setBody(body);
-	response->setContentType(mimeType(".html"));
+		response->setContentType(mimeType(extension));
+		string body;
+		try {
+			body = FileReader::readFile(pathToErrorPage);
+		} catch (FileReader::FileNotFoundException& ex) {
+			body = "";
+		}
+		response->setBody(body.empty() ? getErrorPageBody(errorMessage) : body);
+	} else {
+		string body = getErrorPageBody(errorMessage);
+		response->setBody(body);
+		response->setContentType(mimeType(".html"));
+	}
 	response->setStatus(errorMessage);
 }
 
