@@ -36,7 +36,7 @@ public:
 	void addPortListener(string value);
 	void addAddressPortListener(string value);
 	void addAddressListener(string value);
-	vector<pair<int, string> >& getErrorPages();
+	map<int, string>& getErrorPages();
 	vector<string>& getIndex();
 	void printConfig();
 	vector<LocationContext*> getLocationContexts();
@@ -46,13 +46,13 @@ public:
 
 	void setDefaultDirectives();
 
-	void setErrorPagesFromConfigContext(vector<pair<int, string> >& vector1);
+	void setErrorPagesFromConfigContext(map<int, string>& vector1);
 	string getErrorPage(int code);
 
 private:
 	bool _autoIndex; // false by default
 	size_t _clientMaxBodySize; // client_max_body_size default 1m which is 10 ^ 6 bytes
-	vector<pair<int, string> > _errorPages; // specify default page from our server
+	map<int, string> _errorPages; // specify default page from our server
 	vector<string> _index;
 	vector<pair<string, int> > _listenes;
 	vector<string> _serverNames;

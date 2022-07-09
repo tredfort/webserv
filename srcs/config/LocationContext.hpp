@@ -43,7 +43,7 @@ public:
 	void setRoot(const string& root);
 
 	const set<string>& getAllowedMethods() const;
-	void setErrorPagesFromServerContext(vector<pair<int, string> >& serverErrorPages);
+	void setErrorPagesFromServerContext(map<int, string>& serverErrorPages);
 	string getErrorPage(int code);
 	string getErrorPagePath(int code);
 
@@ -53,7 +53,7 @@ private:
 	string _cgiExtension;
 	string _cgiPath;
 	size_t _clientMaxBodySize;
-	vector<pair<int, string> > _errorPages;
+	map<int, string> _errorPages;
 	vector<string> _index;
 	pair<int, string> _redirect;
 	string _root;

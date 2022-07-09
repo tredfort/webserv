@@ -38,26 +38,23 @@ public:
 	void printConfig();
 
 	// common methods for all context of the config
-	static void addErrorPage(const vector<string>& lineWords, vector<pair<int, std::string> >& errorPages);
+	static void addErrorPage(const vector<string>& lineWords, map<int, std::string>& errorPages);
 	static void parseClientMaxBodySize(string, size_t*);
 	static void parseIndex(const vector<string>& lineWords, vector<string>& index);
 	static void parseRoot(const vector<string>& lineWords, string& root);
 	static ssize_t getParsedLine(ifstream* fileStream, bool isMainContext, vector<string>* lineWords, const string* CONTEXT_DIRECTIVE);
 
-	vector<pair<int, string> >& getErrorPages();
-	void setErrorPages(vector<pair<int, string> >& errorPages);
+	map<int, string>& getErrorPages();
+	void setErrorPages(map<int, string>& errorPages);
 	set<pair<string, int> > getVirtualServersAddresses();
 	LocationContext* getLocationContext(const string& ip, const int& port, const string& host, const string& uri);
 	ServerContext* getServersByIpPortAndHost(const string& ip, const int& port, const string& host);
 
 private:
-	vector<pair<int, string> > _errorPages;
+	map<int, string> _errorPages;
 	vector<ServerContext*> _servers;
 	string _root;
-	ssize_t getParseLine(
-		ifstream* fileStream, bool isMainContext, vector<string>* wordsLine, const std::basic_string<char, std::char_traits<char>, std::allocator<char> >* CONTEXT_DIRECTIVE);
 	void checkDefaultValues();
-	void setDefaultDirectives(LocationContext* location, ServerContext* server);
 	void setDefaultDirectives();
 };
 

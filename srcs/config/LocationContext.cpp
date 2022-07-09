@@ -130,7 +130,7 @@ void LocationContext::printConfig()
 	printStringVector(_allowedMethods);
 
 	cout << endl << "Error pages:" << endl;
-	for (vector<pair<int, string> >::iterator it = _errorPages.begin(); it != _errorPages.end(); ++it) {
+	for (map<int, string>::iterator it = _errorPages.begin(); it != _errorPages.end(); ++it) {
 		cout << it->first << " " << it->second << endl;
 	}
 	cout << endl;
@@ -165,7 +165,7 @@ string LocationContext::getErrorPagePath(int code)
 
 string LocationContext::getErrorPage(int code)
 {
-	for (vector<pair<int, string> >::iterator it = _errorPages.begin(), ite = _errorPages.end(); it != ite; ++it) {
+	for (map<int, string>::iterator it = _errorPages.begin(), ite = _errorPages.end(); it != ite; ++it) {
 		if (code == it->first) {
 			return it->second;
 		}
@@ -173,12 +173,12 @@ string LocationContext::getErrorPage(int code)
 	return "";
 }
 
-void LocationContext::setErrorPagesFromServerContext(vector<pair<int, string> >& serverErrorPages)
+void LocationContext::setErrorPagesFromServerContext(map<int, string>& serverErrorPages)
 {
-	for (vector<pair<int, string> >::iterator it = serverErrorPages.begin(), ite = serverErrorPages.end(); it != ite; ++it) {
+	for (map<int, string>::iterator it = serverErrorPages.begin(), ite = serverErrorPages.end(); it != ite; ++it) {
 		const string configErrorPage = it->second;
 		if (this->getErrorPage(it->first).empty()) {
-			this->_errorPages.push_back(pair<int, string>(it->first, it->second));
+			this->_errorPages[it->first] = it->second;
 		}
 	}
 }

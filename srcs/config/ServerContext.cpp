@@ -113,11 +113,11 @@ void ServerContext::addAddressListener(string value)
 	// TODO:: somehow validate it, or keep until bind
 	_listenes.push_back(make_pair(value, 80));
 }
-vector<pair<int, string> >& ServerContext::getErrorPages() { return _errorPages; }
+map<int, string>& ServerContext::getErrorPages() { return _errorPages; }
 
 string ServerContext::getErrorPage(int code)
 {
-	for (vector<pair<int, string> >::iterator it = _errorPages.begin(), ite = _errorPages.end(); it != ite; ++it) {
+	for (map<int, string>::iterator it = _errorPages.begin(), ite = _errorPages.end(); it != ite; ++it) {
 		if (code == it->first) {
 			return it->second;
 		}
@@ -146,7 +146,7 @@ void ServerContext::printConfig()
 	cout << endl;
 
 	cout << endl << "Error pages:" << endl;
-	for (vector<pair<int, string> >::iterator it = _errorPages.begin(); it != _errorPages.end(); ++it) {
+	for (map<int, string>::iterator it = _errorPages.begin(); it != _errorPages.end(); ++it) {
 		cout << it->first << " " << it->second << endl;
 	}
 	cout << endl;
@@ -187,12 +187,12 @@ void ServerContext::setDefaultDirectives()
 	}
 }
 
-void ServerContext::setErrorPagesFromConfigContext(vector<pair<int, string> >& configErrorPages)
+void ServerContext::setErrorPagesFromConfigContext(map<int, string>& configErrorPages)
 {
-	for (vector<pair<int, string> >::iterator it = configErrorPages.begin(), ite = configErrorPages.end(); it != ite; ++it) {
+	for (map<int, string>::iterator it = configErrorPages.begin(), ite = configErrorPages.end(); it != ite; ++it) {
 		const string configErrorPage = it->second;
 		if (this->getErrorPage(it->first).empty()) {
-			this->_errorPages.push_back(pair<int, string>(it->first, it->second));
+			this->_errorPages[it->first] = it->second;
 		}
 	}
 }
