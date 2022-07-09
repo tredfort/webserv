@@ -1,10 +1,9 @@
 #include "Server.hpp"
 
-Server::Server(Config* config, Env &env)
-	:
-	_config(config),
-	_handler(RequestHandler(config, env)),
-	_env(env)
+Server::Server(Config* config, Env& env)
+	: _config(config)
+	, _handler(RequestHandler(config, env))
+	, _env(env)
 {
 }
 
@@ -17,13 +16,12 @@ void Server::createSockets()
 		Socket* socket = new Socket(AF_INET, SOCK_STREAM, 0);
 		socket->setAddressReuseMode();
 		socket->setNonblockMode();
-//		socket->bindToAddress("127.0.0.1", "8080");
+		//		socket->bindToAddress("127.0.0.1", "8080");
 		socket->bindToAddress(it->first, it->second);
 		socket->startListening(SOMAXCONN);
 		_sockets.push_back(socket);
 		_pollfds.push_back(fillPollfd(socket->getSockfd(), POLLIN));
 	}
-
 }
 
 /**
@@ -97,8 +95,9 @@ void Server::receiveRequest(WebClient* client, short& events)
 	cout << "User listens:" << endl;
 	ssize_t bytesRead = recv(client->getFd(), buffer, sizeof(buffer), 0);
 
-	if (bytesRead < 0) {
+	if (bytesRead <= 0) {
 		cout << "Client ended the userfd!" << client->getFd() << endl;
+		events = POLLHUP;
 		//		return false;
 	}
 

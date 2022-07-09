@@ -151,6 +151,18 @@ const string& LocationContext::getLocation() { return _location; }
 
 const string& LocationContext::getModificator() { return _modificator; }
 
+string LocationContext::getErrorPagePath(int code)
+{
+	string fileName = getErrorPage(code);
+	if (fileName.empty())
+		return "";
+	if (fileName[0] == '/') {
+		return getRoot() + fileName;
+	} else {
+		return getRoot() + getLocation() + fileName;
+	}
+}
+
 string LocationContext::getErrorPage(int code)
 {
 	for (vector<pair<int, string> >::iterator it = _errorPages.begin(), ite = _errorPages.end(); it != ite; ++it) {

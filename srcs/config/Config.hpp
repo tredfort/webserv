@@ -38,14 +38,14 @@ public:
 	void printConfig();
 
 	// common methods for all context of the config
-	static void addErrorPage(const vector<string>& lineWords, vector<pair<int, std::string> > errorPages);
+	static void addErrorPage(const vector<string>& lineWords, vector<pair<int, std::string> >& errorPages);
 	static void parseClientMaxBodySize(string, size_t*);
 	static void parseIndex(const vector<string>& lineWords, vector<string>& index);
 	static void parseRoot(const vector<string>& lineWords, string& root);
 	static ssize_t getParsedLine(ifstream* fileStream, bool isMainContext, vector<string>* lineWords, const string* CONTEXT_DIRECTIVE);
 
-	const vector<pair<int, string> >& getErrorPages() const;
-	void setErrorPages(const vector<pair<int, string> >& errorPages);
+	vector<pair<int, string> >& getErrorPages();
+	void setErrorPages(vector<pair<int, string> >& errorPages);
 	set<pair<string, int> > getVirtualServersAddresses();
 	LocationContext* getLocationContext(const string& ip, const int& port, const string& host, const string& uri);
 	ServerContext* getServersByIpPortAndHost(const string& ip, const int& port, const string& host);

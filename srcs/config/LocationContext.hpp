@@ -44,6 +44,8 @@ public:
 
 	const set<string>& getAllowedMethods() const;
 	void setErrorPagesFromServerContext(vector<pair<int, string> >& serverErrorPages);
+	string getErrorPage(int code);
+	string getErrorPagePath(int code);
 
 private:
 	set<string> _allowedMethods;
@@ -59,7 +61,6 @@ private:
 	string _location;
 	string _modificator;
 	void checkDefaultValues();
-	string getErrorPage(int code);
 };
 
 #endif

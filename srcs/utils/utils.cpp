@@ -132,3 +132,25 @@ bool isAccessRights(string& pathToFile)
 }
 
 bool startsWith(const string& str, const string& pattern) { return str.find(pattern.c_str(), 0, pattern.length()) != string::npos; }
+
+string getErrorPageBody(string errorMessage)
+{
+	return "<html>\n"
+		   "<head>\n"
+		   "    <title>Error "
+		+ errorMessage
+		+ "</title>\n"
+		  "    <link href=\"https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap\" rel=\"stylesheet\">\n"
+		  "    <link rel=\"stylesheet\" href=\"./errorPages/style.css\">\n"
+		  "</head>\n"
+		  "<body>\n"
+		  "<div id=\"main\">\n"
+		  "    <div class=\"msg\">\n"
+		  "        <h1>"
+		+ errorMessage
+		+ "</h1>\n"
+		  "    </div>\n"
+		  "</div>\n"
+		  "</body>\n"
+		  "</html>\n";
+}
