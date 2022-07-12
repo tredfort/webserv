@@ -46,6 +46,7 @@ public:
 	void setErrorPagesFromServerContext(map<int, string>& serverErrorPages);
 	string getErrorPage(int code);
 	string getErrorPagePath(int code);
+	pair<int, string> getRedirect();
 
 private:
 	set<string> _allowedMethods;

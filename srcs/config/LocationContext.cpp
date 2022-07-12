@@ -182,3 +182,4 @@ void LocationContext::setErrorPagesFromServerContext(map<int, string>& serverErr
 		}
 	}
 }
+pair<int, string> LocationContext::getRedirect() { return _redirect; }

@@ -32,7 +32,7 @@ public:
 
 	void setBuffer(const string& buffer);
 
-	void setHeader(const string& header);
+	void pushHeader(const string& header);
 
 	void setBody(const string& body);
 

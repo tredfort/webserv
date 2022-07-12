@@ -12,7 +12,7 @@ void Response::setContentType(const string& contentType) { _contentType = conten
 
 void Response::setBuffer(const string& buffer) { _buffer = buffer; }
 
-void Response::setHeader(const string& header) { _headers.append(header); }
+void Response::pushHeader(const string& header) { _headers.append(header); }
 
 void Response::setBody(const string& body) { _body = body; }
 

@@ -68,7 +68,8 @@ void RequestParser::parseBodyHeaders(Request* request)
 	// TODO: написать этот метод
 }
 
-void RequestParser::setHost(Request* request) {
+void RequestParser::setHost(Request* request)
+{
 	string host = request->getHeader("Host");
 	size_t pos = host.find(':');
 	if (pos != std::string::npos) {

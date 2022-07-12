@@ -65,7 +65,10 @@ void RequestHandler::formResponse(WebClient* client)
 		setResponseWithError(response, "505 HTTP Version Not Supported", location->getErrorPagePath(505));
 	else if (!allowedMethods.empty() && !location->getAllowedMethods().count(request->getMethod()))
 		setResponseWithError(response, "405 Method Not Allowed", location->getErrorPagePath(405));
-	else if (request->getMethod() == "GET")
+	else if (location->getRedirect().first != 0) {
+		response->setBody(getRedirectPageBody(location->getRedirect()));
+		response->setStatus(std::to_string(location->getRedirect().first));
+	} else if (request->getMethod() == "GET")
 		doGet(location, request, response);
 	else if (request->getMethod() == "POST")
 		doPost(request, response);
@@ -75,7 +78,7 @@ void RequestHandler::formResponse(WebClient* client)
 		doPut(request, response);
 	else
 		setResponseWithError(response, "501 Not Implemented", location->getErrorPagePath(501));
-	fillHeaders(response);
+	fillHeaders(response, location);
 }
 
 void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
@@ -214,15 +217,19 @@ void RequestHandler::setResponseWithError(Response* response, string errorMessag
 	response->setStatus(errorMessage);
 }
 
-void RequestHandler::fillHeaders(Response* response)
+void RequestHandler::fillHeaders(Response* response, LocationContext* location)
 {
 	time_t currentTime = time(0);
 	char* time = ctime(&currentTime);
-	response->setHeader(response->getProtocol() + " " + response->getStatus() + "\r\n");
-	response->setHeader("Server: webserv/2.0\r\n");
-	response->setHeader("Date: " + string(time, strlen(time) - 1) + "\r\n");
-	response->setHeader("Content-Type: " + response->getContentType() + "\r\n");
-	response->setHeader("Content-Length: " + std::to_string(response->getBody().size()) + "\r\n");
-	response->setHeader("Connection: keep-alive\r\n\r\n");
+	pair<int, string> redirect = location->getRedirect();
+	response->pushHeader(response->getProtocol() + " " + response->getStatus() + "\r\n");
+	response->pushHeader("Server: webserv/2.0\r\n");
+	response->pushHeader("Date: " + string(time, strlen(time) - 1) + "\r\n");
+	response->pushHeader("Content-Type: " + response->getContentType() + "\r\n");
+	response->pushHeader("Content-Length: " + std::to_string(response->getBody().size()) + "\r\n");
+	if (redirect.first != 0) {
+		response->pushHeader("Location: " + redirect.second + "\r\n");
+	}
+	response->pushHeader("Connection: keep-alive\r\n\r\n");
 	response->setBuffer(response->getHeaders() + response->getBody());
 }

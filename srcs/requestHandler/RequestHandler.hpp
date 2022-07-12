@@ -51,7 +51,7 @@ private:
 
 	void setResponseWithError(Response* response, string errorMessage, string pathToErrorPage);
 
-	void fillHeaders(Response* response);
+	void fillHeaders(Response* response, LocationContext*);
 
 public:
 	void doPost(Request* request, Response* response);
