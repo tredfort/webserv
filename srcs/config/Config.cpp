@@ -88,7 +88,7 @@ Config::~Config()
  * Common method for all error pages in main, server and location contexts
  * @param errorPage string which contain error code in int and substring with pathToFile
  */
-void Config::addErrorPage(const vector<string>& lineWords, vector<pair<int, std::string> > errorPages)
+void Config::addErrorPage(const vector<string>& lineWords, map<int, std::string>& errorPages)
 {
 	if (lineWords.size() != 3) {
 		fatalError("Value of key _error_page isn't correct!", 20);
@@ -100,13 +100,12 @@ void Config::addErrorPage(const vector<string>& lineWords, vector<pair<int, std:
 	}
 
 	string pathToFile = lineWords[2];
-	std::ifstream errorPageFile(pathToFile);
-	errorPages.push_back(std::make_pair(code, pathToFile));
+	errorPages[code] = pathToFile;
 }
 
-const vector<pair<int, string> >& Config::getErrorPages() const { return _errorPages; }
+map<int, string>& Config::getErrorPages() { return _errorPages; }
 
-void Config::setErrorPages(const vector<pair<int, string> >& errorPages) { _errorPages = errorPages; }
+void Config::setErrorPages(map<int, string>& errorPages) { _errorPages = errorPages; }
 
 void Config::parseClientMaxBodySize(string toParseValue, size_t* value)
 {
@@ -145,7 +144,7 @@ void Config::printConfig()
 {
 	cout << "GLOBAL CONFIG" << endl;
 	cout << endl << "Error pages:" << endl;
-	for (vector<pair<int, string> >::iterator it = _errorPages.begin(); it != _errorPages.end(); ++it) {
+	for (map<int, string>::iterator it = _errorPages.begin(); it != _errorPages.end(); ++it) {
 		cout << it->first << " " << it->second << endl;
 	}
 	cout << endl;
@@ -226,6 +225,7 @@ void Config::setDefaultDirectives()
 	for (vector<ServerContext*>::iterator it = _servers.begin(), ite = _servers.end(); it != ite; ++it) {
 		if ((*it)->getRoot().empty())
 			(*it)->setRoot(_root);
+		(*it)->setErrorPagesFromConfigContext(_errorPages);
 		// set default values for location
 		(*it)->setDefaultDirectives();
 	}

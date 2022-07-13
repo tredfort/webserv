@@ -99,4 +99,6 @@ template <class T> T filter(T& c, bool (*function)(typename T::value_type))
 	return result;
 }
 
+string getErrorPageBody(string errorMessage);
+
 #endif

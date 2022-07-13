@@ -5,15 +5,15 @@
 #include "Config.hpp"
 #include "ServerContext.hpp"
 #include <fstream>
+#include <set>
 #include <string>
 #include <utility>
-#include <set>
 
 using std::make_pair;
 using std::pair;
+using std::set;
 using std::string;
 using std::vector;
-using std::set;
 
 const string LOCATION_CONTEXT_DIRECTIVES[]
 	= { "allowed_method", "autoindex", "cgi_extension", "cgi_path", "client_max_body_size", "error_page", "index", "redirect", "root", "upload_path", "" };
@@ -42,7 +42,10 @@ public:
 	const string& getRoot() const;
 	void setRoot(const string& root);
 
-	const set<string> &getAllowedMethods() const;
+	const set<string>& getAllowedMethods() const;
+	void setErrorPagesFromServerContext(map<int, string>& serverErrorPages);
+	string getErrorPage(int code);
+	string getErrorPagePath(int code);
 
 private:
 	set<string> _allowedMethods;
@@ -50,7 +53,7 @@ private:
 	string _cgiExtension;
 	string _cgiPath;
 	size_t _clientMaxBodySize;
-	vector<pair<int, string> > _errorPages;
+	map<int, string> _errorPages;
 	vector<string> _index;
 	pair<int, string> _redirect;
 	string _root;

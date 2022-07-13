@@ -17,6 +17,7 @@ private:
 	string _method;
 	string _uri;
 	string _protocol;
+	string _host;
 	string _buffer;
 
 public:
@@ -31,6 +32,8 @@ public:
 
 	const string& getProtocol() const;
 
+	const string& getHost() const;
+
 	const string& getBuffer() const;
 
 	void setMethod(const string& method);
@@ -38,6 +41,8 @@ public:
 	void setUri(const string&);
 
 	void setProtocol(const string&);
+
+	void setHost(const string&);
 
 	void setBuffer(const string& buffer);
 

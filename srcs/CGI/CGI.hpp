@@ -32,30 +32,18 @@ private:
 	int* _sharedMemory;
 	map<string, string>	_cgiEnv;
 	string pathToFile;
+	string query;
 	string format;
+	LocationContext* _location;
 
 public:
-	CGI(Request & request, string path, Env &env);
+	CGI(Request & request, string path, Env &env, LocationContext* location);
 	~CGI();
 
-	// throws exceptions
 	CGIModel getPathToFileWithResult();
 	bool isFileShouldBeHandleByCGI() const;
 
-	struct FileDoesNotExist : public std::exception {
-		virtual const char* what(void) const throw();
-	};
-
-	struct FileFormatUnsupported : public std::exception {
-		virtual const char* what(void) const throw();
-	};
-
-	struct BadAlloc : public std::exception {
-		virtual const char* what(void) const throw();
-	};
-
 private:
-	// throws exceptions
 	void initCgiEnv(Request & request, string path);
 	char **getEnvAsCstrArray() const;
 	string getFileFormat(string pathToExecFile) const;

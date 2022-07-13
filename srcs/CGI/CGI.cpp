@@ -1,11 +1,15 @@
 #include "CGI.hpp"
 
-CGI::CGI(Request & request,  string path, Env &env) :
+CGI::CGI(Request & request, string uri, Env &env, LocationContext* location) :
 	_cgiFolder("resources/html_data/cgi/"),
-	_env(env)
+	_env(env),
+	_location(location)
 {
 	supportedFileFormats["py"] = "python3";
 	supportedFileFormats["php"] = "php";
+	vector<string> result = ft_split(uri, "?");
+	string path = result[0];
+	query = result.size() == 2 ? result[1] : "";
 	pathToFile = getPathToFile(path);
 	initCgiEnv(request, path);
 }
@@ -28,14 +32,18 @@ bool	CGI::isFileShouldBeHandleByCGI() const {
 	if (pathToFile.empty() || !isFileExists(pathToFile)) {
 		return false;
 	}
-	// TODO: think of other cases
-	return true;
+	string format = getFileFormat(pathToFile);
+	for (map<string, string>::const_iterator it = supportedFileFormats.begin(); it != supportedFileFormats.end(); it++) {
+		if (it->first == format) {
+			return true;
+		}
+	}
+	return false;
 }
 
 // Private methods
 
 void CGI::initCgiEnv(Request & request, string path) {
-	// посмотри какие хедеры можно еще добавить
 	_cgiEnv["REDIRECT_STATUS"] = "200";
 	_cgiEnv["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_cgiEnv["SERVER_PROTOCOL"] = "HTTP/1.1";
@@ -43,25 +51,28 @@ void CGI::initCgiEnv(Request & request, string path) {
 	_cgiEnv["REQUEST_METHOD"] = request.getMethod();
 	_cgiEnv["REQUEST_URI"] = request.getUri();
 	_cgiEnv["PATH_INFO"] = getPathInfo(path);
+	_cgiEnv["PATH_TRANSLATED"] = getPathInfo(path);
+	_cgiEnv["QUERY_STRING"] = query;
 	string header = request.getHeader("Authorization");
 	if (!header.empty()) {
 		_cgiEnv["AUTH_TYPE"] = header;
+		_cgiEnv["REMOTE_IDENT"] = header;
+		_cgiEnv["REMOTE_USER"] = header;
 	}
 	header = request.getHeader("Content-Type");
 	if (!header.empty()) {
 		_cgiEnv["CONTENT_TYPE"] = header;
 	}
 	_cgiEnv["SERVER_NAME"] = request.getHeader("Host");
-	
-	cout << endl << "           ENV              " << endl; 
-	for (map<string, string>::iterator i = _cgiEnv.begin(); i != _cgiEnv.end(); i++) {
-		cout << i->first << " = " << i->second << endl;
-	}
-	cout << endl << "                         " << endl; 
-	for (map<string, string>::iterator i = request._headers.begin(); i != request._headers.end(); i++) {
-		cout << i->first << " = " << i->second << endl;
-	}
-	cout << endl << "                         " << endl; 
+	// cout << endl << "           ENV              " << endl; 
+	// for (map<string, string>::iterator i = _cgiEnv.begin(); i != _cgiEnv.end(); i++) {
+	// 	cout << i->first << " = " << i->second << endl;
+	// }
+	// cout << endl << "                         " << endl; 
+	// for (map<string, string>::iterator i = request._headers.begin(); i != request._headers.end(); i++) {
+	// 	cout << i->first << " = " << i->second << endl;
+	// }
+	// cout << endl << "                         " << endl; 
 }
 
 char **CGI::getEnvAsCstrArray() const {
@@ -115,10 +126,21 @@ string	CGI::getPathToFile(string path) {
 			}
 		}
 	}
+	const vector<string> indexes = _location->getIndex();
+	for (vector<string>::const_iterator it = indexes.begin(), ite = indexes.end(); it != ite; ++it) {
+		string pathToIndexFile;
+		if ((*it)[0] == '/') {
+			pathToIndexFile = _location->getRoot() + *it;
+		} else {
+			pathToIndexFile = path + *it;
+		}
+		if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
+			return pathToIndexFile;
+		}
+	}
 	return "";
 }
 
-// TODO:: ADD env variable
 ExecveArguments *	CGI::constructExecveArguments() {
 
 	ExecveArguments *	arguments = new ExecveArguments[1];
@@ -142,7 +164,6 @@ ExecveArguments *	CGI::constructExecveArguments() {
 	return arguments;
 }
 
-// если делай throw то не забывай чистить все говно
 CGIModel CGI::executeCgi(const ExecveArguments & execArguments) {
 	
 	int saveStdout = dup(STDOUT_FILENO);
@@ -239,16 +260,4 @@ bool		CGI::createSharedMemory() {
 void		CGI::freeSharedMemory() {
 	shm_unlink("exec_result");
 	close(_shmFd);
-}
-
-const char *	CGI::FileDoesNotExist::what() const throw() {
-	return "class - CGI\nmethod - getPathToFileWithResult\n Error - File with path: - does not exist";
-}
-
-const char *	CGI::FileFormatUnsupported::what() const throw() {
-	return "class - CGI\nmethod - getPathToFileWithResult\n Error - File Format is unsupported";
-}
-
-const char *	CGI::BadAlloc::what() const throw() {
-	return "class - CGI\nmethod - getPathToFileWithResult\n Error - Can't allocate memory for cgi";
 }
