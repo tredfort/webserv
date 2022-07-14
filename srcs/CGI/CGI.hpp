@@ -5,6 +5,8 @@
 #include "../server/Env.hpp"
 #include "../utils/usings.hpp"
 #include "../utils/utils.hpp"
+#include "../model/Request.hpp"
+#include "../config/Config.hpp"
 #include "CGIModel.hpp"
 #include <exception>
 #include <fcntl.h>
@@ -28,40 +30,34 @@ private:
 	Env _env;
 	int _shmFd;
 	int* _sharedMemory;
+	map<string, string>	_cgiEnv;
+	string pathToFile;
+	string query;
+	string format;
+	LocationContext* _location;
 
 public:
-	CGI(Env& env);
+	CGI(Request & request, string path, Env &env, LocationContext* location);
 	~CGI();
 
-	// throws exceptions
-	CGIModel getPathToFileWithResult(string pathToExecFile);
-	bool isFileShouldBeHandleByCGI(string pathToExecFile) const;
-
-	struct FileDoesNotExist : public std::exception {
-		virtual const char* what(void) const throw();
-	};
-
-	struct FileFormatUnsupported : public std::exception {
-		virtual const char* what(void) const throw();
-	};
-
-	struct BadAlloc : public std::exception {
-		virtual const char* what(void) const throw();
-	};
+	CGIModel getPathToFileWithResult();
+	bool isFileShouldBeHandleByCGI() const;
 
 private:
-	// throws exceptions
+	void initCgiEnv(Request & request, string path);
+	char **getEnvAsCstrArray() const;
 	string getFileFormat(string pathToExecFile) const;
 	CGIModel executeCgi(const ExecveArguments& execArguments);
-	char** configureArgumentsForComand(string pathToExecFile) const;
+	char** configureArgumentsForComand() const;
 	bool openOutputFile(std::string file);
 	void clearEverything(ExecveArguments* arguments);
 	CGIModel constructCGIResult(int code, bool isSuccessful, string path);
-	ExecveArguments* constructExecveArguments(string pathToExecFile);
+	ExecveArguments* constructExecveArguments();
 	string constructExecutablePath(string format);
 	bool createSharedMemory();
 	void freeSharedMemory();
-	char** getEnvAsCstrArray() const;
+	string getPathInfo(string pathToExecFile) const;
+	string getPathToFile(string path);
 };
 
 #endif

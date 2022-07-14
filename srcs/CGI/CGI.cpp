@@ -1,18 +1,24 @@
 #include "CGI.hpp"
 
-CGI::CGI(Env & env) :
+CGI::CGI(Request & request, string uri, Env &env, LocationContext* location) :
 	_cgiFolder("resources/html_data/cgi/"),
-	_env(env)
+	_env(env),
+	_location(location)
 {
-	supportedFileFormats["py"] = "python";
+	supportedFileFormats["py"] = "python3";
 	supportedFileFormats["php"] = "php";
+	vector<string> result = ft_split(uri, "?");
+	string path = result[0];
+	query = result.size() == 2 ? result[1] : "";
+	pathToFile = getPathToFile(path);
+	initCgiEnv(request, path);
 }
 
 CGI::~CGI() { }
 
-CGIModel	CGI::getPathToFileWithResult(string pathToExecFile) {
+CGIModel	CGI::getPathToFileWithResult() {
 
-	ExecveArguments *arguments = constructExecveArguments(pathToExecFile);
+	ExecveArguments *arguments = constructExecveArguments();
 	if (!arguments)
 		return constructCGIResult(500, false, "");
 
@@ -21,20 +27,66 @@ CGIModel	CGI::getPathToFileWithResult(string pathToExecFile) {
 	return result;
 }
 
-bool	CGI::isFileShouldBeHandleByCGI(string pathToExecFile) const {
+bool	CGI::isFileShouldBeHandleByCGI() const {
 	// TODO: Переделай так как нужно проверять еще на индексные файлы
-	if (!isFileExists(pathToExecFile)) {
+	if (pathToFile.empty() || !isFileExists(pathToFile)) {
 		return false;
 	}
-	string format = getFileFormat(pathToExecFile);
-	if (supportedFileFormats.find(format) == supportedFileFormats.end()) {
-		return false;
+	string format = getFileFormat(pathToFile);
+	for (map<string, string>::const_iterator it = supportedFileFormats.begin(); it != supportedFileFormats.end(); it++) {
+		if (it->first == format) {
+			return true;
+		}
 	}
-	// TODO: think of other cases
-	return true;
+	return false;
 }
 
 // Private methods
+
+void CGI::initCgiEnv(Request & request, string path) {
+	_cgiEnv["REDIRECT_STATUS"] = "200";
+	_cgiEnv["GATEWAY_INTERFACE"] = "CGI/1.1";
+	_cgiEnv["SERVER_PROTOCOL"] = "HTTP/1.1";
+	_cgiEnv["SERVER_SOFTWARE"] = "Webserv/1.0";
+	_cgiEnv["REQUEST_METHOD"] = request.getMethod();
+	_cgiEnv["REQUEST_URI"] = request.getUri();
+	_cgiEnv["PATH_INFO"] = getPathInfo(path);
+	_cgiEnv["PATH_TRANSLATED"] = getPathInfo(path);
+	_cgiEnv["QUERY_STRING"] = query;
+	string header = request.getHeader("Authorization");
+	if (!header.empty()) {
+		_cgiEnv["AUTH_TYPE"] = header;
+		_cgiEnv["REMOTE_IDENT"] = header;
+		_cgiEnv["REMOTE_USER"] = header;
+	}
+	header = request.getHeader("Content-Type");
+	if (!header.empty()) {
+		_cgiEnv["CONTENT_TYPE"] = header;
+	}
+	_cgiEnv["SERVER_NAME"] = request.getHeader("Host");
+	// cout << endl << "           ENV              " << endl; 
+	// for (map<string, string>::iterator i = _cgiEnv.begin(); i != _cgiEnv.end(); i++) {
+	// 	cout << i->first << " = " << i->second << endl;
+	// }
+	// cout << endl << "                         " << endl; 
+	// for (map<string, string>::iterator i = request._headers.begin(); i != request._headers.end(); i++) {
+	// 	cout << i->first << " = " << i->second << endl;
+	// }
+	// cout << endl << "                         " << endl; 
+}
+
+char **CGI::getEnvAsCstrArray() const {
+	char	**env = new char*[_cgiEnv.size() + 1];
+	int	j = 0;
+	for (std::map<std::string, std::string>::const_iterator i = this->_cgiEnv.begin(); i != this->_cgiEnv.end(); i++) {
+		std::string	element = i->first + "=" + i->second;
+		env[j] = new char[element.size() + 1];
+		env[j] = strcpy(env[j], (const char*)element.c_str());
+		j++;
+	}
+	env[j] = NULL;
+	return env;
+}
 
 string	CGI::getFileFormat(string pathToExecFile) const {
 	unsigned long i = 100;
@@ -45,11 +97,54 @@ string	CGI::getFileFormat(string pathToExecFile) const {
 	return pathToExecFile.substr(++i, pathToExecFile.length());
 }
 
-// TODO:: ADD env variable
-ExecveArguments *	CGI::constructExecveArguments(string pathToExecFile) {
+string	CGI::getPathInfo(string fullPath) const {
+	if (fullPath.size() > pathToFile.size()) {
+		string pathInfo = fullPath.erase(0, pathToFile.size());
+		return pathInfo;
+	}
+	return "";
+}
+
+string	CGI::getPathToFile(string path) {
+	for (map<string, string>::iterator it = supportedFileFormats.begin(); it != supportedFileFormats.end(); it++) {
+		size_t i = 0;
+		string toFind = "." + it->first;
+		while (i != string::npos) {
+			if (i == 0) {
+				i = path.find(toFind, i);
+			} else {
+				i = path.find(toFind, i + toFind.size());
+			}
+			if (i != string::npos) {
+				unsigned int size = toFind.size();
+				cout << path[i + size] << endl;
+				if (path[i + size] == '\0' || path[i + size] == '?' || path[i + size] == '/') {
+					string pathToFile = path.erase(i + size, path.size());
+					format = it->second;
+					return pathToFile;
+				}
+			}
+		}
+	}
+	const vector<string> indexes = _location->getIndex();
+	for (vector<string>::const_iterator it = indexes.begin(), ite = indexes.end(); it != ite; ++it) {
+		string pathToIndexFile;
+		if ((*it)[0] == '/') {
+			pathToIndexFile = _location->getRoot() + *it;
+		} else {
+			pathToIndexFile = path + *it;
+		}
+		if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
+			return pathToIndexFile;
+		}
+	}
+	return "";
+}
+
+ExecveArguments *	CGI::constructExecveArguments() {
 
 	ExecveArguments *	arguments = new ExecveArguments[1];
-	char **args = configureArgumentsForComand(pathToExecFile);
+	char **args = configureArgumentsForComand();
 
 	if (!args) {
 		return NULL;
@@ -58,31 +153,17 @@ ExecveArguments *	CGI::constructExecveArguments(string pathToExecFile) {
 		clearEverything(arguments);
 		return NULL;
 	}
-	string format = getFileFormat(pathToExecFile);
-	map<string, string>::iterator fileFormat = supportedFileFormats.find(format);
-	if (fileFormat == supportedFileFormats.end()) {
-		clearEverything(arguments);
-		return NULL;
-	}
-	string pathToExecutable = constructExecutablePath(fileFormat->second);
+	string pathToExecutable = constructExecutablePath(format);
 	if (pathToExecutable.empty()) {
 		clearEverything(arguments);
 		return NULL;
 	}
 	arguments->args = args;
-	arguments->env = NULL;
+	arguments->env = getEnvAsCstrArray();
 	arguments->pathToExecutable = strdup(const_cast<char *>(pathToExecutable.c_str()));
-	// arguments->pathToExecutable = strdup("/usr/bin/python");
 	return arguments;
 }
 
-// TODO: This method
-char	**CGI::getEnvAsCstrArray() const {
-	// char	**env;
-	return NULL;
-}
-
-// если делай throw то не забывай чистить все говно
 CGIModel CGI::executeCgi(const ExecveArguments & execArguments) {
 	
 	int saveStdout = dup(STDOUT_FILENO);
@@ -127,15 +208,15 @@ bool	CGI::openOutputFile(std::string file) {
 	return (true);
 }
 
-char**	CGI::configureArgumentsForComand(string pathToExecFile) const {
+char**	CGI::configureArgumentsForComand() const {
 	char **args = NULL;
 
 	try {
 		args = new char*[3];
 		args[0] = new char[1];
 		args[0] = strcpy(args[0], "");
-		args[1] = new char[pathToExecFile.size() + 1];
-		args[1] = strcpy(args[1], pathToExecFile.c_str());
+		args[1] = new char[pathToFile.size() + 1];
+		args[1] = strcpy(args[1], pathToFile.c_str());
 		args[2] = NULL;
 	} catch (std::bad_alloc &e) {
 		std::cerr << "CGI, configureArgumentsForComand - " << e.what() << std::endl;
@@ -179,16 +260,4 @@ bool		CGI::createSharedMemory() {
 void		CGI::freeSharedMemory() {
 	shm_unlink("exec_result");
 	close(_shmFd);
-}
-
-const char *	CGI::FileDoesNotExist::what() const throw() {
-	return "class - CGI\nmethod - getPathToFileWithResult\n Error - File with path: - does not exist";
-}
-
-const char *	CGI::FileFormatUnsupported::what() const throw() {
-	return "class - CGI\nmethod - getPathToFileWithResult\n Error - File Format is unsupported";
-}
-
-const char *	CGI::BadAlloc::what() const throw() {
-	return "class - CGI\nmethod - getPathToFileWithResult\n Error - Can't allocate memory for cgi";
 }

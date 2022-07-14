@@ -35,7 +35,7 @@ public:
 private:
 	vector<string> index;
 	string locationPath;
-	CGI cgi;
+	Env	_env;
 
 	const string& mimeType(const string& uri);
 

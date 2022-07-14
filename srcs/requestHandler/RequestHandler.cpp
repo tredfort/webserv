@@ -6,29 +6,11 @@
 
 #define CGICODE -1
 
-RequestHandler::RequestHandler(Config* config, Env& env)
-	: config(config)
-	, cgi(CGI(env))
+RequestHandler::RequestHandler(Config* config, Env &env)
+	: config(config),
+	_env(env)
 {
 	fillTypes(_types);
-
-	//Временные переменные
-	vector<string> index;
-	index.push_back("index.htm");
-	index.push_back("index.html");
-
-	vector<string> allowedMethods;
-	allowedMethods.push_back("GET");
-	allowedMethods.push_back("POST");
-	allowedMethods.push_back("DELETE");
-
-	_location.setAutoIndex(true);
-	_location.setClientMaxBodySize(10240);
-	_location.setIndex(index);
-	_location.setRoot("resources/html_data");
-	_location.parseAllowedMethods(allowedMethods);
-	//	cout << "***test***" << endl;
-	//	location.printConfig();
 }
 
 RequestHandler::~RequestHandler() { }
@@ -102,13 +84,11 @@ void RequestHandler::doGet(LocationContext* location, Request* request, Response
 {
 	string pathToFile = location->getRoot() + request->getUri();
 
-	// Check files extension
-	// CGI
-	// создать свой фаайл записать в него результат компиляции файла и прописать путь в path to file
 	string path = pathToFile;
-	if (cgi.isFileShouldBeHandleByCGI(path)) {
+	CGI cgi(*request, path, _env, location);
+	if (cgi.isFileShouldBeHandleByCGI()) {
 		cout << "CGIIIIII" << endl;
-		CGIModel cgiResult = cgi.getPathToFileWithResult(path);
+		CGIModel cgiResult = cgi.getPathToFileWithResult();
 		if (cgiResult.isSuccess) {
 			readfile(response, cgiResult.pathToFile);
 		} else {
