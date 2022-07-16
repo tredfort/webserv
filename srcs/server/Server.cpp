@@ -98,7 +98,6 @@ void Server::receiveRequest(WebClient* client, short& events)
 	if (bytesRead <= 0) {
 		cout << "Client ended the userfd!" << client->getFd() << endl;
 		events = POLLHUP;
-		//		return false;
 	}
 
 	client->getRequest()->appendBuffer(string(buffer, bytesRead));

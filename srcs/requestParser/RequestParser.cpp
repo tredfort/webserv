@@ -68,7 +68,8 @@ void RequestParser::parseBodyHeaders(Request* request)
 	// TODO: написать этот метод
 }
 
-void RequestParser::setHost(Request* request) {
+void RequestParser::setHost(Request* request)
+{
 	string host = request->getHeader("Host");
 	size_t pos = host.find(':');
 	if (pos != std::string::npos) {
@@ -83,12 +84,9 @@ bool RequestParser::isReadyRequest(Request* request)
 	if (request->getMethod() == "GET") {
 		request->setBuffer("");
 		return true;
-	}
-	else if (request->getMethod() == "POST") {
+	} else if (request->getMethod() == "POST") {
 
-	}
-	else if (request->getMethod() == "DELETE") {
-
+	} else if (request->getMethod() == "DELETE") {
 	}
 
 	return false;

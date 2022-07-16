@@ -101,4 +101,6 @@ template <class T> T filter(T& c, bool (*function)(typename T::value_type))
 
 string getErrorPageBody(string errorMessage);
 
+string getRedirectPageBody(std::pair<int, string> redirect);
+
 #endif
