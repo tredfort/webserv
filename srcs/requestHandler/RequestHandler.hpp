@@ -35,7 +35,7 @@ public:
 private:
 	vector<string> index;
 	string locationPath;
-	Env	_env;
+	Env _env;
 
 	const string& mimeType(const string& uri);
 
@@ -51,7 +51,7 @@ private:
 
 	void setResponseWithError(Response* response, string errorMessage, string pathToErrorPage);
 
-	void fillHeaders(Response* response, LocationContext*);
+	void fillHeaders(Response*, LocationContext*);
 
 public:
 	void doPost(Request* request, Response* response);
@@ -61,8 +61,6 @@ public:
 	void doPut(Request* request, Response* response);
 
 	void doDelete(Request* request, Response* response);
-
-	string getErrorPage(string errorMessage);
 };
 
 #endif

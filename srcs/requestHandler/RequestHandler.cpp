@@ -6,9 +6,9 @@
 
 #define CGICODE -1
 
-RequestHandler::RequestHandler(Config* config, Env &env)
-	: config(config),
-	_env(env)
+RequestHandler::RequestHandler(Config* config, Env& env)
+	: config(config)
+	, _env(env)
 {
 	fillTypes(_types);
 }

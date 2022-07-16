@@ -84,12 +84,9 @@ bool RequestParser::isReadyRequest(Request* request)
 	if (request->getMethod() == "GET") {
 		request->setBuffer("");
 		return true;
-	}
-	else if (request->getMethod() == "POST") {
+	} else if (request->getMethod() == "POST") {
 
-	}
-	else if (request->getMethod() == "DELETE") {
-
+	} else if (request->getMethod() == "DELETE") {
 	}
 
 	return false;
