@@ -1,13 +1,8 @@
 #include "RequestHandler.hpp"
 
-#define NOTEXIST 0
-#define REGFILE 1
-#define ISFOLDER 2
-
-#define CGICODE -1
-
 RequestHandler::RequestHandler(Config* config, Env& env)
 	: config(config)
+	, cgi(new CGI(env))
 	, _env(env)
 {
 	fillTypes(_types);
@@ -57,31 +52,54 @@ void RequestHandler::formResponse(WebClient* client)
 		location->printConfig();
 	}
 	response->setProtocol("HTTP/1.1");
-	const set<string> allowedMethods = location->getAllowedMethods();
 
 	if (isBadRequest(request))
 		setResponseWithError(response, "400 Bad Request", location->getErrorPagePath(400));
 	else if (!isProtocolSupported(request->getProtocol()))
 		setResponseWithError(response, "505 HTTP Version Not Supported", location->getErrorPagePath(505));
-	else if (!allowedMethods.empty() && !location->getAllowedMethods().count(request->getMethod()))
-		setResponseWithError(response, "405 Method Not Allowed", location->getErrorPagePath(405));
 	else if (location->getRedirect().first != 0) {
 		response->setBody(getRedirectPageBody(location->getRedirect()));
 		response->setStatus(std::to_string(location->getRedirect().first));
-	} else if (request->getMethod() == "GET")
+	} else if (!location->getAllowedMethods().empty() && !location->getAllowedMethods().count(request->getMethod()))
+		setResponseWithError(response, "405 Method Not Allowed", location->getErrorPagePath(405));
+	else {
+		string pathToFile = location->getRoot() + request->getUri();
+		if (!isFileExists(pathToFile)) {
+			setResponseWithError(response, "404 Not Found", location->getErrorPagePath(404));
+		} else if (isDirectory(pathToFile)) {
+			if (pathToFile.back() != '/') {
+				pathToFile.append("/");
+			}
+			const vector<string> indexes = location->getIndex();
+			for (vector<string>::const_iterator it = indexes.begin(), ite = indexes.end(); it != ite; ++it) {
+				string pathToIndexFile;
+				if ((*it).front() == '/') {
+					pathToIndexFile = location->getRoot() + *it;
+				} else {
+					pathToIndexFile.append(*it);
+				}
+				if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
+					pathToFile = pathToIndexFile;
+					break;
+				}
+			}
+		}
+
+	}
+	if (request->getMethod() == "GET")
 		doGet(location, request, response);
 	else if (request->getMethod() == "POST")
-		doPost(request, response);
+		doPost(location, request, response);
 	else if (request->getMethod() == "DELETE")
-		doDelete(request, response);
+		doDelete(location, request, response);
 	else if (request->getMethod() == "PUT")
-		doPut(request, response);
+		doPut(location, request, response);
 	else
 		setResponseWithError(response, "501 Not Implemented", location->getErrorPagePath(501));
 	fillHeaders(response, location);
 }
 
-void RequestHandler::doPost(Request* request, Response* response) { (void)request, (void)response; }
+void RequestHandler::doPost(LocationContext* location, Request* request, Response* response) { (void)location, (void)request, (void)response; }
 
 void RequestHandler::doGet(LocationContext* location, Request* request, Response* response)
 {
@@ -191,9 +209,13 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	response->setStatus("200 OK");
 }
 
-void RequestHandler::doPut(Request* request, Response* response) { (void)request, (void)response; }
+void RequestHandler::doPut(LocationContext* location, Request* request, Response* response) { (void)location, (void)request, (void)response; }
 
-void RequestHandler::doDelete(Request* request, Response* response) { (void)request, (void)response; }
+void RequestHandler::doDelete(LocationContext* location, Request* request, Response* response) {
+	string pathToFile = location->getRoot() + request->getUri();
+
+	(void)request, (void)response;
+}
 
 void RequestHandler::setResponseWithError(Response* response, string errorMessage, string pathToErrorPage)
 {

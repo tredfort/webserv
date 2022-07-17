@@ -22,6 +22,7 @@
 class RequestHandler {
 public:
 	Config* config;
+	CGI* cgi;
 	map<string, string> _types;
 	// tmp
 	LocationContext _location;
@@ -54,13 +55,13 @@ private:
 	void fillHeaders(Response*, LocationContext*);
 
 public:
-	void doPost(Request* request, Response* response);
+	void doPost(LocationContext* location, Request* request, Response* response);
 
 	void doGet(LocationContext* location, Request* request, Response* response);
 
-	void doPut(Request* request, Response* response);
+	void doPut(LocationContext* location, Request* request, Response* response);
 
-	void doDelete(Request* request, Response* response);
+	void doDelete(LocationContext* location, Request* request, Response* response);
 };
 
 #endif

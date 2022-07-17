@@ -38,10 +38,11 @@ private:
 
 public:
 	CGI(Request & request, string path, Env &env, LocationContext* location);
+	CGI(Env& env);
 	~CGI();
 
 	CGIModel getPathToFileWithResult();
-	bool isFileShouldBeHandleByCGI() const;
+	bool isFileShouldBeHandleByCGI(string& pathToFile) const;
 
 private:
 	void initCgiEnv(Request & request, string path);

@@ -14,6 +14,14 @@ CGI::CGI(Request & request, string uri, Env &env, LocationContext* location) :
 	initCgiEnv(request, path);
 }
 
+CGI::CGI(Env& env) :
+	_cgiFolder("resources/html_data/cgi/"),
+	_env(env)
+{
+	supportedFileFormats["py"] = "python3";
+	supportedFileFormats["php"] = "php";
+}
+
 CGI::~CGI() { }
 
 CGIModel	CGI::getPathToFileWithResult() {
@@ -27,7 +35,7 @@ CGIModel	CGI::getPathToFileWithResult() {
 	return result;
 }
 
-bool	CGI::isFileShouldBeHandleByCGI() const {
+bool	CGI::isFileShouldBeHandleByCGI(string& pathToFile) const {
 	// TODO: Переделай так как нужно проверять еще на индексные файлы
 	if (pathToFile.empty() || !isFileExists(pathToFile)) {
 		return false;
