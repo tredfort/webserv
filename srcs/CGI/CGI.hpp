@@ -31,16 +31,17 @@ private:
 	int _shmFd;
 	int* _sharedMemory;
 	map<string, string>	_cgiEnv;
-	string pathToFile;
+	string _pathToFile;
 	string query;
 	string format;
 	LocationContext* _location;
 
 public:
-	CGI(Request & request, string path, Env &env, LocationContext* location);
+//	CGI(Request & request, string path, Env &env, LocationContext* location);
 	CGI(Env& env);
 	~CGI();
 
+	void setParameters(Request* request, LocationContext* location, string& pathToFile);
 	CGIModel getPathToFileWithResult();
 	bool isFileShouldBeHandleByCGI(string& pathToFile) const;
 

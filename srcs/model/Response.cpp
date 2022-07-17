@@ -1,12 +1,14 @@
 #include "Response.hpp"
 
-Response::Response() { }
+Response::Response() : _statusCode(0) { }
 
 Response::~Response() { }
 
 void Response::setProtocol(const string& protocol) { _protocol = protocol; }
 
-void Response::setStatus(const string& status) { _status = status; }
+void Response::setStatusCode(int statusCode) { _statusCode = statusCode; }
+
+void Response::setStatusLine(const string& status) { _statusLine = status; }
 
 void Response::setContentType(const string& contentType) { _contentType = contentType; }
 
@@ -18,7 +20,9 @@ void Response::setBody(const string& body) { _body = body; }
 
 const string& Response::getProtocol() const { return _protocol; }
 
-const string& Response::getStatus() const { return _status; }
+int Response::getStatusCode() const { return _statusCode; }
+
+const string& Response::getStatusLine() const { return _statusLine; }
 
 const string& Response::getBuffer() const { return _buffer; }
 

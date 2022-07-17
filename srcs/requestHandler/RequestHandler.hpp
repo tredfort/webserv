@@ -24,8 +24,6 @@ public:
 	Config* config;
 	CGI* cgi;
 	map<string, string> _types;
-	// tmp
-	LocationContext _location;
 
 	RequestHandler(Config* config, Env& env);
 
@@ -34,10 +32,6 @@ public:
 	void formResponse(WebClient* client);
 
 private:
-	vector<string> index;
-	string locationPath;
-	Env _env;
-
 	const string& mimeType(const string& uri);
 
 	bool isBadRequest(Request* request) const;
@@ -48,18 +42,18 @@ private:
 
 	void folderContents(Response* response, const string&, const string&);
 
-	bool fillBodyFromIndexFile(Response*, const string&, const LocationContext*);
-
-	void setResponseWithError(Response* response, string errorMessage, string pathToErrorPage);
+	void setStatusLine(Response* response);
 
 	void fillHeaders(Response*, LocationContext*);
+
+	string getPathToFile(Request* request, LocationContext* locationContext) const;
+
+	void setBodyForStatusCode(Response* response, LocationContext* location);
 
 public:
 	void doPost(LocationContext* location, Request* request, Response* response);
 
-	void doGet(LocationContext* location, Request* request, Response* response);
-
-	void doPut(LocationContext* location, Request* request, Response* response);
+	void doGet(LocationContext* location, Request* request, Response* response, string& pathToFile);
 
 	void doDelete(LocationContext* location, Request* request, Response* response);
 };

@@ -1,18 +1,18 @@
 #include "CGI.hpp"
 
-CGI::CGI(Request & request, string uri, Env &env, LocationContext* location) :
-	_cgiFolder("resources/html_data/cgi/"),
-	_env(env),
-	_location(location)
-{
-	supportedFileFormats["py"] = "python3";
-	supportedFileFormats["php"] = "php";
-	vector<string> result = ft_split(uri, "?");
-	string path = result[0];
-	query = result.size() == 2 ? result[1] : "";
-	pathToFile = getPathToFile(path);
-	initCgiEnv(request, path);
-}
+//CGI::CGI(Request & request, string uri, Env &env, LocationContext* location) :
+//	_cgiFolder("resources/html_data/cgi/"),
+//	_env(env),
+//	_location(location)
+//{
+//	supportedFileFormats["py"] = "python3";
+//	supportedFileFormats["php"] = "php";
+//	vector<string> result = ft_split(uri, "?");
+//	string path = result[0];
+//	query = result.size() == 2 ? result[1] : "";
+//	pathToFile = getPathToFile(path);
+//	initCgiEnv(request, path);
+//}
 
 CGI::CGI(Env& env) :
 	_cgiFolder("resources/html_data/cgi/"),
@@ -23,6 +23,15 @@ CGI::CGI(Env& env) :
 }
 
 CGI::~CGI() { }
+
+void CGI::setParameters(Request* request, LocationContext* location, string& pathToFile)
+{
+	_location = location;
+	_pathToFile = pathToFile;
+	initCgiEnv(*request, pathToFile);
+	vector<string> result = ft_split(request->getUri(), "?");
+	query = result.size() == 2 ? result[1] : "";
+}
 
 CGIModel	CGI::getPathToFileWithResult() {
 
@@ -35,23 +44,16 @@ CGIModel	CGI::getPathToFileWithResult() {
 	return result;
 }
 
-bool	CGI::isFileShouldBeHandleByCGI(string& pathToFile) const {
-	// TODO: Переделай так как нужно проверять еще на индексные файлы
-	if (pathToFile.empty() || !isFileExists(pathToFile)) {
-		return false;
-	}
-	string format = getFileFormat(pathToFile);
-	for (map<string, string>::const_iterator it = supportedFileFormats.begin(); it != supportedFileFormats.end(); it++) {
-		if (it->first == format) {
-			return true;
-		}
+bool CGI::isFileShouldBeHandleByCGI(string& pathToFile) const {
+	if (supportedFileFormats.find(getFileFormat(pathToFile)) != supportedFileFormats.end()) {
+		return true;
 	}
 	return false;
 }
 
 // Private methods
 
-void CGI::initCgiEnv(Request & request, string path) {
+void CGI::initCgiEnv(Request& request, string path) {
 	_cgiEnv["REDIRECT_STATUS"] = "200";
 	_cgiEnv["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_cgiEnv["SERVER_PROTOCOL"] = "HTTP/1.1";
@@ -106,8 +108,8 @@ string	CGI::getFileFormat(string pathToExecFile) const {
 }
 
 string	CGI::getPathInfo(string fullPath) const {
-	if (fullPath.size() > pathToFile.size()) {
-		string pathInfo = fullPath.erase(0, pathToFile.size());
+	if (fullPath.size() > _pathToFile.size()) {
+		string pathInfo = fullPath.erase(0, _pathToFile.size());
 		return pathInfo;
 	}
 	return "";
@@ -223,8 +225,8 @@ char**	CGI::configureArgumentsForComand() const {
 		args = new char*[3];
 		args[0] = new char[1];
 		args[0] = strcpy(args[0], "");
-		args[1] = new char[pathToFile.size() + 1];
-		args[1] = strcpy(args[1], pathToFile.c_str());
+		args[1] = new char[_pathToFile.size() + 1];
+		args[1] = strcpy(args[1], _pathToFile.c_str());
 		args[2] = NULL;
 	} catch (std::bad_alloc &e) {
 		std::cerr << "CGI, configureArgumentsForComand - " << e.what() << std::endl;
