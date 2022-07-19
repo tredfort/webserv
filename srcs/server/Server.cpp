@@ -47,7 +47,7 @@ void Server::stop() { }
 
 void Server::polling()
 {
-	if (poll(&(_pollfds.front()), _pollfds.size(), -1) < 0)
+	if (poll(_pollfds.data(), _pollfds.size(), -1) < 0)
 		cerr << "  poll() failed: " << strerror(errno) << endl;
 }
 
@@ -101,7 +101,7 @@ void Server::receiveRequest(WebClient* client, short& events)
 	}
 
 	client->getRequest()->appendBuffer(string(buffer, bytesRead));
-	cout << client->getRequest()->getBuffer() << endl;
+//	cout << client->getRequest()->getBuffer() << endl;
 	_parser.processRequest(client->getRequest());
 	if (_parser.isReadyRequest(client->getRequest())) {
 		events = POLLOUT;

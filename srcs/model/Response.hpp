@@ -12,8 +12,9 @@ using std::vector;
 
 class Response {
 private:
+	int _statusCode;
 	string _protocol;
-	string _status;
+	string _statusLine;
 	string _contentType;
 	string _buffer;
 	string _headers;
@@ -26,7 +27,9 @@ public:
 
 	void setProtocol(const string& protocol);
 
-	void setStatus(const string& status);
+	void setStatusCode(int statusCode);
+
+	void setStatusLine(const string& status);
 
 	void setContentType(const string& contentType);
 
@@ -36,9 +39,11 @@ public:
 
 	void setBody(const string& body);
 
+	int getStatusCode() const;
+
 	const string& getProtocol() const;
 
-	const string& getStatus() const;
+	const string& getStatusLine() const;
 
 	const string& getBuffer() const;
 
