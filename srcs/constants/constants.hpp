@@ -20,4 +20,9 @@ using std::string;
 
 void fillTypes(map<string, string>& types);
 
+#define GET_METHOD "GET"
+#define POST_METHOD "POST"
+#define PUT_METHOD "PUT"
+#define DELETE_METHOD "DELETE"
+
 #endif

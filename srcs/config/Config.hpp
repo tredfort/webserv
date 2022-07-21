@@ -1,7 +1,7 @@
 #ifndef CONFIG_HPP
 #define CONFIG_HPP
 
-#include "../utils/constants.hpp"
+#include "../constants/constants.hpp"
 #include "../utils/utils.hpp"
 #include "LocationContext.hpp"
 #include "ServerContext.hpp"

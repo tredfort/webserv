@@ -1,8 +1,10 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
+#include "../constants/constants.hpp"
 #include "../interfaces/IHeader.hpp"
 #include "../interfaces/IRequest.hpp"
+#include "PostVariable.hpp"
 #include <cstring>
 #include <iostream>
 #include <map>
@@ -19,6 +21,8 @@ private:
 	string _protocol; // TODO: заменить на верисию
 	string _host; // TODO: убрать это поля, вынести метод getHostName() в utils
 	string _buffer; // TODO: вынести буффер клиенту
+	map<string, string> _body;
+	vector<PostVariable*> _postVariables;
 
 public:
 	map<string, string> _headers;
@@ -53,6 +57,15 @@ public:
 	void setHeader(const string& key, const string& value);
 
 	bool emptyHeader() const;
+
+	void addPostVariable(PostVariable*);
+
+	vector<PostVariable*> getPostVariables();
+
+	bool isGetMethod();
+	bool isPostMethod();
+	bool isPutMethod();
+	bool isDeleteMethod();
 };
 
 #endif

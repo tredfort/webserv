@@ -48,6 +48,7 @@ public:
 
 	void setErrorPagesFromConfigContext(map<int, string>& vector1);
 	string getErrorPage(int code);
+	void setDefaultAllowedMethods();
 
 private:
 	bool _autoIndex; // false by default

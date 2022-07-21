@@ -30,10 +30,10 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 	response->setContentType(mimeType(extension));
 	try {
 		response->setBody(FileReader::readFile(path));
-		response->setStatusLine("200 OK");
+		response->setStatusCode(200);
 	} catch (FileReader::FileNotFoundException& ex) {
 		response->setBody(getErrorPageBody("ДОБРО ПОЖАЛОВАТЬ НА СТРАНИЦУ 404!"));
-		response->setStatusLine("404 NOT FOUND");
+		response->setStatusCode(404);
 	}
 }
 
@@ -46,9 +46,9 @@ void RequestHandler::formResponse(WebClient* client)
 	Response* response = client->getResponse();
 	Request* request = client->getRequest();
 	LocationContext* location = config->getLocationContext(client->getIp(), client->getPort(), request->getHost(), request->getUri());
-	cout << "*location info*" << endl;
-	location->printConfig();
 	response->setProtocol("HTTP/1.1");
+	//	cout << "*location info*" << endl;
+	//	location->printConfig();
 
 	if (isBadRequest(request)) {
 		response->setStatusCode(400);
@@ -56,15 +56,15 @@ void RequestHandler::formResponse(WebClient* client)
 		response->setStatusCode(505);
 	} else if (location->getRedirect().first) {
 		response->setStatusCode(location->getRedirect().first);
+	} else if ((request->isPostMethod() || request->isDeleteMethod()) && !location->getUploadPath().empty()) {
+		// Don't do anything
 	} else if (!location->getAllowedMethods().empty() && !location->getAllowedMethods().count(request->getMethod())) {
 		response->setStatusCode(405);
 	} // TODO: GET метод нельзя запретить и он всегда должен быть в разрешенных методах!
 	string path = getPathFromUri(request->getUri(), location);
-	if (path.empty()) {
-		response->setStatusCode(404);
-	} else if (isFileShouldBeHandleByCGI(path)) {
+	if (isFileShouldBeHandleByCGI(path)) {
 		CGI cgi(*request, path, _env);
-		cout << "CGIIIIII" << endl;
+		cout << "process CGI..." << endl;
 		CGIModel cgiResult = cgi.getPathToFileWithResult();
 		if (cgiResult.isSuccess) {
 			readfile(response, cgiResult.pathToFile);
@@ -72,12 +72,14 @@ void RequestHandler::formResponse(WebClient* client)
 			response->setStatusCode(500);
 		}
 	} else {
-		if (request->getMethod() == "GET") {
-			doGet(location, request, response, path);
-		} else if (request->getMethod() == "POST" || request->getMethod() == "PUT") {
-			doPost(location, request, response);
-		} else if (request->getMethod() == "DELETE") {
-			doDelete(response, path);
+		if (request->isGetMethod()) {
+			doGet(request, response, location);
+		} else if (request->isPostMethod()) {
+			doPost(request, response, location);
+		} else if (request->isPutMethod()) {
+			doPut(request, response, location);
+		} else if (request->isDeleteMethod()) {
+			doDelete(request, response, location);
 		} else {
 			response->setStatusCode(501);
 		}
@@ -125,6 +127,9 @@ void RequestHandler::setStatusLine(Response* response)
 	case 505:
 		response->setStatusLine("505 HTTP Version Not Supported");
 		break;
+	default:
+		response->setStatusLine(toString(response->getStatusCode()));
+		break;
 	}
 }
 
@@ -133,7 +138,7 @@ void RequestHandler::setBodyForStatusCode(Response* response, LocationContext* l
 	if (response->getStatusCode() >= 300 && response->getStatusCode() < 400) {
 		response->setBody(getRedirectPageBody(location->getRedirect()));
 		response->setContentType(mimeType(".html"));
-	} else {
+	} else if (response->getStatusCode() > 400) {
 		string pathToErrorPage = location->getErrorPage(response->getStatusCode());
 		if (isFileExists(pathToErrorPage) && !isDirectory(pathToErrorPage)) {
 			readfile(response, pathToErrorPage);
@@ -141,13 +146,14 @@ void RequestHandler::setBodyForStatusCode(Response* response, LocationContext* l
 			response->setBody(getErrorPageBody(response->getStatusLine()));
 			response->setContentType(mimeType(".html"));
 		}
+	} else {
+		// TODO:: here should be okay in this section of code looks bad, I think there are some dublicates
 	}
 }
 
-void RequestHandler::doPost(LocationContext* location, Request* request, Response* response) { (void)location, (void)request, (void)response; }
-
-void RequestHandler::doGet(LocationContext* location, Request* request, Response* response, string& pathToFile)
+void RequestHandler::doGet(Request* request, Response* response, LocationContext* location)
 {
+	const string pathToFile = getPathFromUri(request->getUri(), location);
 	if (isDirectory(pathToFile)) {
 		if (location->isAutoIndex()) {
 			folderContents(response, pathToFile, request->getUri());
@@ -159,6 +165,53 @@ void RequestHandler::doGet(LocationContext* location, Request* request, Response
 	}
 }
 
+void RequestHandler::doPost(Request* request, Response* response, LocationContext* location)
+{
+	vector<PostVariable*> postVariables = request->getPostVariables();
+	bool isAdded = false;
+	string uploadPath = location->getUploadPath();
+	cout << "post variables count: " << postVariables.size() << endl;
+
+	for (vector<PostVariable*>::iterator it = postVariables.begin(); it != postVariables.end(); ++it) {
+		string filename = (*it)->getHeader("filename"); // getFilename
+		string filePath;
+		if (startsWith(uploadPath, "/")) {
+			filePath = "" + uploadPath + (getLastSymbol(uploadPath) == '/' ? "" : "/") + filename;
+		} else {
+			filePath = "./" + uploadPath + (getLastSymbol(uploadPath) == '/' ? "" : "/") + filename;
+		}
+
+		if (!filename.empty()) {
+			cout << "creating file -> " << filePath << endl;
+			std::ofstream out(filePath);
+			out << (*it)->getBody();
+			out.close();
+
+			if (out.bad()) // bad() function will check for badbit
+			{
+				cout << "Writing to file failed" << endl;
+			} else {
+				isAdded = true;
+			}
+		}
+	}
+	if (isAdded) {
+		response->setStatusCode(201);
+		response->setBody("Some of files was created or rewritten");
+	} else {
+		response->setStatusCode(303);
+		response->setBody("Any of files not created");
+	}
+}
+
+// TODO:: implement
+void RequestHandler::doPut(Request* request, Response* response, LocationContext* location)
+{
+	(void)request;
+	(void)response;
+	(void)location;
+}
+
 void RequestHandler::folderContents(Response* response, const std::string& path, const string& uri)
 {
 	DIR* dp;
@@ -167,7 +220,6 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	time_t lastModified;
 	string body;
 
-//	(void)path;
 	string title = "Index of " + uri;
 	body.append("<html>\n"
 				"<head><title>"
@@ -209,8 +261,10 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	response->setStatusLine("200 OK");
 }
 
-void RequestHandler::doDelete(Response* response, string& pathToFile)
+void RequestHandler::doDelete(Request* request, Response* response, LocationContext* location)
 {
+	string pathToFile = location->getUploadPath() + getStringAfterTarget(request->getUri(), location->getUploadPath());
+
 	if (access(pathToFile.c_str(), W_OK) != 0) {
 		response->setStatusCode(403);
 	} else if (std::remove(pathToFile.c_str()) != 0) {
@@ -234,18 +288,21 @@ void RequestHandler::fillHeaders(Response* response, LocationContext* location)
 	response->pushHeader(response->getProtocol() + " " + response->getStatusLine() + "\r\n");
 	response->pushHeader("Server: webserv/2.0\r\n");
 	response->pushHeader("Date: " + string(time, strlen(time) - 1) + "\r\n");
-	response->pushHeader("Content-Type: " + response->getContentType() + "\r\n");
+	if (!response->getContentType().empty()) {
+		response->pushHeader("Content-Type: " + response->getContentType() + "\r\n");
+	}
 	response->pushHeader("Content-Length: " + std::to_string(response->getBody().size()) + "\r\n");
 	if (redirect.first != 0) {
 		response->pushHeader("Location: " + redirect.second + "\r\n");
 	}
+	// TODO:: do we have to use it?
 	response->pushHeader("Connection: keep-alive\r\n\r\n");
 	response->setBuffer(response->getHeaders() + response->getBody());
 }
 
 string RequestHandler::getPathFromUri(const string& uri, LocationContext* location) const
 {
-	string path = location->getRoot() + uri;
+	string path = location->getRoot() + "/" + uri;
 	if (isFileExists(path)) {
 		if (isDirectory(path)) {
 			if (path.back() != '/') {
@@ -268,7 +325,4 @@ string RequestHandler::getPathFromUri(const string& uri, LocationContext* locati
 	return string();
 }
 
-bool RequestHandler::isFileShouldBeHandleByCGI(string& pathToFile) const
-{
-	return _cgiFileFormats.find(getFileFormat(pathToFile)) != _cgiFileFormats.end();
-}
+bool RequestHandler::isFileShouldBeHandleByCGI(string& pathToFile) const { return _cgiFileFormats.find(getFileFormat(pathToFile)) != _cgiFileFormats.end(); }

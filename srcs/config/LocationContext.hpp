@@ -47,6 +47,9 @@ public:
 	string getErrorPage(int code);
 	string getErrorPagePath(int code);
 	pair<int, string> getRedirect();
+	string getUploadPath();
+
+	void setDefaultAllowedMethods();
 
 private:
 	set<string> _allowedMethods;

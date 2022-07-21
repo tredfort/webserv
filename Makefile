@@ -13,7 +13,7 @@ SRC = srcs/main.cpp \
 	srcs/config/LocationContext.cpp \
 	srcs/config/ServerContext.cpp \
 	srcs/utils/utils.cpp \
-	srcs/utils/constants.cpp \
+	srcs/constants/constants.cpp \
 	srcs/model/WebClient.cpp \
 	srcs/model/Request.cpp \
 	srcs/model/Response.cpp \
@@ -22,6 +22,7 @@ SRC = srcs/main.cpp \
 	srcs/requestHandler/FileReader.cpp \
 	srcs/CGI/CGI.cpp \
 	srcs/server/Env.cpp \
+	srcs/model/PostVariable.cpp \
 
 OBJ=$(SRC:.cpp=.o)
 
@@ -42,6 +43,7 @@ HEADERS = \
 	srcs/interfaces/ICGI.hpp \
 	srcs/CGI/CGIModel.hpp \
 	srcs/server/Env.hpp \
+	srcs/model/PostVariable.hpp \
 
 
 srcs/%.o: srcs/%.cpp $(HEADERS)
