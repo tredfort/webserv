@@ -1,37 +1,17 @@
 #include "CGI.hpp"
 
-//CGI::CGI(Request & request, string uri, Env &env, LocationContext* location) :
-//	_cgiFolder("resources/html_data/cgi/"),
-//	_env(env),
-//	_location(location)
-//{
-//	supportedFileFormats["py"] = "python3";
-//	supportedFileFormats["php"] = "php";
-//	vector<string> result = ft_split(uri, "?");
-//	string path = result[0];
-//	query = result.size() == 2 ? result[1] : "";
-//	pathToFile = getPathToFile(path);
-//	initCgiEnv(request, path);
-//}
-
-CGI::CGI(Env& env) :
+CGI::CGI(Request& request, const string& uri, Env& env) :
 	_cgiFolder("resources/html_data/cgi/"),
 	_env(env)
 {
-	supportedFileFormats["py"] = "python3";
-	supportedFileFormats["php"] = "php";
+	vector<string> result = ft_split(uri, "?");
+	string path = result[0];
+	query = result.size() == 2 ? result[1] : "";
+	_pathToFile = path;
+	initCgiEnv(request, path);
 }
 
 CGI::~CGI() { }
-
-void CGI::setParameters(Request* request, LocationContext* location, string& pathToFile)
-{
-	_location = location;
-	_pathToFile = pathToFile;
-	initCgiEnv(*request, pathToFile);
-	vector<string> result = ft_split(request->getUri(), "?");
-	query = result.size() == 2 ? result[1] : "";
-}
 
 CGIModel	CGI::getPathToFileWithResult() {
 
@@ -42,13 +22,6 @@ CGIModel	CGI::getPathToFileWithResult() {
 	CGIModel result = executeCgi(*arguments);
 	clearEverything(arguments);
 	return result;
-}
-
-bool CGI::isFileShouldBeHandleByCGI(string& pathToFile) const {
-	if (supportedFileFormats.find(getFileFormat(pathToFile)) != supportedFileFormats.end()) {
-		return true;
-	}
-	return false;
 }
 
 // Private methods
@@ -98,15 +71,6 @@ char **CGI::getEnvAsCstrArray() const {
 	return env;
 }
 
-string	CGI::getFileFormat(string pathToExecFile) const {
-	unsigned long i = 100;
-	cout << pathToExecFile.size() << endl;
-	for (i = pathToExecFile.size(); i > 0 && pathToExecFile[i] != '.'; i--) { }
-	if (pathToExecFile[i] != '.' && i != pathToExecFile.length())
-		return "";
-	return pathToExecFile.substr(++i, pathToExecFile.length());
-}
-
 string	CGI::getPathInfo(string fullPath) const {
 	if (fullPath.size() > _pathToFile.size()) {
 		string pathInfo = fullPath.erase(0, _pathToFile.size());
@@ -115,41 +79,41 @@ string	CGI::getPathInfo(string fullPath) const {
 	return "";
 }
 
-string	CGI::getPathToFile(string path) {
-	for (map<string, string>::iterator it = supportedFileFormats.begin(); it != supportedFileFormats.end(); it++) {
-		size_t i = 0;
-		string toFind = "." + it->first;
-		while (i != string::npos) {
-			if (i == 0) {
-				i = path.find(toFind, i);
-			} else {
-				i = path.find(toFind, i + toFind.size());
-			}
-			if (i != string::npos) {
-				unsigned int size = toFind.size();
-				cout << path[i + size] << endl;
-				if (path[i + size] == '\0' || path[i + size] == '?' || path[i + size] == '/') {
-					string pathToFile = path.erase(i + size, path.size());
-					format = it->second;
-					return pathToFile;
-				}
-			}
-		}
-	}
-	const vector<string> indexes = _location->getIndex();
-	for (vector<string>::const_iterator it = indexes.begin(), ite = indexes.end(); it != ite; ++it) {
-		string pathToIndexFile;
-		if ((*it)[0] == '/') {
-			pathToIndexFile = _location->getRoot() + *it;
-		} else {
-			pathToIndexFile = path + *it;
-		}
-		if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
-			return pathToIndexFile;
-		}
-	}
-	return "";
-}
+//string	CGI::getPathToFile(string path) {
+//	for (map<string, string>::iterator it = supportedFileFormats.begin(); it != supportedFileFormats.end(); it++) {
+//		size_t i = 0;
+//		string toFind = "." + it->first;
+//		while (i != string::npos) {
+//			if (i == 0) {
+//				i = path.find(toFind, i);
+//			} else {
+//				i = path.find(toFind, i + toFind.size());
+//			}
+//			if (i != string::npos) {
+//				unsigned int size = toFind.size();
+//				cout << path[i + size] << endl;
+//				if (path[i + size] == '\0' || path[i + size] == '?' || path[i + size] == '/') {
+//					string pathToFile = path.erase(i + size, path.size());
+//					format = it->second;
+//					return pathToFile;
+//				}
+//			}
+//		}
+//	}
+//	const vector<string> indexes = _location->getIndex();
+//	for (vector<string>::const_iterator it = indexes.begin(), ite = indexes.end(); it != ite; ++it) {
+//		string pathToIndexFile;
+//		if ((*it)[0] == '/') {
+//			pathToIndexFile = _location->getRoot() + *it;
+//		} else {
+//			pathToIndexFile = path + *it;
+//		}
+//		if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
+//			return pathToIndexFile;
+//		}
+//	}
+//	return "";
+//}
 
 ExecveArguments *	CGI::constructExecveArguments() {
 

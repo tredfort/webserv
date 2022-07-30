@@ -103,4 +103,6 @@ string getErrorPageBody(string errorMessage);
 
 string getRedirectPageBody(std::pair<int, string> redirect);
 
+string getFileFormat(string& pathToExecFile);
+
 #endif

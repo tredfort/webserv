@@ -22,8 +22,9 @@
 class RequestHandler {
 public:
 	Config* config;
-	CGI* cgi;
 	map<string, string> _types;
+	map<string, string> _cgiFileFormats;
+	Env& _env;
 
 	RequestHandler(Config* config, Env& env);
 
@@ -46,7 +47,9 @@ private:
 
 	void fillHeaders(Response*, LocationContext*);
 
-	string getPathToFile(Request* request, LocationContext* locationContext) const;
+	string getPathFromUri(const string& uri, LocationContext* location) const;
+
+	bool isFileShouldBeHandleByCGI(string& pathToFile) const;
 
 	void setBodyForStatusCode(Response* response, LocationContext* location);
 

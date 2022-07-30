@@ -2,8 +2,10 @@
 
 RequestHandler::RequestHandler(Config* config, Env& env)
 	: config(config)
-	, cgi(new CGI(env))
+	, _env(env)
 {
+	_cgiFileFormats["py"] = "python3";
+	_cgiFileFormats["php"] = "php";
 	fillTypes(_types);
 }
 
@@ -23,7 +25,7 @@ const std::string& RequestHandler::mimeType(const std::string& uri)
 void RequestHandler::readfile(Response* response, const std::string& path)
 {
 	string extension = path.substr(path.find_last_of("/\\") + 1);
-	string fileExtension = path.substr(path.find_last_of(".") + 1);
+	string fileExtension = path.substr(path.find_last_of('.') + 1);
 
 	response->setContentType(mimeType(extension));
 	try {
@@ -57,29 +59,27 @@ void RequestHandler::formResponse(WebClient* client)
 	} else if (!location->getAllowedMethods().empty() && !location->getAllowedMethods().count(request->getMethod())) {
 		response->setStatusCode(405);
 	} // TODO: GET метод нельзя запретить и он всегда должен быть в разрешенных методах!
-	string pathToFile = getPathToFile(request, location);
-	if (pathToFile.empty()) {
+	string path = getPathFromUri(request->getUri(), location);
+	if (path.empty()) {
 		response->setStatusCode(404);
-	} else {
-		if (cgi->isFileShouldBeHandleByCGI(pathToFile)) {
-			cgi->setParameters(request, location, pathToFile);
-			cout << "CGIIIIII" << endl;
-			CGIModel cgiResult = cgi->getPathToFileWithResult();
-			if (cgiResult.isSuccess) {
-				readfile(response, cgiResult.pathToFile);
-			} else {
-				response->setStatusCode(500);
-			}
+	} else if (isFileShouldBeHandleByCGI(path)) {
+		CGI cgi(*request, path, _env);
+		cout << "CGIIIIII" << endl;
+		CGIModel cgiResult = cgi.getPathToFileWithResult();
+		if (cgiResult.isSuccess) {
+			readfile(response, cgiResult.pathToFile);
 		} else {
-			if (request->getMethod() == "GET") {
-				doGet(location, request, response, pathToFile);
-			} else if (request->getMethod() == "POST" || request->getMethod() == "PUT") {
-				doPost(location, request, response);
-			} else if (request->getMethod() == "DELETE") {
-				doDelete(location, request, response);
-			} else {
-				response->setStatusCode(501);
-			}
+			response->setStatusCode(500);
+		}
+	} else {
+		if (request->getMethod() == "GET") {
+			doGet(location, request, response, path);
+		} else if (request->getMethod() == "POST" || request->getMethod() == "PUT") {
+			doPost(location, request, response);
+		} else if (request->getMethod() == "DELETE") {
+			doDelete(location, request, response);
+		} else {
+			response->setStatusCode(501);
 		}
 	}
 	setStatusLine(response);
@@ -209,7 +209,8 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	response->setStatusLine("200 OK");
 }
 
-void RequestHandler::doDelete(LocationContext* location, Request* request, Response* response) {
+void RequestHandler::doDelete(LocationContext* location, Request* request, Response* response)
+{
 	string pathToFile = location->getRoot() + request->getUri();
 
 	(void)request, (void)response;
@@ -232,9 +233,9 @@ void RequestHandler::fillHeaders(Response* response, LocationContext* location)
 	response->setBuffer(response->getHeaders() + response->getBody());
 }
 
-string RequestHandler::getPathToFile(Request* request, LocationContext* location) const
+string RequestHandler::getPathFromUri(const string& uri, LocationContext* location) const
 {
-	string path = location->getRoot() + request->getUri();
+	string path = location->getRoot() + uri;
 	if (isFileExists(path)) {
 		if (isDirectory(path)) {
 			if (path.back() != '/') {
@@ -255,4 +256,9 @@ string RequestHandler::getPathToFile(Request* request, LocationContext* location
 		return path;
 	}
 	return string();
+}
+
+bool RequestHandler::isFileShouldBeHandleByCGI(string& pathToFile) const
+{
+	return _cgiFileFormats.find(getFileFormat(pathToFile)) != _cgiFileFormats.end();
 }
