@@ -174,3 +174,12 @@ string getRedirectPageBody(std::pair<int, string> redirect)
 	} else
 		return redirect.second;
 }
+
+string	getFileFormat(string& fileName) {
+	unsigned long i = 100;
+	cout << fileName.size() << endl;
+	for (i = fileName.size(); i > 0 && fileName[i] != '.'; i--) { }
+	if (fileName[i] != '.' && i != fileName.length())
+		return "";
+	return fileName.substr(++i, fileName.length());
+}

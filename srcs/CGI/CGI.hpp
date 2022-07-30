@@ -24,29 +24,25 @@
 class CGI : public ICGI {
 
 private:
-	map<string, string> supportedFileFormats;
 	const string _cgiFolder;
 	int _outputFileFd;
 	Env _env;
 	int _shmFd;
 	int* _sharedMemory;
 	map<string, string>	_cgiEnv;
-	string pathToFile;
+	string _pathToFile;
 	string query;
 	string format;
-	LocationContext* _location;
 
 public:
-	CGI(Request & request, string path, Env &env, LocationContext* location);
+	CGI(Request& request, const string& path, Env& env);
 	~CGI();
 
 	CGIModel getPathToFileWithResult();
-	bool isFileShouldBeHandleByCGI() const;
 
 private:
 	void initCgiEnv(Request & request, string path);
 	char **getEnvAsCstrArray() const;
-	string getFileFormat(string pathToExecFile) const;
 	CGIModel executeCgi(const ExecveArguments& execArguments);
 	char** configureArgumentsForComand() const;
 	bool openOutputFile(std::string file);
@@ -57,7 +53,6 @@ private:
 	bool createSharedMemory();
 	void freeSharedMemory();
 	string getPathInfo(string pathToExecFile) const;
-	string getPathToFile(string path);
 };
 
 #endif

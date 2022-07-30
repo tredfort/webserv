@@ -1,16 +1,13 @@
 #include "CGI.hpp"
 
-CGI::CGI(Request & request, string uri, Env &env, LocationContext* location) :
+CGI::CGI(Request& request, const string& uri, Env& env) :
 	_cgiFolder("resources/html_data/cgi/"),
-	_env(env),
-	_location(location)
+	_env(env)
 {
-	supportedFileFormats["py"] = "python3";
-	supportedFileFormats["php"] = "php";
 	vector<string> result = ft_split(uri, "?");
 	string path = result[0];
 	query = result.size() == 2 ? result[1] : "";
-	pathToFile = getPathToFile(path);
+	_pathToFile = path;
 	initCgiEnv(request, path);
 }
 
@@ -27,23 +24,9 @@ CGIModel	CGI::getPathToFileWithResult() {
 	return result;
 }
 
-bool	CGI::isFileShouldBeHandleByCGI() const {
-	// TODO: Переделай так как нужно проверять еще на индексные файлы
-	if (pathToFile.empty() || !isFileExists(pathToFile)) {
-		return false;
-	}
-	string format = getFileFormat(pathToFile);
-	for (map<string, string>::const_iterator it = supportedFileFormats.begin(); it != supportedFileFormats.end(); it++) {
-		if (it->first == format) {
-			return true;
-		}
-	}
-	return false;
-}
-
 // Private methods
 
-void CGI::initCgiEnv(Request & request, string path) {
+void CGI::initCgiEnv(Request& request, string path) {
 	_cgiEnv["REDIRECT_STATUS"] = "200";
 	_cgiEnv["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_cgiEnv["SERVER_PROTOCOL"] = "HTTP/1.1";
@@ -88,58 +71,49 @@ char **CGI::getEnvAsCstrArray() const {
 	return env;
 }
 
-string	CGI::getFileFormat(string pathToExecFile) const {
-	unsigned long i = 100;
-	cout << pathToExecFile.size() << endl;
-	for (i = pathToExecFile.size(); i > 0 && pathToExecFile[i] != '.'; i--) { }
-	if (pathToExecFile[i] != '.' && i != pathToExecFile.length())
-		return "";
-	return pathToExecFile.substr(++i, pathToExecFile.length());
-}
-
 string	CGI::getPathInfo(string fullPath) const {
-	if (fullPath.size() > pathToFile.size()) {
-		string pathInfo = fullPath.erase(0, pathToFile.size());
+	if (fullPath.size() > _pathToFile.size()) {
+		string pathInfo = fullPath.erase(0, _pathToFile.size());
 		return pathInfo;
 	}
 	return "";
 }
 
-string	CGI::getPathToFile(string path) {
-	for (map<string, string>::iterator it = supportedFileFormats.begin(); it != supportedFileFormats.end(); it++) {
-		size_t i = 0;
-		string toFind = "." + it->first;
-		while (i != string::npos) {
-			if (i == 0) {
-				i = path.find(toFind, i);
-			} else {
-				i = path.find(toFind, i + toFind.size());
-			}
-			if (i != string::npos) {
-				unsigned int size = toFind.size();
-				cout << path[i + size] << endl;
-				if (path[i + size] == '\0' || path[i + size] == '?' || path[i + size] == '/') {
-					string pathToFile = path.erase(i + size, path.size());
-					format = it->second;
-					return pathToFile;
-				}
-			}
-		}
-	}
-	const vector<string> indexes = _location->getIndex();
-	for (vector<string>::const_iterator it = indexes.begin(), ite = indexes.end(); it != ite; ++it) {
-		string pathToIndexFile;
-		if ((*it)[0] == '/') {
-			pathToIndexFile = _location->getRoot() + *it;
-		} else {
-			pathToIndexFile = path + *it;
-		}
-		if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
-			return pathToIndexFile;
-		}
-	}
-	return "";
-}
+//string	CGI::getPathToFile(string path) {
+//	for (map<string, string>::iterator it = supportedFileFormats.begin(); it != supportedFileFormats.end(); it++) {
+//		size_t i = 0;
+//		string toFind = "." + it->first;
+//		while (i != string::npos) {
+//			if (i == 0) {
+//				i = path.find(toFind, i);
+//			} else {
+//				i = path.find(toFind, i + toFind.size());
+//			}
+//			if (i != string::npos) {
+//				unsigned int size = toFind.size();
+//				cout << path[i + size] << endl;
+//				if (path[i + size] == '\0' || path[i + size] == '?' || path[i + size] == '/') {
+//					string pathToFile = path.erase(i + size, path.size());
+//					format = it->second;
+//					return pathToFile;
+//				}
+//			}
+//		}
+//	}
+//	const vector<string> indexes = _location->getIndex();
+//	for (vector<string>::const_iterator it = indexes.begin(), ite = indexes.end(); it != ite; ++it) {
+//		string pathToIndexFile;
+//		if ((*it)[0] == '/') {
+//			pathToIndexFile = _location->getRoot() + *it;
+//		} else {
+//			pathToIndexFile = path + *it;
+//		}
+//		if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
+//			return pathToIndexFile;
+//		}
+//	}
+//	return "";
+//}
 
 ExecveArguments *	CGI::constructExecveArguments() {
 
@@ -215,8 +189,8 @@ char**	CGI::configureArgumentsForComand() const {
 		args = new char*[3];
 		args[0] = new char[1];
 		args[0] = strcpy(args[0], "");
-		args[1] = new char[pathToFile.size() + 1];
-		args[1] = strcpy(args[1], pathToFile.c_str());
+		args[1] = new char[_pathToFile.size() + 1];
+		args[1] = strcpy(args[1], _pathToFile.c_str());
 		args[2] = NULL;
 	} catch (std::bad_alloc &e) {
 		std::cerr << "CGI, configureArgumentsForComand - " << e.what() << std::endl;
