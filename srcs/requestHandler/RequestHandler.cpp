@@ -77,7 +77,7 @@ void RequestHandler::formResponse(WebClient* client)
 		} else if (request->getMethod() == "POST" || request->getMethod() == "PUT") {
 			doPost(location, request, response);
 		} else if (request->getMethod() == "DELETE") {
-			doDelete(location, request, response);
+			doDelete(response, path);
 		} else {
 			response->setStatusCode(501);
 		}
@@ -167,7 +167,7 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	time_t lastModified;
 	string body;
 
-	(void)path;
+//	(void)path;
 	string title = "Index of " + uri;
 	body.append("<html>\n"
 				"<head><title>"
@@ -209,11 +209,21 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	response->setStatusLine("200 OK");
 }
 
-void RequestHandler::doDelete(LocationContext* location, Request* request, Response* response)
+void RequestHandler::doDelete(Response* response, string& pathToFile)
 {
-	string pathToFile = location->getRoot() + request->getUri();
-
-	(void)request, (void)response;
+	if (access(pathToFile.c_str(), W_OK) != 0) {
+		response->setStatusCode(403);
+	} else if (std::remove(pathToFile.c_str()) != 0) {
+		response->setStatusCode(500);
+	} else {
+		response->setStatusCode(200);
+		string body = "<html>\n"
+					  "  <body>\n"
+					  "    <h1>File deleted.</h1>\n"
+					  "  </body>\n"
+					  "</html>";
+		response->setBody(body);
+	}
 }
 
 void RequestHandler::fillHeaders(Response* response, LocationContext* location)

@@ -58,7 +58,7 @@ public:
 
 	void doGet(LocationContext* location, Request* request, Response* response, string& pathToFile);
 
-	void doDelete(LocationContext* location, Request* request, Response* response);
+	void doDelete(Response* response, string& pathToFile);
 };
 
 #endif

@@ -16,9 +16,9 @@ class Request {
 private:
 	string _method;
 	string _uri;
-	string _protocol;
-	string _host;
-	string _buffer;
+	string _protocol; // TODO: заменить на верисию
+	string _host; // TODO: убрать это поля, вынести метод getHostName() в utils
+	string _buffer; // TODO: вынести буффер клиенту
 
 public:
 	map<string, string> _headers;
