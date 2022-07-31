@@ -4,7 +4,7 @@ RequestParser::RequestParser() { }
 
 RequestParser::~RequestParser() { }
 
-void RequestParser::processRequest(Request* request)
+void RequestParser::parseRequest(Request* request)
 {
 	size_t pos = request->getBuffer().find("\r\n\r\n");
 
@@ -14,11 +14,16 @@ void RequestParser::processRequest(Request* request)
 		vector<string> headers = ft_split(buffer, "\r\n");
 		parseStartLine(request, headers[0]);
 		setHeaders(request, headers);
-		setHost(request);
+		setHost(request); // TODO: вынести в utils, реализовать как метод getHostName()
 	}
 
 	if (request->getMethod() == "POST") {
-		parseBodyHeaders(request);
+		if (isChunkedRequest(request)) {
+//			parseChunked(request);
+		} else if (isRequestWithContentLength(request)) {
+//			parseBody(request);
+		}
+//		parseBodyHeaders(request);
 	}
 }
 
@@ -66,6 +71,7 @@ void RequestParser::parseBodyHeaders(Request* request)
 	request->setBuffer(request->getBuffer().substr(pos + 4));
 
 	// TODO: написать этот метод
+	if (is)
 }
 
 void RequestParser::setHost(Request* request)
@@ -87,7 +93,18 @@ bool RequestParser::isReadyRequest(Request* request)
 	} else if (request->getMethod() == "POST") {
 
 	} else if (request->getMethod() == "DELETE") {
+		return true;
 	}
 
 	return false;
+}
+
+bool RequestParser::isChunkedRequest(Request* request) const
+{
+	return request->getHeader("Transfer-Encoding") == "chunked";
+}
+
+bool RequestParser::isRequestWithContentLength(Request* request) const
+{
+	return !request->getHeader("Content-Length").empty();
 }

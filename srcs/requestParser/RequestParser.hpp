@@ -15,7 +15,7 @@ public:
 
 	~RequestParser();
 
-	void processRequest(Request* request);
+	void parseRequest(Request* request);
 
 	bool isReadyRequest(Request* request);
 
@@ -31,6 +31,10 @@ private:
 	void setHost(Request* request);
 
 	void parseBodyHeaders(Request* request);
+
+	bool isChunkedRequest(Request* request) const;
+
+	bool isRequestWithContentLength(Request* request) const;
 };
 
 #endif

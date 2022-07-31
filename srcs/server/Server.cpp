@@ -95,16 +95,18 @@ void Server::receiveRequest(WebClient* client, short& events)
 	cout << "User listens:" << endl;
 	ssize_t bytesRead = recv(client->getFd(), buffer, sizeof(buffer), 0);
 
-	if (bytesRead <= 0) {
-		cout << "Client ended the userfd!" << client->getFd() << endl;
+	if (bytesRead < 0) {
+		cout << "Error during request receipt from fd: " << client->getFd() << "." << endl;
 		events = POLLHUP;
-	}
-
-	client->getRequest()->appendBuffer(string(buffer, bytesRead));
-//	cout << client->getRequest()->getBuffer() << endl;
-	_parser.processRequest(client->getRequest());
-	if (_parser.isReadyRequest(client->getRequest())) {
-		events = POLLOUT;
+	} else if (bytesRead == 0) {
+		cout << "Client with fd: " << client->getFd() << " ended session." << endl;
+		events = POLLHUP;
+	} else {
+		client->getRequest()->appendBuffer(string(buffer, bytesRead));
+		_parser.parseRequest(client->getRequest());
+		if (_parser.isReadyRequest(client->getRequest())) {
+			events = POLLOUT;
+		}
 	}
 }
 
