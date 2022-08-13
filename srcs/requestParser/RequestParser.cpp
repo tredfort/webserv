@@ -17,13 +17,13 @@ void RequestParser::parseRequest(Request* request)
 		setHost(request); // TODO: вынести в utils, реализовать как метод getHostName()
 	}
 
-	if (request->getMethod() == "POST") {
+	if (request->isPostMethod()) {
 		if (isChunkedRequest(request)) {
-//			parseChunked(request);
+			//			parseChunked(request);
 		} else if (isRequestWithContentLength(request)) {
-//			parseBody(request);
+			//			parseBody(request);
 		}
-//		parseBodyHeaders(request);
+		parsePostBodyHeaders(request);
 	}
 }
 
@@ -60,18 +60,17 @@ void RequestParser::setHeaders(Request* request, vector<string> headers)
 	}
 }
 
-void RequestParser::parseBodyHeaders(Request* request)
+void RequestParser::parsePostBodyHeaders(Request* request)
 {
-	size_t pos = request->getBuffer().find("\r\n\r\n");
+	std::cout << "request buffer:" << request->getBuffer() << endl << endl;
 
-	if (pos == std::string::npos)
-		return;
+	const string contentType = request->getHeader("Content-Type");
+	const size_t boundaryPos = contentType.find("boundary=");
+	const string boundary = boundaryPos == string::npos ? "" : contentType.substr(boundaryPos + string("boundary=").size());
+	vector<string> values = ft_split(request->getBuffer(), "--" + boundary);
 
-	std::string buffer = request->getBuffer().substr(0, pos);
-	request->setBuffer(request->getBuffer().substr(pos + 4));
-
-	// TODO: написать этот метод
-	if (is)
+	for (vector<string>::iterator it = values.begin(), ite = values.end(); it != ite; ++it)
+		request->addPostVariable(new PostVariable(*it));
 }
 
 void RequestParser::setHost(Request* request)
@@ -87,24 +86,18 @@ void RequestParser::setHost(Request* request)
 
 bool RequestParser::isReadyRequest(Request* request)
 {
-	if (request->getMethod() == "GET") {
+	if (request->isGetMethod()) {
 		request->setBuffer("");
 		return true;
-	} else if (request->getMethod() == "POST") {
-
-	} else if (request->getMethod() == "DELETE") {
+	} else if (request->isPostMethod()) {
+		return true;
+	} else if (request->isDeleteMethod()) {
 		return true;
 	}
 
 	return false;
 }
 
-bool RequestParser::isChunkedRequest(Request* request) const
-{
-	return request->getHeader("Transfer-Encoding") == "chunked";
-}
+bool RequestParser::isChunkedRequest(Request* request) const { return request->getHeader("Transfer-Encoding") == "chunked"; }
 
-bool RequestParser::isRequestWithContentLength(Request* request) const
-{
-	return !request->getHeader("Content-Length").empty();
-}
+bool RequestParser::isRequestWithContentLength(Request* request) const { return !request->getHeader("Content-Length").empty(); }

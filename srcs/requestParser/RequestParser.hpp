@@ -1,8 +1,8 @@
 #ifndef REQUESTPARSER_HPP
 #define REQUESTPARSER_HPP
 
-#include <sys/socket.h>
 #include <sys/poll.h>
+#include <sys/socket.h>
 #include <vector>
 
 #include "../model/Request.hpp"
@@ -30,7 +30,7 @@ private:
 
 	void setHost(Request* request);
 
-	void parseBodyHeaders(Request* request);
+	void parsePostBodyHeaders(Request* request);
 
 	bool isChunkedRequest(Request* request) const;
 

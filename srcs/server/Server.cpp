@@ -120,7 +120,6 @@ void Server::sendResponse(WebClient* client, short& events)
 
 		if (sendBytes < 0) {
 			cout << "Client ended the userfd!" << client->getFd() << endl;
-			//					return false;
 		}
 
 		client->getResponse()->setBuffer(buffer.substr(sendBytes));

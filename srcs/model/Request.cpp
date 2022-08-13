@@ -41,3 +41,12 @@ const string& Request::getBuffer() const { return _buffer; }
 void Request::setBuffer(const string& buffer) { _buffer = buffer; }
 
 void Request::appendBuffer(const string& buffer) { _buffer.append(buffer); }
+
+void Request::addPostVariable(PostVariable* p) { _postVariables.push_back(p); }
+
+vector<PostVariable*> Request::getPostVariables() { return _postVariables; }
+
+bool Request::isGetMethod() { return _method == GET_METHOD; }
+bool Request::isPostMethod() { return _method == POST_METHOD; }
+bool Request::isPutMethod() { return _method == PUT_METHOD; }
+bool Request::isDeleteMethod() { return _method == DELETE_METHOD; }
