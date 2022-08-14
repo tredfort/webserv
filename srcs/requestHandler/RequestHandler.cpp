@@ -77,7 +77,9 @@ void RequestHandler::formResponse(WebClient* client)
 		} else if (request->isPostMethod()) {
 			doPost(request, response, location);
 		} else if (request->isPutMethod()) {
-			doPut(request, response, location);
+			// TODO:: implement doPut function
+			doPost(request, response, location);
+			// doPut(request, response, location);
 		} else if (request->isDeleteMethod()) {
 			doDelete(request, response, location);
 		} else {
@@ -165,6 +167,7 @@ void RequestHandler::doGet(Request* request, Response* response, LocationContext
 	}
 }
 
+// TODO:: handle request without upload directive
 void RequestHandler::doPost(Request* request, Response* response, LocationContext* location)
 {
 	vector<PostVariable*> postVariables = request->getPostVariables();
@@ -175,6 +178,7 @@ void RequestHandler::doPost(Request* request, Response* response, LocationContex
 	for (vector<PostVariable*>::iterator it = postVariables.begin(); it != postVariables.end(); ++it) {
 		string filename = (*it)->getHeader("filename"); // getFilename
 		string filePath;
+
 		if (startsWith(uploadPath, "/")) {
 			filePath = "" + uploadPath + (getLastSymbol(uploadPath) == '/' ? "" : "/") + filename;
 		} else {
@@ -201,6 +205,8 @@ void RequestHandler::doPost(Request* request, Response* response, LocationContex
 	} else {
 		response->setStatusCode(303);
 		response->setBody("Any of files not created");
+		// TODO:: add location header here
+		//			response->pushHeader("Location: /\r\n");
 	}
 }
 
