@@ -103,7 +103,6 @@ void Server::receiveRequest(WebClient* client, short& events)
 		events = POLLHUP;
 	} else {
 		client->getRequest()->appendBuffer(string(buffer, bytesRead));
-		cout << "Incoming buffer" << endl << buffer << endl << endl;
 		_parser.parseRequest(client->getRequest());
 		if (_parser.isReadyRequest(client->getRequest())) {
 			events = POLLOUT;
