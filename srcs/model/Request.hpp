@@ -19,12 +19,26 @@ private:
 	string _protocol; // TODO: заменить на верисию
 	string _host; // TODO: убрать это поля, вынести метод getHostName() в utils
 	string _buffer; // TODO: вынести буффер клиенту
+	string _fileName;
+	string _body;
+//	int _contentLength;
+public:
+	const string& getBody() const;
+	void setBody(const string& body);
 
 public:
 	map<string, string> _headers;
 	Request();
 
 	~Request();
+
+	const string& getFileName() const;
+
+	void setFileName(const string& fileName);
+
+	int getContentLength() const;
+
+	void setContentLength(int contentLength);
 
 	const string& getMethod() const;
 

@@ -41,3 +41,13 @@ const string& Request::getBuffer() const { return _buffer; }
 void Request::setBuffer(const string& buffer) { _buffer = buffer; }
 
 void Request::appendBuffer(const string& buffer) { _buffer.append(buffer); }
+
+const string& Request::getFileName() const { return _fileName; }
+
+void Request::setFileName(const string& fileName) { _fileName = fileName; }
+
+int Request::getContentLength() const { return _body.size(); }
+
+const string& Request::getBody() const { return _body; }
+
+void Request::setBody(const string& body) { _body = body; }

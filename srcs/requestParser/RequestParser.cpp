@@ -19,9 +19,9 @@ void RequestParser::parseRequest(Request* request)
 
 	if (request->getMethod() == "POST") {
 		if (isChunkedRequest(request)) {
-//			parseChunked(request);
+			parseChunked(request);
 		} else if (isRequestWithContentLength(request)) {
-//			parseBody(request);
+			parseBody(request);
 		}
 //		parseBodyHeaders(request);
 	}
@@ -71,7 +71,6 @@ void RequestParser::parseBodyHeaders(Request* request)
 	request->setBuffer(request->getBuffer().substr(pos + 4));
 
 	// TODO: написать этот метод
-	if (is)
 }
 
 void RequestParser::setHost(Request* request)
@@ -107,4 +106,19 @@ bool RequestParser::isChunkedRequest(Request* request) const
 bool RequestParser::isRequestWithContentLength(Request* request) const
 {
 	return !request->getHeader("Content-Length").empty();
+}
+
+void RequestParser::parseBody(Request* request)
+{
+	string fileName = getFileName(request->getUri());
+	request->setFileName(fileName);
+	int contentLength = std::atoi(request->getHeader("Content-Length").c_str());
+	request->setContentLength(contentLength);
+}
+
+void RequestParser::parseChunked(Request* request)
+{
+	if ()
+	string fileName = getFileName(request->getUri());
+	request->setFileName(fileName);
 }
