@@ -92,7 +92,7 @@ void Server::receiveRequest(WebClient* client, short& events)
 {
 	char buffer[BUFFER_SIZE];
 
-	cout << "User listens:" << endl;
+	cout << "Server listens client..." << endl;
 	ssize_t bytesRead = recv(client->getFd(), buffer, sizeof(buffer), 0);
 
 	if (bytesRead < 0) {
@@ -103,8 +103,14 @@ void Server::receiveRequest(WebClient* client, short& events)
 		events = POLLHUP;
 	} else {
 		client->getRequest()->appendBuffer(string(buffer, bytesRead));
-		_parser.parseRequest(client->getRequest());
-		if (_parser.isReadyRequest(client->getRequest())) {
+		cout << "incoming request:" << endl << string(buffer, bytesRead) << endl << endl;
+		bool isRequestEnded = _parser.parseRequest(client->getRequest());
+
+		if (client->getRequest()->isGetMethod() && isRequestEnded) {
+			client->getRequest()->setBuffer("");
+		}
+		if (isRequestEnded) {
+			cout << "stop listen to user" << endl;
 			events = POLLOUT;
 		}
 	}
@@ -116,6 +122,7 @@ void Server::sendResponse(WebClient* client, short& events)
 		_handler.formResponse(client);
 	} else {
 		string buffer = client->getResponse()->getBuffer();
+		cout << "send response" << endl << buffer << endl;
 		ssize_t sendBytes = send(client->getFd(), buffer.c_str(), buffer.size(), 0);
 
 		if (sendBytes < 0) {
@@ -123,6 +130,7 @@ void Server::sendResponse(WebClient* client, short& events)
 		}
 
 		client->getResponse()->setBuffer(buffer.substr(sendBytes));
+
 		if (client->getResponse()->getBuffer().empty()) {
 			client->clear();
 			events = POLLIN;

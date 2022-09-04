@@ -166,6 +166,7 @@ vector<LocationContext*> ServerContext::getLocationContexts(const string& patter
 {
 	vector<LocationContext*> result;
 
+	// TODO:: POST request comes here with uri = ""
 	for (vector<LocationContext*>::iterator it = _locations.begin(), ite = _locations.end(); it != ite; ++it) {
 		if (startsWith(pattern, (*it)->getLocation()))
 			result.push_back(*it);
@@ -197,7 +198,8 @@ void ServerContext::setErrorPagesFromConfigContext(map<int, string>& configError
 	}
 }
 
-void ServerContext::setDefaultAllowedMethods() {
+void ServerContext::setDefaultAllowedMethods()
+{
 	for (vector<LocationContext*>::iterator it = _locations.begin(), ite = _locations.end(); it != ite; ++it)
 		(*it)->setDefaultAllowedMethods();
 }

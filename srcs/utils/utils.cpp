@@ -123,7 +123,7 @@ bool isAccessRights(string& pathToFile)
 	return stat(pathToFile.c_str(), &file) != -1 && file.st_mode & S_IROTH;
 }
 
-bool startsWith(const string& str, const string& pattern) { return str.find(pattern.c_str(), 0, pattern.length()) != string::npos; }
+bool startsWith(const string& str, const string& pattern) { return str.empty() || str.find(pattern.c_str(), 0, pattern.length()) != string::npos; }
 
 string getErrorPageBody(string errorMessage)
 {
@@ -173,7 +173,8 @@ string getStringAfterTarget(string source, string target)
 	return targetPos == string::npos ? "" : source.substr(targetPos + target.size());
 }
 
-char getLastSymbol(string s) { return s[s.length() - 1]; }
+// TODO:: very danger return of '\0'
+char getLastSymbol(string s) { return (s.length() > 0) ? s[s.length() - 1] : '\0'; }
 
 string getFileFormat(string& fileName)
 {

@@ -4,11 +4,22 @@ RequestParser::RequestParser() { }
 
 RequestParser::~RequestParser() { }
 
-void RequestParser::parseRequest(Request* request)
+bool RequestParser::parseRequest(Request* request)
 {
-	size_t pos = request->getBuffer().find("\r\n\r\n");
 
-	if (pos != std::string::npos && request->emptyHeader()) {
+	// TODO:: maybe last characters should be like this?
+	size_t pos = request->getBuffer().find("\r\n\r\n");
+	bool isRequestEnded = pos != std::string::npos;
+	//	//  Если это чанк реквест, тогда  конце должен прийти тупо 0
+
+	if (isChunkedRequest(request)) {
+		size_t pos2 = request->getBuffer().find("\r\n");
+		string s = request->getBuffer().substr(0, pos2);
+		if (s == "0")
+			return true;
+	}
+
+	if (isRequestEnded && request->emptyHeader()) {
 		std::string buffer = request->getBuffer().substr(0, pos);
 		request->setBuffer(request->getBuffer().substr(pos + 4));
 		vector<string> headers = ft_split(buffer, "\r\n");
@@ -17,22 +28,34 @@ void RequestParser::parseRequest(Request* request)
 		setHost(request); // TODO: вынести в utils, реализовать как метод getHostName()
 	}
 
-	if (request->isPostMethod()) {
-		if (isChunkedRequest(request)) {
-			//			parseChunked(request);
-		} else if (isRequestWithContentLength(request)) {
-			//			parseBody(request);
-		}
+	if (isChunkedRequest(request)) {
+		size_t pos2 = request->getBuffer().find("\r\n");
+		string s = request->getBuffer().substr(0, pos2);
+		if (s == "0")
+			return true;
+	}
+
+	if (isRequestEnded && (request->isGetMethod() || request->isDeleteMethod()))
+		return true;
+
+	if (isRequestWithContentLength(request)) {
 		parsePostBodyHeaders(request);
 	}
+
+	if (!isRequestEnded && isChunkedRequest(request)) {
+		return false;
+	}
+
+	return isRequestEnded;
 }
 
 void RequestParser::parseStartLine(Request* request, string& startLine)
 {
+	cout << "parsing request " << startLine << endl;
 	size_t start;
 	size_t end = startLine.find(' ');
 	if (end == std::string::npos)
-		return;
+		return; // TODO:: what if it is not ended request?
 	request->setMethod(startLine.substr(0, end));
 
 	start = end + 1;

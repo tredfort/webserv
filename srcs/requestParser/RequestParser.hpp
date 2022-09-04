@@ -15,7 +15,12 @@ public:
 
 	~RequestParser();
 
-	void parseRequest(Request* request);
+	/**
+	 * parse request
+	 * @param request
+	 * @return true if request ended false otherwise
+	 */
+	bool parseRequest(Request* request);
 
 	bool isReadyRequest(Request* request);
 

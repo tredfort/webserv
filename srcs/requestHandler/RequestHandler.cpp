@@ -72,6 +72,7 @@ void RequestHandler::formResponse(WebClient* client)
 			response->setStatusCode(500);
 		}
 	} else {
+		cout << "method:" << request->getMethod() << endl;
 		if (request->isGetMethod()) {
 			doGet(request, response, location);
 		} else if (request->isPostMethod()) {
@@ -175,6 +176,13 @@ void RequestHandler::doPost(Request* request, Response* response, LocationContex
 	string uploadPath = location->getUploadPath();
 	cout << "post variables count: " << postVariables.size() << endl;
 
+	//	if (postVariables.empty())
+	//	{
+	//		response->setStatusCode(200);
+	//		response->setBody("Nothing created");
+	//		return;
+	//	}
+
 	for (vector<PostVariable*>::iterator it = postVariables.begin(); it != postVariables.end(); ++it) {
 		string filename = (*it)->getHeader("filename"); // getFilename
 		string filePath;
@@ -204,9 +212,8 @@ void RequestHandler::doPost(Request* request, Response* response, LocationContex
 		response->setBody("Some of files was created or rewritten");
 	} else {
 		response->setStatusCode(303);
-		response->setBody("Any of files not created");
-		// TODO:: add location header here
-		//			response->pushHeader("Location: /\r\n");
+		//		response->setBody("Any of files not created");
+		response->pushHeader("Location: /\r\n");
 	}
 }
 
