@@ -10,10 +10,7 @@
 
 # location []
 
-- autoindex[]
 - cgi_extension[]
-- client_max_body_size[]
-- error_page[]
 - index[]
 - redirect[]
 - root[]

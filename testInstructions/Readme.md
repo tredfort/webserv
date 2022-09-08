@@ -1,6 +1,7 @@
-## How to execute tests from folder?
+## Как использовать тесты?
 
-- Go to specific folder
-- Replace html folder with resources/html
-- Copy content of [test_name].conf to config.conf or specify it on start
-- Execute server, check that all directives work
+- Перейти в папку с нужной директивой
+- Скопировать папку html в корневую папку html
+- Скопировать содержимое [директива].conf в config.conf или указать путь до файла
+- Прочитать дополнительные инструкцию в Readme.md в папке директивы если такой файл есть
+- Запустить сервер, проверить что всё работает
