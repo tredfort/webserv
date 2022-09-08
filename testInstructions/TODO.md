@@ -1,0 +1,20 @@
+# server[]
+
+- error_page [ ]
+- server_name []
+- listen 80 []
+- autoindex []
+- client_max_body_size []
+- error_page 500 []
+- index []
+
+# location []
+
+- autoindex[]
+- cgi_extension[]
+- client_max_body_size[]
+- error_page[]
+- index[]
+- redirect[]
+- root[]
+- upload_path[]
