@@ -38,8 +38,6 @@ public:
 
 	int getContentLength() const;
 
-	void setContentLength(int contentLength);
-
 	const string& getMethod() const;
 
 	const string& getUri() const;

@@ -112,13 +112,38 @@ void RequestParser::parseBody(Request* request)
 {
 	string fileName = getFileName(request->getUri());
 	request->setFileName(fileName);
-	int contentLength = std::atoi(request->getHeader("Content-Length").c_str());
-	request->setContentLength(contentLength);
+	size_t contentLength = std::atoi(request->getHeader("Content-Length").c_str());
+	if (request->getBuffer().size() > contentLength) {
+		throw "400 BAD REQUEST! RECV size > then MUST BE";
+	}
+	string body = request->getBuffer();
+	request->setBuffer("");
+	request->setBody(body);
 }
 
 void RequestParser::parseChunked(Request* request)
 {
-	if ()
-	string fileName = getFileName(request->getUri());
-	request->setFileName(fileName);
+	const string newLine = "\r\n";
+	size_t newLineLen = newLine.length();
+	const string& chunks = request->getBuffer();
+	size_t chunkedRequestEnd = chunks.find("\r\n0\r\n\r\n");
+	size_t chunkEnd = 0;
+	if (chunkedRequestEnd != std::string::npos) {
+		if (chunks.length() != chunkedRequestEnd + 7) {
+			throw BadChunkedRequestException();
+		}
+		while (chunkEnd < chunkedRequestEnd) {
+			size_t chunkStart = chunks.find(newLine, chunkEnd);
+			size_t chunkLength = stringToInt(chunks.substr(chunkEnd, chunkStart - chunkEnd));
+			chunkStart += newLineLen;
+			chunkEnd = chunks.find(newLine, chunkStart);
+			string chunk = chunks.substr(chunkStart, chunkEnd - chunkStart);
+			chunkEnd += newLineLen;
+			if (chunk.length() != chunkLength) {
+				throw BadChunkedRequestException();
+			}
+			request->setBody(request->getBody() + chunk);
+		}
+		request->setBuffer("");
+	}
 }

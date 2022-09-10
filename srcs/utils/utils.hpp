@@ -107,4 +107,16 @@ string getFileFormat(string& path);
 
 string getFileName(const string& path);
 
+int stringToInt(const string& str);
+
+class CastToIntException : public std::exception {
+public:
+	const char *what() const throw();
+};
+
+class BadChunkedRequestException : public std::exception {
+public:
+	const char *what() const throw();
+};
+
 #endif

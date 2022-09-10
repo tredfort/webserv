@@ -193,3 +193,16 @@ string getFileName(const string& path) {
 	}
 }
 
+int stringToInt(const string& str) {
+	char* endPtr;
+	long number = std::strtol(str.c_str(), &endPtr, 10);
+
+	if (*endPtr || number < INT32_MIN || number > INT32_MAX) {
+		throw CastToIntException();
+	}
+	return number;
+}
+
+const char* CastToIntException::what() const throw() { return "Conversion error to integer"; }
+
+const char* BadChunkedRequestException::what() const throw() { return "Bad chunked request"; }
