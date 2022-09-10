@@ -7,6 +7,5 @@
 # location []
 
 - ~~cgi_extension[]~~
-- redirect[]
 - root[]
 - upload_path[]
