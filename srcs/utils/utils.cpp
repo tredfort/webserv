@@ -203,6 +203,21 @@ int stringToInt(const string& str) {
 	return number;
 }
 
+bool createFile(const string& pathToFile, const string& content) {
+	std::ofstream targetFile(pathToFile);
+	if (!targetFile.is_open())
+		return false;
+//		throw "500 cannot creat file in POST";
+	targetFile << content;
+	targetFile.close();
+	return true;
+}
+
+string getParentFilePath(const string& pathToFile) {
+	size_t pos = pathToFile.find_last_of('/');
+	return pathToFile.substr(0, pos);
+}
+
 const char* CastToIntException::what() const throw() { return "Conversion error to integer"; }
 
 const char* BadChunkedRequestException::what() const throw() { return "Bad chunked request"; }

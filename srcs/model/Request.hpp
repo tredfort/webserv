@@ -36,7 +36,7 @@ public:
 
 	void setFileName(const string& fileName);
 
-	int getContentLength() const;
+	size_t getContentLength() const;
 
 	const string& getMethod() const;
 

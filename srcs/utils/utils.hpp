@@ -109,6 +109,10 @@ string getFileName(const string& path);
 
 int stringToInt(const string& str);
 
+bool createFile(const string& pathToFile, const string& content);
+
+string getParentFilePath(const string& pathToFile);
+
 class CastToIntException : public std::exception {
 public:
 	const char *what() const throw();

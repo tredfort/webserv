@@ -1,6 +1,6 @@
 #include "LocationContext.hpp"
 
-LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstream* fileStream)
+LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstream* fileStream) : _clientMaxBodySize(INT32_MAX)
 {
 	string line;
 	ssize_t directiveIndex;

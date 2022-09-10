@@ -46,7 +46,7 @@ const string& Request::getFileName() const { return _fileName; }
 
 void Request::setFileName(const string& fileName) { _fileName = fileName; }
 
-int Request::getContentLength() const { return (int)_body.size(); }
+size_t Request::getContentLength() const { return (int)_body.size(); }
 
 const string& Request::getBody() const { return _body; }
 

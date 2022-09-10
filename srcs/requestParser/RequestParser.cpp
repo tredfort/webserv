@@ -90,7 +90,10 @@ bool RequestParser::isReadyRequest(Request* request)
 		request->setBuffer("");
 		return true;
 	} else if (request->getMethod() == "POST") {
-
+		if (!request->getBody().empty()) {
+			return true;
+		}
+		return false;
 	} else if (request->getMethod() == "DELETE") {
 		return true;
 	}
@@ -112,7 +115,7 @@ void RequestParser::parseBody(Request* request)
 {
 	string fileName = getFileName(request->getUri());
 	request->setFileName(fileName);
-	size_t contentLength = std::atoi(request->getHeader("Content-Length").c_str());
+	size_t contentLength = stringToInt(request->getHeader("Content-Length"));
 	if (request->getBuffer().size() > contentLength) {
 		throw "400 BAD REQUEST! RECV size > then MUST BE";
 	}
@@ -145,5 +148,7 @@ void RequestParser::parseChunked(Request* request)
 			request->setBody(request->getBody() + chunk);
 		}
 		request->setBuffer("");
+		string fileName = getFileName(request->getUri());
+		request->setFileName(fileName);
 	}
 }

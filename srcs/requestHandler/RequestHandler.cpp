@@ -59,7 +59,11 @@ void RequestHandler::formResponse(WebClient* client)
 	} else if (!location->getAllowedMethods().empty() && !location->getAllowedMethods().count(request->getMethod())) {
 		response->setStatusCode(405);
 	} // TODO: GET метод нельзя запретить и он всегда должен быть в разрешенных методах!
+	else if (request->getContentLength() > location->getClientMaxBodySize()) {
+		response->setStatusCode(413);
+	}
 	string path = getPathFromUri(request->getUri(), location);
+	path = location->getRoot() + request->getUri();
 	if (path.empty()) {
 		response->setStatusCode(404);
 	} else if (isFileShouldBeHandleByCGI(path)) {
@@ -75,7 +79,7 @@ void RequestHandler::formResponse(WebClient* client)
 		if (request->getMethod() == "GET") {
 			doGet(location, request, response, path);
 		} else if (request->getMethod() == "POST" || request->getMethod() == "PUT") {
-			doPost(location, request, response);
+			doPost(location, request, response, path);
 		} else if (request->getMethod() == "DELETE") {
 			doDelete(response, path);
 		} else {
@@ -144,7 +148,21 @@ void RequestHandler::setBodyForStatusCode(Response* response, LocationContext* l
 	}
 }
 
-void RequestHandler::doPost(LocationContext* location, Request* request, Response* response) { (void)location, (void)request, (void)response; }
+void RequestHandler::doPost(LocationContext* location, Request* request, Response* response, string& pathToFile) {
+	if (pathToFile.empty()) {
+		pathToFile = location->getRoot() + request->getUri();
+	}
+	(void)location;
+//	(void)request, (void)response; (void)pathToFile;
+	if (isFileExists(pathToFile)) {
+//		deleteFile(pathToFile);
+	}
+	if (!createFile(pathToFile, request->getBody())) {
+		response->setStatusCode(500);
+	} else {
+		folderContents(response, getParentFilePath(pathToFile), request->getUri());
+	}
+}
 
 void RequestHandler::doGet(LocationContext* location, Request* request, Response* response, string& pathToFile)
 {
