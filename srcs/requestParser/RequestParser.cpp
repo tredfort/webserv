@@ -90,10 +90,10 @@ bool RequestParser::isReadyRequest(Request* request)
 		request->setBuffer("");
 		return true;
 	} else if (request->getMethod() == "POST") {
-		if (!request->getBody().empty()) {
-			return true;
+		if (isChunkedRequest(request)) {
+			return !request->getBody().empty();
 		}
-		return false;
+		return request->getContentLength() == (size_t)stringToInt(request->getHeader("Content-Length"));
 	} else if (request->getMethod() == "DELETE") {
 		return true;
 	}
@@ -121,7 +121,7 @@ void RequestParser::parseBody(Request* request)
 	}
 	string body = request->getBuffer();
 	request->setBuffer("");
-	request->setBody(body);
+	request->setBody(request->getBody() + body);
 }
 
 void RequestParser::parseChunked(Request* request)
@@ -148,7 +148,6 @@ void RequestParser::parseChunked(Request* request)
 			request->setBody(request->getBody() + chunk);
 		}
 		request->setBuffer("");
-		string fileName = getFileName(request->getUri());
-		request->setFileName(fileName);
+		request->setFileName(getFileName(request->getUri()));
 	}
 }

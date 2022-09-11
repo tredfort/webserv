@@ -30,10 +30,10 @@ void RequestHandler::readfile(Response* response, const std::string& path)
 	response->setContentType(mimeType(extension));
 	try {
 		response->setBody(FileReader::readFile(path));
-		response->setStatusLine("200 OK");
+		response->setStatusCode(200);
 	} catch (FileReader::FileNotFoundException& ex) {
 		response->setBody(getErrorPageBody("ДОБРО ПОЖАЛОВАТЬ НА СТРАНИЦУ 404!"));
-		response->setStatusLine("404 NOT FOUND");
+		response->setStatusCode(404);
 	}
 }
 
@@ -63,8 +63,7 @@ void RequestHandler::formResponse(WebClient* client)
 		response->setStatusCode(413);
 	}
 	string path = getPathFromUri(request->getUri(), location);
-	path = location->getRoot() + request->getUri();
-	if (path.empty()) {
+	if (path.empty() && request->getMethod() != "POST") {
 		response->setStatusCode(404);
 	} else if (isFileShouldBeHandleByCGI(path)) {
 		CGI cgi(*request, path, _env);
@@ -87,7 +86,7 @@ void RequestHandler::formResponse(WebClient* client)
 		}
 	}
 	setStatusLine(response);
-	if (response->getStatusCode()) {
+	if (response->getStatusCode() != 200) {
 		setBodyForStatusCode(response, location);
 	}
 	fillHeaders(response, location);
@@ -96,6 +95,9 @@ void RequestHandler::formResponse(WebClient* client)
 void RequestHandler::setStatusLine(Response* response)
 {
 	switch (response->getStatusCode()) {
+	case 200:
+		response->setStatusLine("200 OK");
+		break;
 	case 301:
 		response->setStatusLine("301 Moved Permanently");
 		break;
@@ -152,15 +154,11 @@ void RequestHandler::doPost(LocationContext* location, Request* request, Respons
 	if (pathToFile.empty()) {
 		pathToFile = location->getRoot() + request->getUri();
 	}
-	(void)location;
-//	(void)request, (void)response; (void)pathToFile;
-	if (isFileExists(pathToFile)) {
-//		deleteFile(pathToFile);
-	}
 	if (!createFile(pathToFile, request->getBody())) {
 		response->setStatusCode(500);
 	} else {
-		folderContents(response, getParentFilePath(pathToFile), request->getUri());
+		readfile(response, pathToFile);
+//		folderContents(response, getParentFilePath(pathToFile), request->getUri());
 	}
 }
 
@@ -185,7 +183,6 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	time_t lastModified;
 	string body;
 
-//	(void)path;
 	string title = "Index of " + uri;
 	body.append("<html>\n"
 				"<head><title>"
@@ -224,7 +221,7 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	body.append("</pre><hr></body>\n"
 				"</html>\n");
 	response->setBody(body);
-	response->setStatusLine("200 OK");
+	response->setStatusCode(200);
 }
 
 void RequestHandler::doDelete(Response* response, string& pathToFile)
@@ -257,8 +254,10 @@ void RequestHandler::fillHeaders(Response* response, LocationContext* location)
 	if (redirect.first != 0) {
 		response->pushHeader("Location: " + redirect.second + "\r\n");
 	}
-	response->pushHeader("Connection: keep-alive\r\n\r\n");
-	response->setBuffer(response->getHeaders() + response->getBody());
+	if (response->getStatusCode() == 200) {
+		response->pushHeader("Connection: keep-alive\r\n");
+	}
+	response->setBuffer(response->getHeaders() + "\r\n" + response->getBody());
 }
 
 string RequestHandler::getPathFromUri(const string& uri, LocationContext* location) const

@@ -102,11 +102,6 @@ void Server::receiveRequest(WebClient* client, short& events)
 		cout << "Client with fd: " << client->getFd() << " ended session." << endl;
 		events = POLLHUP;
 	} else {
-		cout << "read bytes: " << bytesRead << "\n*\n" << string(buffer, bytesRead)<< endl;
-		if (string(buffer, bytesRead).find("0\r\n\r\n") != string::npos) {
-			char signal = 7;
-			cout << signal << endl;
-		}
 		client->getRequest()->appendBuffer(string(buffer, bytesRead));
 		_parser.parseRequest(client->getRequest());
 		if (_parser.isReadyRequest(client->getRequest())) {
