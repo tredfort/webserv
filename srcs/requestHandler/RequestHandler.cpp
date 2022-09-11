@@ -49,6 +49,7 @@ void RequestHandler::formResponse(WebClient* client)
 	cout << "*location info*" << endl;
 	location->printConfig();
 	response->setProtocol("HTTP/1.1");
+	string path = getPathFromUri(request->getUri(), location);
 
 	if (isBadRequest(request)) {
 		response->setStatusCode(400);
@@ -56,14 +57,12 @@ void RequestHandler::formResponse(WebClient* client)
 		response->setStatusCode(505);
 	} else if (location->getRedirect().first) {
 		response->setStatusCode(location->getRedirect().first);
-	} else if (!location->getAllowedMethods().empty() && !location->getAllowedMethods().count(request->getMethod())) {
+	} else if (!location->getAllowedMethods().count(request->getMethod())) {
 		response->setStatusCode(405);
 	} // TODO: GET метод нельзя запретить и он всегда должен быть в разрешенных методах!
 	else if (request->getContentLength() > location->getClientMaxBodySize()) {
 		response->setStatusCode(413);
-	}
-	string path = getPathFromUri(request->getUri(), location);
-	if (path.empty() && request->getMethod() != "POST") {
+	} else if (!isFileExists(path) && request->getMethod() != "POST" && request->getMethod() != "PUT") {
 		response->setStatusCode(404);
 	} else if (isFileShouldBeHandleByCGI(path)) {
 		CGI cgi(*request, path, _env);
@@ -150,21 +149,22 @@ void RequestHandler::setBodyForStatusCode(Response* response, LocationContext* l
 	}
 }
 
-void RequestHandler::doPost(LocationContext* location, Request* request, Response* response, string& pathToFile) {
-	if (pathToFile.empty()) {
-		pathToFile = location->getRoot() + request->getUri();
-	}
+void RequestHandler::doPost(LocationContext* location, Request* request, Response* response, string& pathToFile)
+{
+	(void)location;
 	if (!createFile(pathToFile, request->getBody())) {
 		response->setStatusCode(500);
 	} else {
 		readfile(response, pathToFile);
-//		folderContents(response, getParentFilePath(pathToFile), request->getUri());
+		//		folderContents(response, getParentFilePath(pathToFile), request->getUri());
 	}
 }
 
 void RequestHandler::doGet(LocationContext* location, Request* request, Response* response, string& pathToFile)
 {
-	if (isDirectory(pathToFile)) {
+	if (!isFileExists(pathToFile)) {
+		response->setStatusCode(404);
+	} else if (isDirectory(pathToFile)) {
 		if (location->isAutoIndex()) {
 			folderContents(response, pathToFile, request->getUri());
 		} else {
@@ -263,29 +263,23 @@ void RequestHandler::fillHeaders(Response* response, LocationContext* location)
 string RequestHandler::getPathFromUri(const string& uri, LocationContext* location) const
 {
 	string path = location->getRoot() + uri;
-	if (isFileExists(path)) {
-		if (isDirectory(path)) {
-			if (path.back() != '/') {
-				path.append("/");
+	if (isFileExists(path) && isDirectory(path)) {
+		if (path.back() != '/') {
+			path.append("/");
+		}
+		for (vector<string>::const_iterator it = location->getIndex().begin(), ite = location->getIndex().end(); it != ite; ++it) {
+			string pathToIndexFile;
+			if ((*it).front() == '/') {
+				pathToIndexFile = location->getRoot() + *it;
+			} else {
+				pathToIndexFile = path + *it;
 			}
-			for (vector<string>::const_iterator it = location->getIndex().begin(), ite = location->getIndex().end(); it != ite; ++it) {
-				string pathToIndexFile;
-				if ((*it).front() == '/') {
-					pathToIndexFile = location->getRoot() + *it;
-				} else {
-					pathToIndexFile = path + *it;
-				}
-				if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
-					return pathToIndexFile;
-				}
+			if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
+				return pathToIndexFile;
 			}
 		}
-		return path;
 	}
-	return string();
+	return path;
 }
 
-bool RequestHandler::isFileShouldBeHandleByCGI(string& pathToFile) const
-{
-	return _cgiFileFormats.find(getFileFormat(pathToFile)) != _cgiFileFormats.end();
-}
+bool RequestHandler::isFileShouldBeHandleByCGI(string& pathToFile) const { return _cgiFileFormats.find(getFileFormat(pathToFile)) != _cgiFileFormats.end(); }
