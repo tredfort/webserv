@@ -57,10 +57,9 @@ void RequestHandler::formResponse(WebClient* client)
 		response->setStatusCode(505);
 	} else if (location->getRedirect().first) {
 		response->setStatusCode(location->getRedirect().first);
-	} else if (!location->getAllowedMethods().count(request->getMethod())) {
+	} else if (request->getMethod() != "GET" && !location->getAllowedMethods().count(request->getMethod())) {
 		response->setStatusCode(405);
-	} // TODO: GET метод нельзя запретить и он всегда должен быть в разрешенных методах!
-	else if (request->getContentLength() > location->getClientMaxBodySize()) {
+	} else if (request->getContentLength() > location->getClientMaxBodySize()) {
 		response->setStatusCode(413);
 	} else if (!isFileExists(path) && request->getMethod() != "POST" && request->getMethod() != "PUT") {
 		response->setStatusCode(404);
@@ -85,7 +84,7 @@ void RequestHandler::formResponse(WebClient* client)
 		}
 	}
 	setStatusLine(response);
-	if (response->getStatusCode() != 200) {
+	if (response->getStatusCode() < 200 || response->getStatusCode() >= 400) {
 		setBodyForStatusCode(response, location);
 	}
 	fillHeaders(response, location);
@@ -254,7 +253,7 @@ void RequestHandler::fillHeaders(Response* response, LocationContext* location)
 	if (redirect.first != 0) {
 		response->pushHeader("Location: " + redirect.second + "\r\n");
 	}
-	if (response->getStatusCode() == 200) {
+	if (response->getStatusCode() >= 200 || response->getStatusCode() < 400) {
 		response->pushHeader("Connection: keep-alive\r\n");
 	}
 	response->setBuffer(response->getHeaders() + "\r\n" + response->getBody());

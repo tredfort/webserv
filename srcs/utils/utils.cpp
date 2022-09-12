@@ -177,7 +177,6 @@ string getRedirectPageBody(std::pair<int, string> redirect)
 
 string	getFileFormat(string& path) {
 	unsigned long i = 100;
-	cout << path.size() << endl;
 	for (i = path.size(); i > 0 && path[i] != '.'; i--) { }
 	if (path[i] != '.' && i != path.length())
 		return "";
