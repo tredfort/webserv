@@ -23,7 +23,6 @@ void RequestParser::parseRequest(Request* request)
 		} else if (isRequestWithContentLength(request)) {
 			parseBody(request);
 		}
-//		parseBodyHeaders(request);
 	}
 }
 

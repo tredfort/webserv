@@ -183,3 +183,10 @@ void LocationContext::setErrorPagesFromServerContext(map<int, string>& serverErr
 	}
 }
 pair<int, string> LocationContext::getRedirect() { return _redirect; }
+
+void LocationContext::setDefaultAllowedMethods()
+{
+	if (_allowedMethods.empty())
+		_allowedMethods.insert("GET");
+}
+string LocationContext::getUploadPath() { return _uploadPath; }

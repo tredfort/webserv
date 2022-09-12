@@ -46,8 +46,8 @@ void RequestHandler::formResponse(WebClient* client)
 	Response* response = client->getResponse();
 	Request* request = client->getRequest();
 	LocationContext* location = config->getLocationContext(client->getIp(), client->getPort(), request->getHost(), request->getUri());
-	cout << "*location info*" << endl;
-	location->printConfig();
+//	cout << "*location info*" << endl;
+//	location->printConfig();
 	response->setProtocol("HTTP/1.1");
 	string path = getPathFromUri(request->getUri(), location);
 
@@ -65,7 +65,7 @@ void RequestHandler::formResponse(WebClient* client)
 		response->setStatusCode(404);
 	} else if (isFileShouldBeHandleByCGI(path)) {
 		CGI cgi(*request, path, _env);
-		cout << "CGIIIIII" << endl;
+		cout << "process CGI..." << endl;
 		CGIModel cgiResult = cgi.getPathToFileWithResult();
 		if (cgiResult.isSuccess) {
 			readfile(response, cgiResult.pathToFile);
@@ -128,6 +128,9 @@ void RequestHandler::setStatusLine(Response* response)
 		break;
 	case 505:
 		response->setStatusLine("505 HTTP Version Not Supported");
+		break;
+	default:
+		response->setStatusLine(toString(response->getStatusCode()));
 		break;
 	}
 }
@@ -247,7 +250,9 @@ void RequestHandler::fillHeaders(Response* response, LocationContext* location)
 	response->pushHeader(response->getProtocol() + " " + response->getStatusLine() + "\r\n");
 	response->pushHeader("Server: webserv/2.0\r\n");
 	response->pushHeader("Date: " + string(time, strlen(time) - 1) + "\r\n");
-	response->pushHeader("Content-Type: " + response->getContentType() + "\r\n");
+	if (!response->getContentType().empty()) {
+		response->pushHeader("Content-Type: " + response->getContentType() + "\r\n");
+	}
 	response->pushHeader("Content-Length: " + std::to_string(response->getBody().size()) + "\r\n");
 	if (redirect.first != 0) {
 		response->pushHeader("Location: " + redirect.second + "\r\n");

@@ -107,14 +107,6 @@ time_t getFileModificationDate(string& pathToFile)
 	return (stat(pathToFile.c_str(), &file) != -1) ? file.st_mtime : -1;
 }
 
-// void printStringVector(const set<string>& v)
-//{
-//	for (set<string>::const_iterator it = v.begin(); it != v.end(); ++it) {
-//		cout << *it << endl;
-//	}
-//	cout << endl;
-// }
-
 string removeAfter(string s, char c)
 {
 	size_t pos = s.find(c);
@@ -175,18 +167,22 @@ string getRedirectPageBody(std::pair<int, string> redirect)
 		return redirect.second;
 }
 
+string getStringAfterTarget(string source, string target)
+{
+	const size_t targetPos = source.find(target);
+	return targetPos == string::npos ? "" : source.substr(targetPos + target.size());
+}
+
+char getLastSymbol(string s) { return s[s.length() - 1]; }
+
 string	getFileFormat(string& path) {
 	size_t pos = path.find_last_of('.');
-	if (pos != string::npos)
-		return path.substr(pos + 1);
-	return "";
+	return (pos != string::npos) ? path.substr(pos + 1) : "";
 }
 
 string getFileName(const string& path) {
 	size_t pos = path.find_last_of('/');
-	if (pos != string::npos)
-		return path.substr(pos + 1);
-	return path;
+	return (pos != string::npos) ? path.substr(pos + 1) : "";
 }
 
 int stringToInt(const string& str) {

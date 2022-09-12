@@ -196,3 +196,8 @@ void ServerContext::setErrorPagesFromConfigContext(map<int, string>& configError
 		}
 	}
 }
+
+void ServerContext::setDefaultAllowedMethods() {
+	for (vector<LocationContext*>::iterator it = _locations.begin(), ite = _locations.end(); it != ite; ++it)
+		(*it)->setDefaultAllowedMethods();
+}

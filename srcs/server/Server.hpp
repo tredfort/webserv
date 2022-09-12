@@ -2,10 +2,10 @@
 #define SERVER_HPP
 
 #include "../config/Config.hpp"
+#include "../constants/constants.hpp"
 #include "../model/WebClient.hpp"
 #include "../requestHandler/RequestHandler.hpp"
 #include "../requestParser/RequestParser.hpp"
-#include "../utils/constants.hpp"
 #include "../utils/utils.hpp"
 #include "Env.hpp"
 #include "Socket.hpp"
@@ -34,10 +34,10 @@ private:
 	vector<Socket*> _sockets;
 	vector<WebClient*> _clients;
 	vector<struct pollfd> _pollfds;
-	Env	_env;
+	Env _env;
 
 public:
-	explicit Server(Config* config, Env &env);
+	explicit Server(Config* config, Env& env);
 
 	~Server();
 

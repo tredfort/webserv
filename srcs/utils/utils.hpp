@@ -67,8 +67,6 @@ bool isDirectory(const string& pathToFile);
 
 time_t getFileModificationDate(string& pathToFile);
 
-// void printStringVector(const set<string>&);
-
 template <class T> void printStringVector(T& v)
 {
 	for (typename T::const_iterator it = v.begin(); it != v.end(); ++it) {
@@ -122,5 +120,16 @@ class BadChunkedRequestException : public std::exception {
 public:
 	const char *what() const throw();
 };
+
+string getStringAfterTarget(string source, string target);
+
+char getLastSymbol(string);
+
+template <typename T> std::string toString(const T& value)
+{
+	std::ostringstream oss;
+	oss << value;
+	return oss.str();
+}
 
 #endif
