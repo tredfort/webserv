@@ -127,12 +127,13 @@ void RequestParser::parseBody(Request* request)
 void RequestParser::parseChunked(Request* request)
 {
 	const string newLine = "\r\n";
+	const string endOfChunkedRequest = "\r\n0\r\n\r\n";
 	size_t newLineLen = newLine.length();
 	const string& chunks = request->getBuffer();
-	size_t chunkedRequestEnd = chunks.find("\r\n0\r\n\r\n");
+	size_t chunkedRequestEnd = chunks.find(endOfChunkedRequest);
 	size_t chunkEnd = 0;
 	if (chunkedRequestEnd != std::string::npos) {
-		if (chunks.length() != chunkedRequestEnd + 7) {
+		if (chunks.length() != chunkedRequestEnd + endOfChunkedRequest.length()) {
 			throw BadChunkedRequestException();
 		}
 		while (chunkEnd < chunkedRequestEnd) {

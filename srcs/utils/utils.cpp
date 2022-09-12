@@ -176,20 +176,17 @@ string getRedirectPageBody(std::pair<int, string> redirect)
 }
 
 string	getFileFormat(string& path) {
-	unsigned long i = 100;
-	for (i = path.size(); i > 0 && path[i] != '.'; i--) { }
-	if (path[i] != '.' && i != path.length())
-		return "";
-	return path.substr(++i, path.length());
+	size_t pos = path.find_last_of('.');
+	if (pos != string::npos)
+		return path.substr(pos + 1);
+	return "";
 }
 
 string getFileName(const string& path) {
 	size_t pos = path.find_last_of('/');
-	if (pos == string::npos) {
-		return path;
-	} else {
+	if (pos != string::npos)
 		return path.substr(pos + 1);
-	}
+	return path;
 }
 
 int stringToInt(const string& str) {

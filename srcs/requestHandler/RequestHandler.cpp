@@ -155,7 +155,6 @@ void RequestHandler::doPost(LocationContext* location, Request* request, Respons
 		response->setStatusCode(500);
 	} else {
 		readfile(response, pathToFile);
-		//		folderContents(response, getParentFilePath(pathToFile), request->getUri());
 	}
 }
 
