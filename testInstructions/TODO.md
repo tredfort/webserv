@@ -1,6 +1,5 @@
 # server[]
 
-- server_name []
 - listen  []
 - client_max_body_size []
 
