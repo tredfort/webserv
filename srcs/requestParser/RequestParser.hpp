@@ -30,8 +30,6 @@ private:
 
 	void setHost(Request* request);
 
-	void parsePostBodyHeaders(Request* request);
-
 	bool isChunkedRequest(Request* request) const;
 
 	bool isRequestWithContentLength(Request* request) const;

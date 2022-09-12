@@ -59,19 +59,6 @@ void RequestParser::setHeaders(Request* request, vector<string> headers)
 	}
 }
 
-void RequestParser::parseBodyHeaders(Request* request)
-{
-	size_t pos = request->getBuffer().find("\r\n\r\n");
-
-	if (pos == std::string::npos)
-		return;
-
-	std::string buffer = request->getBuffer().substr(0, pos);
-	request->setBuffer(request->getBuffer().substr(pos + 4));
-
-	// TODO: написать этот метод
-}
-
 void RequestParser::setHost(Request* request)
 {
 	string host = request->getHeader("Host");
