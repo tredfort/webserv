@@ -175,8 +175,41 @@ string getStringAfterTarget(string source, string target)
 
 char getLastSymbol(string s) { return s[s.length() - 1]; }
 
-string getFileFormat(string& fileName)
-{
-	const size_t pos = fileName.find_last_of('.');
-	return (pos == string::npos) ? "" : fileName.substr(pos + 1);
+string	getFileFormat(string& path) {
+	size_t pos = path.find_last_of('.');
+	return (pos != string::npos) ? path.substr(pos + 1) : "";
 }
+
+string getFileName(const string& path) {
+	size_t pos = path.find_last_of('/');
+	return (pos != string::npos) ? path.substr(pos + 1) : "";
+}
+
+int stringToInt(const string& str) {
+	char* endPtr;
+	long number = std::strtol(str.c_str(), &endPtr, 10);
+
+	if (*endPtr || number < INT32_MIN || number > INT32_MAX) {
+		throw CastToIntException();
+	}
+	return number;
+}
+
+bool createFile(const string& pathToFile, const string& content) {
+	std::ofstream targetFile(pathToFile);
+	if (!targetFile.is_open())
+		return false;
+//		throw "500 cannot creat file in POST";
+	targetFile << content;
+	targetFile.close();
+	return true;
+}
+
+string getParentFilePath(const string& pathToFile) {
+	size_t pos = pathToFile.find_last_of('/');
+	return pathToFile.substr(0, pos);
+}
+
+const char* CastToIntException::what() const throw() { return "Conversion error to integer"; }
+
+const char* BadChunkedRequestException::what() const throw() { return "Bad chunked request"; }

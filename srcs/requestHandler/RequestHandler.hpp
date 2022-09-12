@@ -15,7 +15,7 @@
 #include "../model/Request.hpp"
 #include "../model/Response.hpp"
 #include "../model/WebClient.hpp"
-#include "../utils/index.hpp"
+#include "../utils/usings.hpp"
 #include "FileReader.hpp"
 
 class RequestHandler {
@@ -53,10 +53,11 @@ private:
 	void setBodyForStatusCode(Response* response, LocationContext* location);
 
 public:
-	void doGet(Request*, Response*, LocationContext*);
-	void doPost(Request*, Response*, LocationContext*);
-	void doPut(Request*, Response*, LocationContext*);
-	void doDelete(Request*, Response*, LocationContext*);
+	void doPost(LocationContext* location, Request* request, Response* response, string& pathToFile);
+
+	void doGet(LocationContext* location, Request* request, Response* response, string& pathToFile);
+
+	void doDelete(Response* response, string& pathToFile);
 };
 
 #endif

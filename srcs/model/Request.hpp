@@ -1,10 +1,8 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#include "../constants/constants.hpp"
 #include "../interfaces/IHeader.hpp"
 #include "../interfaces/IRequest.hpp"
-#include "PostVariable.hpp"
 #include <cstring>
 #include <iostream>
 #include <map>
@@ -18,17 +16,27 @@ class Request {
 private:
 	string _method;
 	string _uri;
-	string _protocol; // TODO: заменить на верисию
-	string _host; // TODO: убрать это поля, вынести метод getHostName() в utils
-	string _buffer; // TODO: вынести буффер клиенту
-	map<string, string> _body;
-	vector<PostVariable*> _postVariables;
+	string _protocol;
+	string _host;
+	string _buffer;
+	string _fileName;
+	string _body;
+
+public:
+	const string& getBody() const;
+	void setBody(const string& body);
 
 public:
 	map<string, string> _headers;
 	Request();
 
 	~Request();
+
+	const string& getFileName() const;
+
+	void setFileName(const string& fileName);
+
+	size_t getContentLength() const;
 
 	const string& getMethod() const;
 
@@ -57,15 +65,6 @@ public:
 	void setHeader(const string& key, const string& value);
 
 	bool emptyHeader() const;
-
-	void addPostVariable(PostVariable*);
-
-	vector<PostVariable*> getPostVariables();
-
-	bool isGetMethod();
-	bool isPostMethod();
-	bool isPutMethod();
-	bool isDeleteMethod();
 };
 
 #endif

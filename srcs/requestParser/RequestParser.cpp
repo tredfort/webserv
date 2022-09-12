@@ -17,13 +17,12 @@ void RequestParser::parseRequest(Request* request)
 		setHost(request); // TODO: вынести в utils, реализовать как метод getHostName()
 	}
 
-	if (request->isPostMethod()) {
+	if (request->getMethod() == "POST") {
 		if (isChunkedRequest(request)) {
-			//			parseChunked(request);
+			parseChunked(request);
 		} else if (isRequestWithContentLength(request)) {
-			//			parseBody(request);
+			parseBody(request);
 		}
-		parsePostBodyHeaders(request);
 	}
 }
 
@@ -60,19 +59,6 @@ void RequestParser::setHeaders(Request* request, vector<string> headers)
 	}
 }
 
-void RequestParser::parsePostBodyHeaders(Request* request)
-{
-	std::cout << "request buffer:" << request->getBuffer() << endl << endl;
-
-	const string contentType = request->getHeader("Content-Type");
-	const size_t boundaryPos = contentType.find("boundary=");
-	const string boundary = boundaryPos == string::npos ? "" : contentType.substr(boundaryPos + string("boundary=").size());
-	vector<string> values = ft_split(request->getBuffer(), "--" + boundary);
-
-	for (vector<string>::iterator it = values.begin(), ite = values.end(); it != ite; ++it)
-		request->addPostVariable(new PostVariable(*it));
-}
-
 void RequestParser::setHost(Request* request)
 {
 	string host = request->getHeader("Host");
@@ -86,18 +72,69 @@ void RequestParser::setHost(Request* request)
 
 bool RequestParser::isReadyRequest(Request* request)
 {
-	if (request->isGetMethod()) {
+	if (request->getMethod() == "GET") {
 		request->setBuffer("");
 		return true;
-	} else if (request->isPostMethod()) {
-		return true;
-	} else if (request->isDeleteMethod()) {
+	} else if (request->getMethod() == "POST") {
+		if (isChunkedRequest(request)) {
+			return !request->getBody().empty();
+		}
+		return request->getContentLength() == (size_t)stringToInt(request->getHeader("Content-Length"));
+	} else if (request->getMethod() == "DELETE") {
 		return true;
 	}
 
 	return false;
 }
 
-bool RequestParser::isChunkedRequest(Request* request) const { return request->getHeader("Transfer-Encoding") == "chunked"; }
+bool RequestParser::isChunkedRequest(Request* request) const
+{
+	return request->getHeader("Transfer-Encoding") == "chunked";
+}
 
-bool RequestParser::isRequestWithContentLength(Request* request) const { return !request->getHeader("Content-Length").empty(); }
+bool RequestParser::isRequestWithContentLength(Request* request) const
+{
+	return !request->getHeader("Content-Length").empty();
+}
+
+void RequestParser::parseBody(Request* request)
+{
+	string fileName = getFileName(request->getUri());
+	request->setFileName(fileName);
+	size_t contentLength = stringToInt(request->getHeader("Content-Length"));
+	if (request->getBuffer().size() > contentLength) {
+		throw "400 BAD REQUEST! RECV size > then MUST BE";
+	}
+	string body = request->getBuffer();
+	request->setBuffer("");
+	request->setBody(request->getBody() + body);
+}
+
+void RequestParser::parseChunked(Request* request)
+{
+	const string newLine = "\r\n";
+	const string endOfChunkedRequest = "\r\n0\r\n\r\n";
+	size_t newLineLen = newLine.length();
+	const string& chunks = request->getBuffer();
+	size_t chunkedRequestEnd = chunks.find(endOfChunkedRequest);
+	size_t chunkEnd = 0;
+	if (chunkedRequestEnd != std::string::npos) {
+		if (chunks.length() != chunkedRequestEnd + endOfChunkedRequest.length()) {
+			throw BadChunkedRequestException();
+		}
+		while (chunkEnd < chunkedRequestEnd) {
+			size_t chunkStart = chunks.find(newLine, chunkEnd);
+			size_t chunkLength = stringToInt(chunks.substr(chunkEnd, chunkStart - chunkEnd));
+			chunkStart += newLineLen;
+			chunkEnd = chunks.find(newLine, chunkStart);
+			string chunk = chunks.substr(chunkStart, chunkEnd - chunkStart);
+			chunkEnd += newLineLen;
+			if (chunk.length() != chunkLength) {
+				throw BadChunkedRequestException();
+			}
+			request->setBody(request->getBody() + chunk);
+		}
+		request->setBuffer("");
+		request->setFileName(getFileName(request->getUri()));
+	}
+}
