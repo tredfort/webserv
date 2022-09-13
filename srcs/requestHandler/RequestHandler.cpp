@@ -57,7 +57,7 @@ void RequestHandler::formResponse(WebClient* client)
 		response->setStatusCode(505);
 	} else if (location->getRedirect().first) {
 		response->setStatusCode(location->getRedirect().first);
-	} else if (request->getMethod() != "GET" && !location->getAllowedMethods().count(request->getMethod())) {
+	} else if (!location->getAllowedMethods().count(request->getMethod())) {
 		response->setStatusCode(405);
 	} else if (request->getContentLength() > location->getClientMaxBodySize()) {
 		response->setStatusCode(413);
@@ -263,8 +263,9 @@ void RequestHandler::fillHeaders(Response* response, LocationContext* location)
 	response->setBuffer(response->getHeaders() + "\r\n" + response->getBody());
 }
 
-string RequestHandler::getPathFromUri(const string& uri, LocationContext* location) const
+string RequestHandler::getPathFromUri(string uri, LocationContext* location) const
 {
+	uri.replace(uri.find(location->getLocation()), location->getLocation().size(), "");
 	string path = location->getRoot() + uri;
 	if (isFileExists(path) && isDirectory(path)) {
 		if (path.back() != '/') {
