@@ -92,8 +92,9 @@ void Server::receiveRequest(WebClient* client, short& events)
 {
 	char buffer[BUFFER_SIZE];
 
+	bzero(buffer, BUFFER_SIZE);
 	cout << "User listens:" << endl;
-	ssize_t bytesRead = recv(client->getFd(), buffer, sizeof(buffer), 0);
+	ssize_t bytesRead = recv(client->getFd(), buffer, BUFFER_SIZE, 0);
 
 	if (bytesRead < 0) {
 		cout << "Error during request receipt from fd: " << client->getFd() << "." << endl;
@@ -114,7 +115,8 @@ void Server::sendResponse(WebClient* client, short& events)
 {
 	if (client->getResponse()->getBuffer().empty()) {
 		_handler.formResponse(client);
-	} else {
+	}
+	if (!client->getResponse()->getBuffer().empty()) {
 		string buffer = client->getResponse()->getBuffer();
 		ssize_t sendBytes = send(client->getFd(), buffer.c_str(), buffer.size(), 0);
 

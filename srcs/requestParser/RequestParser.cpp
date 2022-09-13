@@ -77,10 +77,13 @@ bool RequestParser::isReadyRequest(Request* request)
 		return true;
 	} else if (request->getMethod() == "POST") {
 		if (isChunkedRequest(request)) {
-			return !request->getBody().empty();
+			return request->getBuffer().empty();
 		}
 		return request->getContentLength() == (size_t)stringToInt(request->getHeader("Content-Length"));
 	} else if (request->getMethod() == "DELETE") {
+		return true;
+	}
+	if (request->getMethod() != "GET" && request->getMethod() != "POST" && request->getMethod() != "DELETE" && !request->getMethod().empty()) {
 		return true;
 	}
 
@@ -113,7 +116,7 @@ void RequestParser::parseBody(Request* request)
 void RequestParser::parseChunked(Request* request)
 {
 	const string newLine = "\r\n";
-	const string endOfChunkedRequest = "\r\n0\r\n\r\n";
+	const string endOfChunkedRequest = "0\r\n\r\n";
 	size_t newLineLen = newLine.length();
 	const string& chunks = request->getBuffer();
 	size_t chunkedRequestEnd = chunks.find(endOfChunkedRequest);

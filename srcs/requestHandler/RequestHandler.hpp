@@ -46,7 +46,7 @@ private:
 
 	void fillHeaders(Response*, LocationContext*);
 
-	string getPathFromUri(const string& uri, LocationContext* location) const;
+	string getPathFromUri(string uri, LocationContext* location) const;
 
 	bool isFileShouldBeHandleByCGI(string& pathToFile) const;
 
