@@ -169,7 +169,7 @@ void RequestHandler::doGet(LocationContext* location, Request* request, Response
 		if (location->isAutoIndex()) {
 			folderContents(response, pathToFile, request->getUri());
 		} else {
-			response->setStatusCode(403);
+			response->setStatusCode(404);
 		}
 	} else {
 		readfile(response, pathToFile);
