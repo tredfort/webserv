@@ -106,6 +106,7 @@ void Server::receiveRequest(WebClient* client, short& events)
 		client->getRequest()->appendBuffer(string(buffer, bytesRead));
 		_parser.parseRequest(client->getRequest());
 		if (_parser.isReadyRequest(client->getRequest())) {
+			printRequest(client->getRequest());
 			events = POLLOUT;
 		}
 	}
@@ -126,6 +127,7 @@ void Server::sendResponse(WebClient* client, short& events)
 
 		client->getResponse()->setBuffer(buffer.substr(sendBytes));
 		if (client->getResponse()->getBuffer().empty()) {
+			printResponse(client->getResponse());
 			client->clear();
 			events = POLLIN;
 		}

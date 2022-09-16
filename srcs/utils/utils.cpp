@@ -185,9 +185,9 @@ string getFileName(const string& path) {
 	return (pos != string::npos) ? path.substr(pos + 1) : "";
 }
 
-int stringToInt(const string& str) {
+int stringToInt(const string& str, int base) {
 	char* endPtr;
-	long number = std::strtol(str.c_str(), &endPtr, 10);
+	long number = std::strtol(str.c_str(), &endPtr, base);
 
 	if (*endPtr || number < INT32_MIN || number > INT32_MAX) {
 		throw CastToIntException();
@@ -213,3 +213,31 @@ string getParentFilePath(const string& pathToFile) {
 const char* CastToIntException::what() const throw() { return "Conversion error to integer"; }
 
 const char* BadChunkedRequestException::what() const throw() { return "Bad chunked request"; }
+
+void printRequest(Request* request) {
+	string requestBuf;
+	requestBuf.append("*REQUEST*\n");
+	requestBuf.append(request->getMethod()).append(" ")
+		.append(request->getUri()).append(" ")
+		.append(request->getProtocol()).append("\n");
+
+	map<string, string> headers = request->_headers;
+	for (map<string, string>::iterator it = headers.begin(); it != headers.end(); ++it) {
+		requestBuf.append(replace(it->first, "\r", "")).append(":").append(replace(it->second, "\r", "")).append("\n");
+	}
+	cout << requestBuf << endl;
+}
+
+void printResponse(Response* response) {
+	string responseBuf;
+	responseBuf.append("*RESPONSE*\n");
+	responseBuf.append(replace(response->getHeaders(), "\r", ""));
+	cout << responseBuf << endl;
+}
+
+string replace(string input, const string& target, const string& replacement) {
+	for (size_t pos = input.find(target); pos < input.length() && pos != string::npos; pos = input.find(target)) {
+		input.replace(pos, target.size(), replacement);
+	}
+	return input;
+}

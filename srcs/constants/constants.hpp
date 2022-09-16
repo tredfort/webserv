@@ -25,4 +25,20 @@ void fillTypes(map<string, string>& types);
 #define PUT_METHOD "PUT"
 #define DELETE_METHOD "DELETE"
 
+namespace method {
+
+const string GET = "GET";
+const string POST = "POST";
+const string DELETE = "DELETE";
+const string PUT = "PUT";
+
+}
+
+namespace defaults {
+
+const string UNLOAD_PATH = "html/unloadPath";
+const string ROOT = "html/";
+
+}
+
 #endif

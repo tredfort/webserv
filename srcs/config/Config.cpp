@@ -220,7 +220,7 @@ void Config::setDefaultDirectives()
 {
 	// set default values for root
 	if (_root.empty())
-		_root = ROOT_DEFAULT;
+		_root = defaults::ROOT;
 
 	// set default values for servers
 	for (vector<ServerContext*>::iterator it = _servers.begin(), ite = _servers.end(); it != ite; ++it) {

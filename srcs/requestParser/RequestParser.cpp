@@ -17,9 +17,9 @@ void RequestParser::parseRequest(Request* request)
 		setHost(request); // TODO: вынести в utils, реализовать как метод getHostName()
 	}
 
-	if (request->getMethod() == "POST") {
+	if (request->getMethod() == "POST" || request->getMethod() == "PUT") {
 		if (isChunkedRequest(request)) {
-			parseChunked(request);
+ 			parseChunked(request);
 		} else if (isRequestWithContentLength(request)) {
 			parseBody(request);
 		}
@@ -75,15 +75,15 @@ bool RequestParser::isReadyRequest(Request* request)
 	if (request->getMethod() == "GET") {
 		request->setBuffer("");
 		return true;
-	} else if (request->getMethod() == "POST") {
-		if (isChunkedRequest(request)) {
+	} else if (request->getMethod() == "POST" || request->getMethod() == "PUT") {
+		if (isChunkedRequest(request) && !request->getBody().empty()) {
 			return request->getBuffer().empty();
 		}
-		return request->getContentLength() == (size_t)stringToInt(request->getHeader("Content-Length"));
+		return request->getContentLength() == (size_t)stringToInt(request->getHeader("Content-Length"), 10);
 	} else if (request->getMethod() == "DELETE") {
 		return true;
 	}
-	if (request->getMethod() != "GET" && request->getMethod() != "POST" && request->getMethod() != "DELETE" && !request->getMethod().empty()) {
+	if (request->getMethod() != "GET" && request->getMethod() != "POST" && request->getMethod() != "PUT" && request->getMethod() != "DELETE" && !request->getMethod().empty()) {
 		return true;
 	}
 
@@ -104,7 +104,7 @@ void RequestParser::parseBody(Request* request)
 {
 	string fileName = getFileName(request->getUri());
 	request->setFileName(fileName);
-	size_t contentLength = stringToInt(request->getHeader("Content-Length"));
+	size_t contentLength = stringToInt(request->getHeader("Content-Length"), 10);
 	if (request->getBuffer().size() > contentLength) {
 		throw "400 BAD REQUEST! RECV size > then MUST BE";
 	}
@@ -127,7 +127,7 @@ void RequestParser::parseChunked(Request* request)
 		}
 		while (chunkEnd < chunkedRequestEnd) {
 			size_t chunkStart = chunks.find(newLine, chunkEnd);
-			size_t chunkLength = stringToInt(chunks.substr(chunkEnd, chunkStart - chunkEnd));
+			size_t chunkLength = stringToInt(chunks.substr(chunkEnd, chunkStart - chunkEnd), 16);
 			chunkStart += newLineLen;
 			chunkEnd = chunks.find(newLine, chunkStart);
 			string chunk = chunks.substr(chunkStart, chunkEnd - chunkStart);

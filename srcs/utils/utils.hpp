@@ -13,6 +13,8 @@
 #include <sys/stat.h>
 #include <vector>
 
+#include "../model/Request.hpp"
+#include "../model/Response.hpp"
 #include "usings.hpp"
 
 /**
@@ -105,7 +107,7 @@ string getFileFormat(string& path);
 
 string getFileName(const string& path);
 
-int stringToInt(const string& str);
+int stringToInt(const string& str, int base);
 
 bool createFile(const string& pathToFile, const string& content);
 
@@ -113,12 +115,12 @@ string getParentFilePath(const string& pathToFile);
 
 class CastToIntException : public std::exception {
 public:
-	const char *what() const throw();
+	const char* what() const throw();
 };
 
 class BadChunkedRequestException : public std::exception {
 public:
-	const char *what() const throw();
+	const char* what() const throw();
 };
 
 string getStringAfterTarget(string source, string target);
@@ -131,5 +133,11 @@ template <typename T> std::string toString(const T& value)
 	oss << value;
 	return oss.str();
 }
+
+void printRequest(Request* request);
+
+void printResponse(Response* response);
+
+string replace(string input, const string& target, const string& replacement);
 
 #endif
