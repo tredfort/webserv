@@ -5,7 +5,7 @@ ServerContext::~ServerContext() { }
 // here we parse file stream, and throw error in bad case
 ServerContext::ServerContext(std::ifstream* fileStream)
 	: _autoIndex(false)
-	, _clientMaxBodySize(1024 * 1024)
+	, _clientMaxBodySize(defaults::CLIENT_MAX_BODY_SIZE)
 {
 	string line;
 	ssize_t directiveIndex;

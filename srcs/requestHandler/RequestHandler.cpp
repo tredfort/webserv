@@ -48,7 +48,6 @@ void RequestHandler::formResponse(WebClient* client)
 	LocationContext* location = config->getLocationContext(client->getIp(), client->getPort(), request->getHost(), request->getUri());
 	//	cout << "*location info*" << endl;
 	//	location->printConfig();
-	response->setProtocol("HTTP/1.1");
 	// TODO:: rename path
 	string path = getPathFromUri(request->getUri(), location);
 

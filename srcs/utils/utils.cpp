@@ -201,9 +201,10 @@ int stringToInt(const string& str, int base)
 bool createFile(const string& pathToFile, const string& content)
 {
 	std::ofstream targetFile(pathToFile);
-	if (!targetFile.is_open())
+	if (!targetFile.is_open()) {
 		return false;
-	//		throw "500 cannot creat file in POST";
+	}
+
 	targetFile << content;
 	targetFile.close();
 	return true;

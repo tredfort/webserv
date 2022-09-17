@@ -8,22 +8,7 @@
 using std::map;
 using std::string;
 
-#define BUFFER_SIZE 1024 * 1024
-
-#define DELIMITER "\r\n"
-
-#define POLL_TIMEOUT 1000
-
-#define HOSTNAME "localhost"
-
-#define ROOT_DEFAULT "html/"
-
 void fillTypes(map<string, string>& types);
-
-#define GET_METHOD "GET"
-#define POST_METHOD "POST"
-#define PUT_METHOD "PUT"
-#define DELETE_METHOD "DELETE"
 
 namespace method {
 
@@ -36,8 +21,12 @@ const string PUT = "PUT";
 
 namespace defaults {
 
+const int BUFFER_SIZE = 1024 * 1024;
+const string HOSTNAME = "localhost";
 const string UNLOAD_PATH = "html/unloadPath";
 const string ROOT = "html/";
+const int CLIENT_MAX_BODY_SIZE = INT32_MAX;
+const int POLL_TIMEOUT = 1000;
 
 }
 
