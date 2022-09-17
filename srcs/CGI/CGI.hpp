@@ -1,12 +1,12 @@
 #ifndef CGI_HPP
 #define CGI_HPP
 
+#include "../config/Config.hpp"
 #include "../interfaces/ICGI.hpp"
+#include "../model/Request.hpp"
 #include "../server/Env.hpp"
 #include "../utils/usings.hpp"
 #include "../utils/utils.hpp"
-#include "../model/Request.hpp"
-#include "../config/Config.hpp"
 #include "CGIModel.hpp"
 #include <exception>
 #include <fcntl.h>
@@ -29,7 +29,7 @@ private:
 	Env _env;
 	int _shmFd;
 	int* _sharedMemory;
-	map<string, string>	_cgiEnv;
+	map<string, string> _cgiEnv;
 	string _pathToFile;
 	string query;
 	string format;
@@ -41,8 +41,8 @@ public:
 	CGIModel getPathToFileWithResult();
 
 private:
-	void initCgiEnv(Request & request, string path);
-	char **getEnvAsCstrArray() const;
+	void initCgiEnv(Request& request, string path);
+	char** getEnvAsCstrArray() const;
 	CGIModel executeCgi(const ExecveArguments& execArguments);
 	char** configureArgumentsForComand() const;
 	bool openOutputFile(std::string file);

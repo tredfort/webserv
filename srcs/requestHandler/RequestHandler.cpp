@@ -24,10 +24,7 @@ const std::string& RequestHandler::mimeType(const std::string& uri)
 
 void RequestHandler::readfile(Response* response, const std::string& path)
 {
-	string extension = path.substr(path.find_last_of("/\\") + 1);
-	string fileExtension = path.substr(path.find_last_of('.') + 1);
-
-	response->setContentType(mimeType(extension));
+	response->setContentType(mimeType(path));
 	try {
 		response->setBody(FileReader::readFile(path));
 		response->setStatusCode(200);
@@ -46,10 +43,10 @@ void RequestHandler::formResponse(WebClient* client)
 	Response* response = client->getResponse();
 	Request* request = client->getRequest();
 	LocationContext* location = config->getLocationContext(client->getIp(), client->getPort(), request->getHost(), request->getUri());
-//	cout << "*location info*" << endl;
-//	location->printConfig();
-	response->setProtocol("HTTP/1.1");
-	string path = getPathFromUri(request->getUri(), location);
+	//	cout << "*location info*" << endl;
+	//	location->printConfig();
+	// TODO:: rename path
+	string pathToFile = getPathFromUri(location, request->getUri());
 
 	if (isBadRequest(request)) {
 		response->setStatusCode(400);
@@ -61,27 +58,16 @@ void RequestHandler::formResponse(WebClient* client)
 		response->setStatusCode(405);
 	} else if (request->getContentLength() > location->getClientMaxBodySize()) {
 		response->setStatusCode(413);
-	} else if (!isFileExists(path) && request->getMethod() != "POST" && request->getMethod() != "PUT") {
-		response->setStatusCode(404);
-	} else if (isFileShouldBeHandleByCGI(path)) {
-		CGI cgi(*request, path, _env);
-		cout << "process CGI..." << endl;
-		CGIModel cgiResult = cgi.getPathToFileWithResult();
-		if (cgiResult.isSuccess) {
-			readfile(response, cgiResult.pathToFile);
-		} else {
-			response->setStatusCode(500);
-		}
+	} else if (isFileShouldBeHandleByCGI(pathToFile)) {
+		doCGI(request, response, pathToFile);
+	} else if (request->getMethod() == "GET") {
+		doGet(location, request, response, pathToFile);
+	} else if (request->getMethod() == "POST" || request->getMethod() == "PUT") {
+		doPost(location, request, response, pathToFile);
+	} else if (request->getMethod() == "DELETE") {
+		doDelete(response, pathToFile);
 	} else {
-		if (request->getMethod() == "GET") {
-			doGet(location, request, response, path);
-		} else if (request->getMethod() == "POST" || request->getMethod() == "PUT") {
-			doPost(location, request, response, path);
-		} else if (request->getMethod() == "DELETE") {
-			doDelete(response, path);
-		} else {
-			response->setStatusCode(501);
-		}
+		response->setStatusCode(501);
 	}
 	setStatusLine(response);
 	if (response->getStatusCode() < 200 || response->getStatusCode() >= 400) {
@@ -141,7 +127,7 @@ void RequestHandler::setBodyForStatusCode(Response* response, LocationContext* l
 		response->setBody(getRedirectPageBody(location->getRedirect()));
 		response->setContentType(mimeType(".html"));
 	} else {
-		string pathToErrorPage = location->getErrorPage(response->getStatusCode());
+		string pathToErrorPage = location->getPathToFile(location->getErrorPage(response->getStatusCode()));
 		if (isFileExists(pathToErrorPage) && !isDirectory(pathToErrorPage)) {
 			readfile(response, pathToErrorPage);
 		} else {
@@ -165,14 +151,26 @@ void RequestHandler::doGet(LocationContext* location, Request* request, Response
 {
 	if (!isFileExists(pathToFile)) {
 		response->setStatusCode(404);
-	} else if (isDirectory(pathToFile)) {
+	} else if (!isDirectory(pathToFile)) {
+		readfile(response, pathToFile);
+	} else {
+		const vector<string> indexes = location->getIndexes();
+		for (vector<string>::const_iterator it = indexes.begin(); it != indexes.end(); ++it) {
+			string pathToIndexFile = ((*it).front() == '/') ? createPath(location->getRoot(), *it) : createPath(pathToFile, *it);
+			if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile)) {
+				if (isFileShouldBeHandleByCGI(pathToIndexFile)) {
+					doCGI(request, response, pathToFile);
+					return;
+				}
+				readfile(response, pathToIndexFile);
+				return;
+			}
+		}
 		if (location->isAutoIndex()) {
 			folderContents(response, pathToFile, request->getUri());
 		} else {
 			response->setStatusCode(404);
 		}
-	} else {
-		readfile(response, pathToFile);
 	}
 }
 
@@ -186,41 +184,48 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 
 	string title = "Index of " + uri;
 	body.append("<html>\n"
-				"<head><title>"
-		+ title
-		+ "</title></head>\n"
+				"<head>"
+				"<title>" + title + "</title>"
+		  "    <style>\n"
+		  "        td {\n"
+		  "            padding-left: 15px;\n"
+		  "            text-align: left;\n"
+		  "        }\n"
+		  "    </style>"
+		  "</head>\n"
 		  "<body>\n"
-		  "<h1>"
-		+ title + "</h1><hr><pre><a href=\"../\">../</a>\n");
+		  "<h1>" + title + "</h1>"
+				  "<table style=\"width:80%\">"
+				  "<tr><td><a href=\"../\">../</a></td></tr>\n");
 	if ((dp = opendir(path.c_str())) != nullptr) {
 		while ((di_struct = readdir(dp)) != nullptr) {
 			if (strcmp(di_struct->d_name, ".") && strcmp(di_struct->d_name, "..")) {
 
-				string tmp_path = path + "/" + di_struct->d_name;
+				string tmp_path = createPath(path, di_struct->d_name);
 				stat(tmp_path.data(), &file_stats);
 
-				body.append("<a href=\"" + uri + string(di_struct->d_name));
+				body.append("<tr><td><a href=\"" + createPath(uri, di_struct->d_name));
 				if (S_ISDIR(file_stats.st_mode))
 					body.append("/");
 				body.append("\">" + string(di_struct->d_name));
 				if (S_ISDIR(file_stats.st_mode))
 					body.append("/");
-				body.append("</a>                                               ");
+				body.append("</a></td><td>");
 				lastModified = getFileModificationDate(tmp_path);
 				string date = string(ctime(&lastModified));
 				date = date.substr(0, date.size() - 1);
-				body.append(date + "                   ");
+				body.append(date + "</td><td>");
 				if (S_ISDIR(file_stats.st_mode))
 					body.append("-\n");
 				else {
 					body.append(std::to_string(static_cast<float>(file_stats.st_size)) + "\n");
 				}
+				body.append("</td></tr>");
 			}
 		}
 		closedir(dp);
 	}
-	body.append("</pre><hr></body>\n"
-				"</html>\n");
+	body.append("</table>\n</body>\n</html>\n");
 	response->setBody(body);
 	response->setStatusCode(200);
 }
@@ -239,6 +244,18 @@ void RequestHandler::doDelete(Response* response, string& pathToFile)
 					  "  </body>\n"
 					  "</html>";
 		response->setBody(body);
+	}
+}
+
+void RequestHandler::doCGI(Request* request, Response* response, string& pathToFile)
+{
+	CGI cgi(*request, pathToFile, _env);
+	cout << "process CGI..." << endl;
+	CGIModel cgiResult = cgi.getPathToFileWithResult();
+	if (cgiResult.isSuccess) {
+		readfile(response, cgiResult.pathToFile);
+	} else {
+		response->setStatusCode(500);
 	}
 }
 
@@ -263,27 +280,28 @@ void RequestHandler::fillHeaders(Response* response, LocationContext* location)
 	response->setBuffer(response->getHeaders() + "\r\n" + response->getBody());
 }
 
-string RequestHandler::getPathFromUri(string uri, LocationContext* location) const
+string RequestHandler::getPathFromUri(LocationContext* location, string uri) const
 {
 	uri.replace(uri.find(location->getLocation()), location->getLocation().size(), "");
-	string path = location->getRoot() + uri;
-	if (isFileExists(path) && isDirectory(path)) {
-		if (path.back() != '/') {
-			path.append("/");
-		}
-		for (vector<string>::const_iterator it = location->getIndex().begin(), ite = location->getIndex().end(); it != ite; ++it) {
-			string pathToIndexFile;
-			if ((*it).front() == '/') {
-				pathToIndexFile = location->getRoot() + *it;
-			} else {
-				pathToIndexFile = path + *it;
-			}
-			if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
-				return pathToIndexFile;
-			}
-		}
-	}
-	return path;
+	return createPath(location->getRoot(), uri);
+//	string path = (location->getRoot().back() == '/') ? location->getRoot() + uri : location->getRoot() + "/" + uri;
+	//	if (isFileExists(path) && isDirectory(path)) {
+	//		if (path.back() != '/') {
+	//			path.append("/");
+	//		}
+	//		for (vector<string>::const_iterator it = location->getIndexes().begin(), ite = location->getIndexes().end(); it != ite; ++it) {
+	//			string pathToIndexFile;
+	//			if ((*it).front() == '/') {
+	//				pathToIndexFile = location->getRoot() + *it;
+	//			} else {
+	//				pathToIndexFile = path + *it;
+	//			}
+	//			if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
+	//				return pathToIndexFile;
+	//			}
+	//		}
+	//	}
+//	return replace(path, "//", "/");
 }
 
 bool RequestHandler::isFileShouldBeHandleByCGI(string& pathToFile) const { return _cgiFileFormats.find(getFileFormat(pathToFile)) != _cgiFileFormats.end(); }

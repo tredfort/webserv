@@ -46,7 +46,7 @@ private:
 
 	void fillHeaders(Response*, LocationContext*);
 
-	string getPathFromUri(string uri, LocationContext* location) const;
+	string getPathFromUri(LocationContext* location, string uri) const;
 
 	bool isFileShouldBeHandleByCGI(string& pathToFile) const;
 
@@ -58,6 +58,8 @@ public:
 	void doGet(LocationContext* location, Request* request, Response* response, string& pathToFile);
 
 	void doDelete(Response* response, string& pathToFile);
+
+	void doCGI(Request* request, Response* response, string& pathToFile);
 };
 
 #endif

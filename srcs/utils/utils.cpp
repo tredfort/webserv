@@ -175,17 +175,20 @@ string getStringAfterTarget(string source, string target)
 
 char getLastSymbol(string s) { return s[s.length() - 1]; }
 
-string	getFileFormat(string& path) {
+string getFileFormat(string& path)
+{
 	size_t pos = path.find_last_of('.');
 	return (pos != string::npos) ? path.substr(pos + 1) : "";
 }
 
-string getFileName(const string& path) {
+string getFileName(const string& path)
+{
 	size_t pos = path.find_last_of('/');
 	return (pos != string::npos) ? path.substr(pos + 1) : "";
 }
 
-int stringToInt(const string& str, int base) {
+int stringToInt(const string& str, int base)
+{
 	char* endPtr;
 	long number = std::strtol(str.c_str(), &endPtr, base);
 
@@ -195,17 +198,20 @@ int stringToInt(const string& str, int base) {
 	return number;
 }
 
-bool createFile(const string& pathToFile, const string& content) {
+bool createFile(const string& pathToFile, const string& content)
+{
 	std::ofstream targetFile(pathToFile);
-	if (!targetFile.is_open())
+	if (!targetFile.is_open()) {
 		return false;
-//		throw "500 cannot creat file in POST";
+	}
+
 	targetFile << content;
 	targetFile.close();
 	return true;
 }
 
-string getParentFilePath(const string& pathToFile) {
+string getParentFilePath(const string& pathToFile)
+{
 	size_t pos = pathToFile.find_last_of('/');
 	return pathToFile.substr(0, pos);
 }
@@ -214,12 +220,11 @@ const char* CastToIntException::what() const throw() { return "Conversion error 
 
 const char* BadChunkedRequestException::what() const throw() { return "Bad chunked request"; }
 
-void printRequest(Request* request) {
+void printRequest(Request* request)
+{
 	string requestBuf;
 	requestBuf.append("*REQUEST*\n");
-	requestBuf.append(request->getMethod()).append(" ")
-		.append(request->getUri()).append(" ")
-		.append(request->getProtocol()).append("\n");
+	requestBuf.append(request->getMethod()).append(" ").append(request->getUri()).append(" ").append(request->getProtocol()).append("\n");
 
 	map<string, string> headers = request->_headers;
 	for (map<string, string>::iterator it = headers.begin(); it != headers.end(); ++it) {
@@ -228,16 +233,37 @@ void printRequest(Request* request) {
 	cout << requestBuf << endl;
 }
 
-void printResponse(Response* response) {
+void printResponse(Response* response)
+{
 	string responseBuf;
 	responseBuf.append("*RESPONSE*\n");
 	responseBuf.append(replace(response->getHeaders(), "\r", ""));
 	cout << responseBuf << endl;
 }
 
-string replace(string input, const string& target, const string& replacement) {
+string replace(string input, const string& target, const string& replacement)
+{
 	for (size_t pos = input.find(target); pos < input.length() && pos != string::npos; pos = input.find(target)) {
 		input.replace(pos, target.size(), replacement);
 	}
 	return input;
+}
+
+string removeTrailingSlashes(string s)
+{
+	return replace(s, "//", "/");
+}
+
+string createPath(const string& path1, const string& path2) {
+	if (path1.back() == '/' && path2.front() == '/') {
+		return path1 + path2.substr(1);
+	} else if (path1.back() != '/' && path2.front() != '/') {
+		return path1 + "/" + path2;
+	}
+	return path1 + path2;
+}
+
+string createPath(const string& path1, const string& path2, const string& path3) {
+	string path = createPath(path1, path2);
+	return createPath(path, path3);
 }

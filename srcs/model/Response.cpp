@@ -1,6 +1,6 @@
 #include "Response.hpp"
 
-Response::Response() : _statusCode(0) { }
+Response::Response() : _statusCode(0), _protocol("HTTP/1.1") { }
 
 Response::~Response() { }
 

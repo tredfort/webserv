@@ -90,11 +90,11 @@ void Server::acceptNewClients(Socket* socket)
 
 void Server::receiveRequest(WebClient* client, short& events)
 {
-	char buffer[BUFFER_SIZE];
+	char buffer[defaults::BUFFER_SIZE];
 
-	bzero(buffer, BUFFER_SIZE);
+	bzero(buffer, defaults::BUFFER_SIZE);
 	cout << "User listens:" << endl;
-	ssize_t bytesRead = recv(client->getFd(), buffer, BUFFER_SIZE, 0);
+	ssize_t bytesRead = recv(client->getFd(), buffer, defaults::BUFFER_SIZE, 0);
 
 	if (bytesRead < 0) {
 		cout << "Error during request receipt from fd: " << client->getFd() << "." << endl;

@@ -1,6 +1,7 @@
 #include "LocationContext.hpp"
 
-LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstream* fileStream) : _clientMaxBodySize(INT32_MAX)
+LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstream* fileStream)
+	: _clientMaxBodySize(defaults::CLIENT_MAX_BODY_SIZE)
 {
 	string line;
 	ssize_t directiveIndex;
@@ -8,9 +9,9 @@ LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstre
 
 	if (lineLocation.size() == 4) {
 		_modificator = lineLocation[1];
-		_location = lineLocation[2];
+		_location = removeTrailingSlashes(lineLocation[2]);
 	} else if (lineLocation.size() == 3) {
-		_location = lineLocation[1];
+		_location = removeTrailingSlashes(lineLocation[1]);
 	}
 	// set default values
 	_redirect.first = 0;
@@ -142,7 +143,7 @@ void LocationContext::printConfig()
 }
 size_t LocationContext::getClientMaxBodySize() const { return _clientMaxBodySize; }
 void LocationContext::setClientMaxBodySize(size_t clientMaxBodySize) { _clientMaxBodySize = clientMaxBodySize; }
-const vector<string>& LocationContext::getIndex() const { return _index; }
+const vector<string>& LocationContext::getIndexes() const { return _index; }
 void LocationContext::setIndex(const vector<string>& index) { _index = index; }
 const string& LocationContext::getRoot() const { return _root; }
 void LocationContext::setRoot(const string& root) { _root = root; }
@@ -159,9 +160,9 @@ string LocationContext::getErrorPagePath(int code)
 	if (fileName.empty())
 		return "";
 	if (fileName[0] == '/') {
-		return getRoot() + fileName;
+		return createPath(getRoot(), fileName);
 	} else {
-		return getRoot() + getLocation() + fileName;
+		return createPath(getRoot(), getLocation(), fileName);
 	}
 }
 
@@ -180,7 +181,8 @@ void LocationContext::setErrorPagesFromServerContext(map<int, string>& serverErr
 	for (map<int, string>::iterator it = serverErrorPages.begin(), ite = serverErrorPages.end(); it != ite; ++it) {
 		const string configErrorPage = it->second;
 		if (this->getErrorPage(it->first).empty()) {
-			this->_errorPages[it->first] = it->second;
+			// Здесь ставим вначaле /, чтобы при использовании этой страницы игнорировать /location
+			this->_errorPages[it->first] = "/" + it->second;
 		}
 	}
 }
@@ -192,3 +194,13 @@ void LocationContext::setDefaultAllowedMethods()
 		_allowedMethods.insert("GET");
 }
 string LocationContext::getUploadPath() { return _uploadPath; }
+
+// Вернуть путь до файла с использованием root и текущего location, путь может содержать множество повторений / в пути
+// Если путь до файла начинается с /, то _location игнорируется
+string LocationContext::getPathToFile(const string& pathToFile)
+{
+	if (startsWith(pathToFile, "/")) {
+		return removeTrailingSlashes(_root + '/' + pathToFile);
+	} else
+		return removeTrailingSlashes(_root + '/' + _location + '/' + pathToFile);
+}

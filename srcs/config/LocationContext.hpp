@@ -37,10 +37,11 @@ public:
 
 	size_t getClientMaxBodySize() const;
 	void setClientMaxBodySize(size_t clientMaxBodySize);
-	const vector<string>& getIndex() const;
+	const vector<string>& getIndexes() const;
 	void setIndex(const vector<string>& index);
 	const string& getRoot() const;
 	void setRoot(const string& root);
+	string getPathToFile(const string& pathToFile);
 
 	const set<string>& getAllowedMethods() const;
 	void setErrorPagesFromServerContext(map<int, string>& serverErrorPages);

@@ -123,7 +123,7 @@ ExecveArguments *	CGI::constructExecveArguments() {
 	if (!args) {
 		return NULL;
 	}
-	if (!openOutputFile(_cgiFolder + "fileCgi.html")) {
+	if (!openOutputFile(createPath(_cgiFolder, "fileCgi.html"))) {
 		clearEverything(arguments);
 		return NULL;
 	}
@@ -165,7 +165,7 @@ CGIModel CGI::executeCgi(const ExecveArguments & execArguments) {
 	freeSharedMemory();
 	if (execResult == 0)
 		return constructCGIResult(500, false, "");
-	return constructCGIResult(200, true, _cgiFolder + "fileCgi.html");
+	return constructCGIResult(200, true, createPath(_cgiFolder, "fileCgi.html"));
 }
 
 void	CGI::clearEverything(ExecveArguments * arguments) {
@@ -210,7 +210,7 @@ CGIModel	CGI::constructCGIResult(int code, bool isSuccessful, string path) {
 string		CGI::constructExecutablePath(string format) {
 	vector<string> paths = _env.getPaths();
 	for (unsigned int i = 0; i < paths.size(); i++) {
-		string fullPath = paths[i] + "/" + format;
+		string fullPath = createPath(paths[i], format);
 		if (isFileExists(fullPath)) {
 			return fullPath;
 		}
