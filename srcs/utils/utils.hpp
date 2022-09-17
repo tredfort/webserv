@@ -140,4 +140,6 @@ void printResponse(Response* response);
 
 string replace(string input, const string& target, const string& replacement);
 
+string removeTrailingSlashes(string s);
+
 #endif

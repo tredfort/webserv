@@ -46,9 +46,10 @@ void RequestHandler::formResponse(WebClient* client)
 	Response* response = client->getResponse();
 	Request* request = client->getRequest();
 	LocationContext* location = config->getLocationContext(client->getIp(), client->getPort(), request->getHost(), request->getUri());
-//	cout << "*location info*" << endl;
-//	location->printConfig();
+	//	cout << "*location info*" << endl;
+	//	location->printConfig();
 	response->setProtocol("HTTP/1.1");
+	// TODO:: rename path
 	string path = getPathFromUri(request->getUri(), location);
 
 	if (isBadRequest(request)) {
@@ -141,7 +142,7 @@ void RequestHandler::setBodyForStatusCode(Response* response, LocationContext* l
 		response->setBody(getRedirectPageBody(location->getRedirect()));
 		response->setContentType(mimeType(".html"));
 	} else {
-		string pathToErrorPage = location->getErrorPage(response->getStatusCode());
+		string pathToErrorPage = location->getPathToFile(location->getErrorPage(response->getStatusCode()));
 		if (isFileExists(pathToErrorPage) && !isDirectory(pathToErrorPage)) {
 			readfile(response, pathToErrorPage);
 		} else {
@@ -163,12 +164,22 @@ void RequestHandler::doPost(LocationContext* location, Request* request, Respons
 
 void RequestHandler::doGet(LocationContext* location, Request* request, Response* response, string& pathToFile)
 {
-	if (!isFileExists(pathToFile)) {
+	string locationPathToFile = location->getPathToFile("");
+
+	if (!isFileExists(locationPathToFile)) {
 		response->setStatusCode(404);
-	} else if (isDirectory(pathToFile)) {
+	} else if (isDirectory(locationPathToFile)) {
 		if (location->isAutoIndex()) {
 			folderContents(response, pathToFile, request->getUri());
 		} else {
+			const vector<string> indexes = location->getIndexes();
+			for (vector<string>::const_iterator it = indexes.begin(); it != indexes.end(); ++it) {
+				string indexPathToFile = locationPathToFile + '/' + *it;
+				if (isFileExists(indexPathToFile)) {
+					readfile(response, indexPathToFile);
+					return;
+				}
+			}
 			response->setStatusCode(404);
 		}
 	} else {
@@ -271,7 +282,7 @@ string RequestHandler::getPathFromUri(string uri, LocationContext* location) con
 		if (path.back() != '/') {
 			path.append("/");
 		}
-		for (vector<string>::const_iterator it = location->getIndex().begin(), ite = location->getIndex().end(); it != ite; ++it) {
+		for (vector<string>::const_iterator it = location->getIndexes().begin(), ite = location->getIndexes().end(); it != ite; ++it) {
 			string pathToIndexFile;
 			if ((*it).front() == '/') {
 				pathToIndexFile = location->getRoot() + *it;

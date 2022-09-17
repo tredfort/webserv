@@ -3,8 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <title>test error_page</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        article {
+            width: 100%;
+            border: 1px solid tomato;
+            padding: 10px;
+            border-radius: 5px;
+            height: 200px;
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
-<a href="/nowhere">Тестим 404</a>
+<article>
+    <h2>404</h2>
+    <a href="/nowhere">Тестим 404 на главной</a>
+</article>
+<article>
+    <h2>Раздел first</h2>
+    <a href="/first">Раздел first</a>
+</article>
+<article>
+    <h2>Раздел second</h2>
+    <a href="/second">Раздел second</a>
+</article>
 </body>
 </html>
