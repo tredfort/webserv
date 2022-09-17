@@ -1,10 +1,13 @@
-# server[]
+# server
 
-- listen  []
-- client_max_body_size []
+- listen
+- client_max_body_size
 
-# location []
+# location
 
-- ~~cgi_extension[]~~
-- root[]
-- upload_path[]
+- cgi_extension
+- upload_path
+
+# Отдельно ещё
+
+- server
