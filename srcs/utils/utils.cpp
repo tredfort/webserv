@@ -251,8 +251,19 @@ string replace(string input, const string& target, const string& replacement)
 
 string removeTrailingSlashes(string s)
 {
-	while (s.length() > 1 && getLastSymbol(s) == '/') {
-		s = s.substr(0, s.length() - 1);
+	return replace(s, "//", "/");
+}
+
+string createPath(const string& path1, const string& path2) {
+	if (path1.back() == '/' && path2.front() == '/') {
+		return path1 + path2.substr(1);
+	} else if (path1.back() != '/' && path2.front() != '/') {
+		return path1 + "/" + path2;
 	}
-	return s;
+	return path1 + path2;
+}
+
+string createPath(const string& path1, const string& path2, const string& path3) {
+	string path = createPath(path1, path2);
+	return createPath(path, path3);
 }

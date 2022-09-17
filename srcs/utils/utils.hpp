@@ -142,4 +142,8 @@ string replace(string input, const string& target, const string& replacement);
 
 string removeTrailingSlashes(string s);
 
+string createPath(const string& path1, const string& path2);
+
+string createPath(const string& path1, const string& path2, const string& path3);
+
 #endif

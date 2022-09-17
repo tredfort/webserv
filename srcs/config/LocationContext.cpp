@@ -160,9 +160,9 @@ string LocationContext::getErrorPagePath(int code)
 	if (fileName.empty())
 		return "";
 	if (fileName[0] == '/') {
-		return getRoot() + fileName;
+		return createPath(getRoot(), fileName);
 	} else {
-		return getRoot() + getLocation() + fileName;
+		return createPath(getRoot(), getLocation(), fileName);
 	}
 }
 
