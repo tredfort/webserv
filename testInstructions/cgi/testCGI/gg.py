@@ -1,0 +1,8 @@
+print("<html>")
+print("    <head>")
+print("        <title>Example</title>")
+print("    </head>")
+print("    <body>")
+print("        <p>This is an example of a simple HTML page with one paragraph.</p>")
+print("    </body>")
+print("</html>")
