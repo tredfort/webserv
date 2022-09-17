@@ -45,8 +45,7 @@ void RequestHandler::formResponse(WebClient* client)
 	LocationContext* location = config->getLocationContext(client->getIp(), client->getPort(), request->getHost(), request->getUri());
 	//	cout << "*location info*" << endl;
 	//	location->printConfig();
-	// TODO:: rename path
-	string pathToFile = getPathFromUri(location, request->getUri());
+	string pathToFile = getFilePathThrowAppliedConfig(location, request->getUri(), response);
 
 	if (isBadRequest(request)) {
 		response->setStatusCode(400);
@@ -149,28 +148,16 @@ void RequestHandler::doPost(LocationContext* location, Request* request, Respons
 
 void RequestHandler::doGet(LocationContext* location, Request* request, Response* response, string& pathToFile)
 {
-	if (!isFileExists(pathToFile)) {
-		response->setStatusCode(404);
-	} else if (!isDirectory(pathToFile)) {
+	(void)location;
+
+	if (isDirectory(pathToFile)) {
+		folderContents(response, pathToFile, request->getUri());
+	} else if (isFileExists(pathToFile)) {
 		readfile(response, pathToFile);
 	} else {
-		const vector<string> indexes = location->getIndexes();
-		for (vector<string>::const_iterator it = indexes.begin(); it != indexes.end(); ++it) {
-			string pathToIndexFile = ((*it).front() == '/') ? createPath(location->getRoot(), *it) : createPath(pathToFile, *it);
-			if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile)) {
-				if (isFileShouldBeHandleByCGI(pathToIndexFile)) {
-					doCGI(request, response, pathToFile);
-					return;
-				}
-				readfile(response, pathToIndexFile);
-				return;
-			}
-		}
-		if (location->isAutoIndex()) {
-			folderContents(response, pathToFile, request->getUri());
-		} else {
+		// Возможно заранее был поставлен код 403, тогда мы уже захендлили 403 (костыль)
+		if (response->getStatusCode() != 403)
 			response->setStatusCode(404);
-		}
 	}
 }
 
@@ -185,7 +172,9 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	string title = "Index of " + uri;
 	body.append("<html>\n"
 				"<head>"
-				"<title>" + title + "</title>"
+				"<title>"
+		+ title
+		+ "</title>"
 		  "    <style>\n"
 		  "        td {\n"
 		  "            padding-left: 15px;\n"
@@ -194,9 +183,11 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 		  "    </style>"
 		  "</head>\n"
 		  "<body>\n"
-		  "<h1>" + title + "</h1>"
-				  "<table style=\"width:80%\">"
-				  "<tr><td><a href=\"../\">../</a></td></tr>\n");
+		  "<h1>"
+		+ title
+		+ "</h1>"
+		  "<table style=\"width:80%\">"
+		  "<tr><td><a href=\"../\">../</a></td></tr>\n");
 	if ((dp = opendir(path.c_str())) != nullptr) {
 		while ((di_struct = readdir(dp)) != nullptr) {
 			if (strcmp(di_struct->d_name, ".") && strcmp(di_struct->d_name, "..")) {
@@ -280,28 +271,29 @@ void RequestHandler::fillHeaders(Response* response, LocationContext* location)
 	response->setBuffer(response->getHeaders() + "\r\n" + response->getBody());
 }
 
-string RequestHandler::getPathFromUri(LocationContext* location, string uri) const
+// Приеменим правила конфига к uri, если найдём файл, то вернём путь до него, иначе пустую строку
+string RequestHandler::getFilePathThrowAppliedConfig(LocationContext* location, string uri, Response* response) const
 {
-	uri.replace(uri.find(location->getLocation()), location->getLocation().size(), "");
-	return createPath(location->getRoot(), uri);
-//	string path = (location->getRoot().back() == '/') ? location->getRoot() + uri : location->getRoot() + "/" + uri;
-	//	if (isFileExists(path) && isDirectory(path)) {
-	//		if (path.back() != '/') {
-	//			path.append("/");
-	//		}
-	//		for (vector<string>::const_iterator it = location->getIndexes().begin(), ite = location->getIndexes().end(); it != ite; ++it) {
-	//			string pathToIndexFile;
-	//			if ((*it).front() == '/') {
-	//				pathToIndexFile = location->getRoot() + *it;
-	//			} else {
-	//				pathToIndexFile = path + *it;
-	//			}
-	//			if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
-	//				return pathToIndexFile;
-	//			}
-	//		}
-	//	}
-//	return replace(path, "//", "/");
+	string pathToFile = location->getRoot() + '/' + uri;
+	if (isDirectory(pathToFile)) {
+		if (location->isAutoIndex())
+			return pathToFile;
+		else {
+			const vector<string> indexes = location->getIndexes();
+			for (vector<string>::const_iterator it = indexes.begin(); it != indexes.end(); ++it) {
+				string pathToIndexFile = pathToFile + '/' + *it;
+				if (isFileExists(pathToIndexFile)) {
+					return pathToIndexFile;
+				}
+			}
+			response->setStatusCode(403);
+			return "";
+		}
+	} else if (isFileExists(pathToFile)) {
+		return pathToFile;
+	} else {
+	}
+	return "";
 }
 
 bool RequestHandler::isFileShouldBeHandleByCGI(string& pathToFile) const { return _cgiFileFormats.find(getFileFormat(pathToFile)) != _cgiFileFormats.end(); }
