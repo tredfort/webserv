@@ -162,7 +162,7 @@ void RequestHandler::doGet(LocationContext* location, Request* request, Response
 			string pathToIndexFile = ((*it).front() == '/') ? createPath(location->getRoot(), *it) : createPath(pathToFile, *it);
 			if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile)) {
 				if (isFileShouldBeHandleByCGI(pathToIndexFile)) {
-					doCGI(request, response, pathToFile);
+					doCGI(request, response, pathToIndexFile);
 					return;
 				}
 				readfile(response, pathToIndexFile);
@@ -268,7 +268,7 @@ void RequestHandler::fillHeaders(Response* response, LocationContext* location)
 	char* time = ctime(&currentTime);
 	pair<int, string> redirect = location->getRedirect();
 	response->pushHeader(response->getProtocol() + " " + response->getStatusLine() + "\r\n");
-	response->pushHeader("Server: webserv/2.0\r\n");
+	response->pushHeader("Server: " + defaults::SERVER_NAME + "\r\n");
 	response->pushHeader("Date: " + string(time, strlen(time) - 1) + "\r\n");
 	if (!response->getContentType().empty()) {
 		response->pushHeader("Content-Type: " + response->getContentType() + "\r\n");
@@ -287,24 +287,6 @@ string RequestHandler::getPathFromUri(LocationContext* location, string uri) con
 {
 	uri.replace(uri.find(location->getLocation()), location->getLocation().size(), "");
 	return createPath(location->getRoot(), uri);
-//	string path = (location->getRoot().back() == '/') ? location->getRoot() + uri : location->getRoot() + "/" + uri;
-	//	if (isFileExists(path) && isDirectory(path)) {
-	//		if (path.back() != '/') {
-	//			path.append("/");
-	//		}
-	//		for (vector<string>::const_iterator it = location->getIndexes().begin(), ite = location->getIndexes().end(); it != ite; ++it) {
-	//			string pathToIndexFile;
-	//			if ((*it).front() == '/') {
-	//				pathToIndexFile = location->getRoot() + *it;
-	//			} else {
-	//				pathToIndexFile = path + *it;
-	//			}
-	//			if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile) && !access(pathToIndexFile.c_str(), W_OK)) {
-	//				return pathToIndexFile;
-	//			}
-	//		}
-	//	}
-//	return replace(path, "//", "/");
 }
 
 bool RequestHandler::isFileShouldBeHandleByCGI(string& pathToFile) const { return _cgiFileFormats.find(getFileFormat(pathToFile)) != _cgiFileFormats.end(); }

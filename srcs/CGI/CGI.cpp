@@ -1,7 +1,7 @@
 #include "CGI.hpp"
 
 CGI::CGI(Request& request, const string& uri, Env& env) :
-	_cgiFolder("resources/html_data/cgi/"),
+	_cgiFolder(defaults::CGI_FOLDER),
 	_env(env)
 {
 	vector<string> result = ft_split(uri, "?");
@@ -30,7 +30,7 @@ void CGI::initCgiEnv(Request& request, string path) {
 	_cgiEnv["REDIRECT_STATUS"] = "200";
 	_cgiEnv["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_cgiEnv["SERVER_PROTOCOL"] = "HTTP/1.1";
-	_cgiEnv["SERVER_SOFTWARE"] = "Webserv/1.0";
+	_cgiEnv["SERVER_SOFTWARE"] = defaults::SERVER_NAME;
 	_cgiEnv["REQUEST_METHOD"] = request.getMethod();
 	_cgiEnv["REQUEST_URI"] = request.getUri();
 	_cgiEnv["PATH_INFO"] = getPathInfo(path);

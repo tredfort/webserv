@@ -28,6 +28,8 @@ const string ROOT = "html/";
 const int CLIENT_MAX_BODY_SIZE = INT32_MAX;
 const int POLL_TIMEOUT = 1000;
 const bool AUTOINDEX = false;
+const string CGI_FOLDER = "testInstructions/cgi/tmp/";
+const string SERVER_NAME = "webserv/1.0";
 
 }
 
