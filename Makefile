@@ -40,7 +40,6 @@ HEADERS = \
 	srcs/requestHandler/RequestHandler.hpp \
 	srcs/requestHandler/FileReader.hpp \
 	srcs/CGI/CGI.hpp \
-	srcs/interfaces/ICGI.hpp \
 	srcs/CGI/CGIModel.hpp \
 	srcs/server/Env.hpp \
 	srcs/model/PostVariable.hpp \
