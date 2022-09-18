@@ -1,7 +1,6 @@
 #ifndef RESPONSE_HPP
 #define RESPONSE_HPP
 
-#include "../interfaces/IResponse.hpp"
 #include <fstream>
 #include <iostream>
 #include <map>

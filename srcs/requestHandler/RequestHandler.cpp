@@ -106,6 +106,9 @@ void RequestHandler::setStatusLine(Response* response)
 	case 405:
 		response->setStatusLine("405 Method Not Allowed");
 		break;
+	case 413:
+		response->setStatusLine("413 Payload Too Large");
+		break;
 	case 500:
 		response->setStatusLine("500 Server Error");
 		break;

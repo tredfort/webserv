@@ -1,8 +1,6 @@
 #ifndef REQUEST_HPP
 #define REQUEST_HPP
 
-#include "../interfaces/IHeader.hpp"
-#include "../interfaces/IRequest.hpp"
 #include <cstring>
 #include <iostream>
 #include <map>
@@ -21,10 +19,7 @@ private:
 	string _buffer;
 	string _fileName;
 	string _body;
-
-public:
-	const string& getBody() const;
-	void setBody(const string& body);
+	bool _isReady;
 
 public:
 	map<string, string> _headers;
@@ -57,6 +52,14 @@ public:
 	void setHost(const string&);
 
 	void setBuffer(const string& buffer);
+
+	const string& getBody() const;
+
+	void setBody(const string& body);
+
+	bool isReady() const;
+
+	void setIsReady(bool isReady);
 
 	void appendBuffer(const string& buffer);
 

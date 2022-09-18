@@ -16,7 +16,6 @@ void Server::createSockets()
 		Socket* socket = new Socket(AF_INET, SOCK_STREAM, 0);
 		socket->setAddressReuseMode();
 		socket->setNonblockMode();
-		//		socket->bindToAddress("127.0.0.1", "8080");
 		socket->bindToAddress(it->first, it->second);
 		socket->startListening(SOMAXCONN);
 		_sockets.push_back(socket);
@@ -92,8 +91,6 @@ void Server::receiveRequest(WebClient* client, short& events)
 {
 	char buffer[defaults::BUFFER_SIZE];
 
-	bzero(buffer, defaults::BUFFER_SIZE);
-	cout << "User listens:" << endl;
 	ssize_t bytesRead = recv(client->getFd(), buffer, defaults::BUFFER_SIZE, 0);
 
 	if (bytesRead < 0) {
@@ -105,7 +102,7 @@ void Server::receiveRequest(WebClient* client, short& events)
 	} else {
 		client->getRequest()->appendBuffer(string(buffer, bytesRead));
 		_parser.parseRequest(client->getRequest());
-		if (_parser.isReadyRequest(client->getRequest())) {
+		if (client->getRequest()->isReady()) {
 			printRequest(client->getRequest());
 			events = POLLOUT;
 		}

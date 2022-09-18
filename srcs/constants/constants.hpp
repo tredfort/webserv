@@ -27,6 +27,7 @@ const string UNLOAD_PATH = "html/unloadPath";
 const string ROOT = "html/";
 const int CLIENT_MAX_BODY_SIZE = INT32_MAX;
 const int POLL_TIMEOUT = 1000;
+const bool AUTOINDEX = false;
 
 }
 

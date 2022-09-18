@@ -17,9 +17,11 @@ void RequestParser::parseRequest(Request* request)
 		setHost(request); // TODO: вынести в utils, реализовать как метод getHostName()
 	}
 
-	if (request->getMethod() == "POST" || request->getMethod() == "PUT") {
-		if (isChunkedRequest(request)) {
- 			parseChunked(request);
+	if (!request->getMethod().empty()) {
+		if (request->getMethod() != "POST" && request->getMethod() != "PUT") {
+			request->setIsReady(true);
+		} else if (isChunkedRequest(request)) {
+			parseChunked(request);
 		} else if (isRequestWithContentLength(request)) {
 			parseBody(request);
 		}
@@ -70,47 +72,21 @@ void RequestParser::setHost(Request* request)
 	}
 }
 
-bool RequestParser::isReadyRequest(Request* request)
-{
-	if (request->getMethod() == "GET") {
-		request->setBuffer("");
-		return true;
-	} else if (request->getMethod() == "POST" || request->getMethod() == "PUT") {
-		if (isChunkedRequest(request) && !request->getBody().empty()) {
-			return request->getBuffer().empty();
-		}
-		return request->getContentLength() == (size_t)stringToInt(request->getHeader("Content-Length"), 10);
-	} else if (request->getMethod() == "DELETE") {
-		return true;
-	}
-	if (request->getMethod() != "GET" && request->getMethod() != "POST" && request->getMethod() != "PUT" && request->getMethod() != "DELETE" && !request->getMethod().empty()) {
-		return true;
-	}
+bool RequestParser::isChunkedRequest(Request* request) const { return request->getHeader("Transfer-Encoding") == "chunked"; }
 
-	return false;
-}
-
-bool RequestParser::isChunkedRequest(Request* request) const
-{
-	return request->getHeader("Transfer-Encoding") == "chunked";
-}
-
-bool RequestParser::isRequestWithContentLength(Request* request) const
-{
-	return !request->getHeader("Content-Length").empty();
-}
+bool RequestParser::isRequestWithContentLength(Request* request) const { return !request->getHeader("Content-Length").empty(); }
 
 void RequestParser::parseBody(Request* request)
 {
 	string fileName = getFileName(request->getUri());
 	request->setFileName(fileName);
 	size_t contentLength = stringToInt(request->getHeader("Content-Length"), 10);
-	if (request->getBuffer().size() > contentLength) {
-		throw "400 BAD REQUEST! RECV size > then MUST BE";
-	}
 	string body = request->getBuffer();
 	request->setBuffer("");
 	request->setBody(request->getBody() + body);
+	if (request->getContentLength() == contentLength) {
+		request->setIsReady(true);
+	}
 }
 
 void RequestParser::parseChunked(Request* request)
@@ -139,5 +115,6 @@ void RequestParser::parseChunked(Request* request)
 		}
 		request->setBuffer("");
 		request->setFileName(getFileName(request->getUri()));
+		request->setIsReady(true);
 	}
 }

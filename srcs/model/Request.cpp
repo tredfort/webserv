@@ -1,6 +1,6 @@
 #include "Request.hpp"
 
-Request::Request() { }
+Request::Request() : _isReady(false) { }
 
 Request::~Request() { }
 
@@ -51,3 +51,7 @@ size_t Request::getContentLength() const { return (int)_body.size(); }
 const string& Request::getBody() const { return _body; }
 
 void Request::setBody(const string& body) { _body = body; }
+
+bool Request::isReady() const { return _isReady; }
+
+void Request::setIsReady(bool isReady) { _isReady = isReady; }

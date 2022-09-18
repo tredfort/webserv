@@ -1,7 +1,8 @@
 #include "LocationContext.hpp"
 
 LocationContext::LocationContext(const vector<string>& lineLocation, std::ifstream* fileStream)
-	: _clientMaxBodySize(defaults::CLIENT_MAX_BODY_SIZE)
+	: _autoIndex(defaults::AUTOINDEX)
+	, _clientMaxBodySize(defaults::CLIENT_MAX_BODY_SIZE)
 {
 	string line;
 	ssize_t directiveIndex;
@@ -119,7 +120,7 @@ void LocationContext::printConfig()
 	cout << "LOCATION CONFIG" << endl << endl;
 	cout << "location: " << _location << endl;
 	cout << "location modificator: " << _modificator << endl;
-	cout << "AutoIndex is enabled? :" << (_autoIndex ? "true" : "false") << endl;
+	cout << "AutoIndex: " << (_autoIndex ? "on" : "off") << endl;
 	cout << "CgiExtension :" << _cgiExtension << endl;
 	cout << "CgiPath :" << _cgiPath << endl;
 	cout << "client_max_body_size :" << _clientMaxBodySize << endl;
@@ -200,7 +201,7 @@ string LocationContext::getUploadPath() { return _uploadPath; }
 string LocationContext::getPathToFile(const string& pathToFile)
 {
 	if (startsWith(pathToFile, "/")) {
-		return removeTrailingSlashes(_root + '/' + pathToFile);
-	} else
-		return removeTrailingSlashes(_root + '/' + _location + '/' + pathToFile);
+		return createPath(_root, pathToFile);
+	}
+	return createPath(_root, _location, pathToFile);
 }

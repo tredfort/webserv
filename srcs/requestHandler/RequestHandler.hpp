@@ -11,7 +11,6 @@
 
 #include "../CGI/CGI.hpp"
 #include "../config/Config.hpp"
-#include "../interfaces/IRequestHandler.hpp"
 #include "../model/Request.hpp"
 #include "../model/Response.hpp"
 #include "../model/WebClient.hpp"
