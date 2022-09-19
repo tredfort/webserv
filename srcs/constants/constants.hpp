@@ -10,15 +10,6 @@ using std::string;
 
 void fillTypes(map<string, string>& types);
 
-namespace method {
-
-const string GET = "GET";
-const string POST = "POST";
-const string DELETE = "DELETE";
-const string PUT = "PUT";
-
-}
-
 namespace defaults {
 
 const int BUFFER_SIZE = 1024 * 1024;

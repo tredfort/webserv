@@ -105,8 +105,6 @@ void LocationContext::parseAllowedMethods(vector<string> lineWords)
 		_allowedMethods.insert("PUT");
 	if (std::find(lineWords.begin(), lineWords.end(), "DELETE") != lineWords.end())
 		_allowedMethods.insert("DELETE");
-	if (!_allowedMethods.count("GET"))
-		_allowedMethods.insert("GET");
 }
 bool LocationContext::isAutoIndex() const { return _autoIndex; }
 void LocationContext::setAutoIndex(bool autoIndex) { _autoIndex = autoIndex; }
@@ -191,7 +189,7 @@ pair<int, string> LocationContext::getRedirect() { return _redirect; }
 
 void LocationContext::setDefaultAllowedMethods()
 {
-	if (_allowedMethods.empty())
+	if (!_allowedMethods.count("GET"))
 		_allowedMethods.insert("GET");
 }
 string LocationContext::getUploadPath() { return _uploadPath; }
