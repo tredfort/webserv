@@ -68,8 +68,6 @@ webserv
 a.out
 
 #CGI
-**/fileCgi.html
-**/cgi_tester
 
 # upload folder
 upload/
