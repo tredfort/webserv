@@ -13,9 +13,9 @@ CGI::CGI(Request& request, const string& uri, Env& env) :
 
 CGI::~CGI() { }
 
-CGIModel	CGI::getPathToFileWithResult() {
+CGIModel	CGI::getPathToFileWithResult(LocationContext* location) {
 
-	ExecveArguments *arguments = constructExecveArguments();
+	ExecveArguments *arguments = constructExecveArguments(location);
 	if (!arguments)
 		return constructCGIResult(500, false, "");
 
@@ -27,14 +27,17 @@ CGIModel	CGI::getPathToFileWithResult() {
 // Private methods
 
 void CGI::initCgiEnv(Request& request, string path) {
+	(void) path;
 	_cgiEnv["REDIRECT_STATUS"] = "200";
 	_cgiEnv["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_cgiEnv["SERVER_PROTOCOL"] = "HTTP/1.1";
 	_cgiEnv["SERVER_SOFTWARE"] = defaults::SERVER_NAME;
 	_cgiEnv["REQUEST_METHOD"] = request.getMethod();
 	_cgiEnv["REQUEST_URI"] = request.getUri();
-	_cgiEnv["PATH_INFO"] = getPathInfo(path);
-	_cgiEnv["PATH_TRANSLATED"] = getPathInfo(path);
+	_cgiEnv["PATH_INFO"] = path;
+//	_cgiEnv["PATH_INFO"] = getPathInfo(path);
+//	_cgiEnv["PATH_TRANSLATED"] = getPathInfo(path);
+	_cgiEnv["PATH_TRANSLATED"] = path;
 	_cgiEnv["QUERY_STRING"] = query;
 	string header = request.getHeader("Authorization");
 	if (!header.empty()) {
@@ -45,6 +48,8 @@ void CGI::initCgiEnv(Request& request, string path) {
 	header = request.getHeader("Content-Type");
 	if (!header.empty()) {
 		_cgiEnv["CONTENT_TYPE"] = header;
+	} else {
+		_cgiEnv["CONTENT_TYPE"] = "text/plain";
 	}
 	_cgiEnv["SERVER_NAME"] = request.getHeader("Host");
 	// cout << endl << "           ENV              " << endl; 
@@ -115,7 +120,7 @@ string	CGI::getPathInfo(string fullPath) const {
 //	return "";
 //}
 
-ExecveArguments *	CGI::constructExecveArguments() {
+ExecveArguments *	CGI::constructExecveArguments(LocationContext* location) {
 
 	ExecveArguments *	arguments = new ExecveArguments[1];
 	char **args = configureArgumentsForComand();
@@ -127,14 +132,14 @@ ExecveArguments *	CGI::constructExecveArguments() {
 		clearEverything(arguments);
 		return NULL;
 	}
-	string pathToExecutable = constructExecutablePath(format);
+	const string& pathToExecutable = location->getCgiPath();
 	if (pathToExecutable.empty()) {
 		clearEverything(arguments);
 		return NULL;
 	}
 	arguments->args = args;
 	arguments->env = getEnvAsCstrArray();
-	arguments->pathToExecutable = strdup(const_cast<char *>(pathToExecutable.c_str()));
+	arguments->pathToExecutable = strdup(pathToExecutable.c_str());
 	return arguments;
 }
 
@@ -219,6 +224,8 @@ string		CGI::constructExecutablePath(string format) {
 }
 
 bool		CGI::createSharedMemory() {
+	shm_unlink("exec_result");
+	close(_shmFd);
 	_shmFd = shm_open("exec_result", O_CREAT | O_EXCL | O_RDWR, S_IRWXU | S_IRWXG);
 	if (_shmFd < 0)
 		return false;

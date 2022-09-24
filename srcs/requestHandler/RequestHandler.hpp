@@ -47,7 +47,7 @@ private:
 
 	string getPathFromUri(LocationContext* location, string uri) const;
 
-	bool isFileShouldBeHandleByCGI(string& pathToFile) const;
+	bool isShouldBeHandleByCGI(LocationContext* location, string& pathToFile) const;
 
 	void setBodyForStatusCode(Response* response, LocationContext* location);
 
@@ -58,7 +58,7 @@ public:
 
 	void doDelete(Response* response, string& pathToFile);
 
-	void doCGI(Request* request, Response* response, string& pathToFile);
+	void doCGI(LocationContext* location, Request* request, Response* response, string& pathToFile);
 };
 
 #endif

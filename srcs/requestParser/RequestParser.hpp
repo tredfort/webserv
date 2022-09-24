@@ -17,8 +17,6 @@ public:
 
 	void parseRequest(Request* request);
 
-	bool isReadyRequest(Request* request);
-
 private:
 	RequestParser(const RequestParser& parser);
 

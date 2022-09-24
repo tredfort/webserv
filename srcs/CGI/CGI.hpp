@@ -31,13 +31,13 @@ private:
 	map<string, string> _cgiEnv;
 	string _pathToFile;
 	string query;
-	string format;
+//	string format;
 
 public:
 	CGI(Request& request, const string& path, Env& env);
 	~CGI();
 
-	CGIModel getPathToFileWithResult();
+	CGIModel getPathToFileWithResult(LocationContext* location);
 
 private:
 	void initCgiEnv(Request& request, string path);
@@ -47,7 +47,7 @@ private:
 	bool openOutputFile(std::string file);
 	void clearEverything(ExecveArguments* arguments);
 	CGIModel constructCGIResult(int code, bool isSuccessful, string path);
-	ExecveArguments* constructExecveArguments();
+	ExecveArguments* constructExecveArguments(LocationContext* location);
 	string constructExecutablePath(string format);
 	bool createSharedMemory();
 	void freeSharedMemory();

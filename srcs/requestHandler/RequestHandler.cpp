@@ -58,8 +58,8 @@ void RequestHandler::formResponse(WebClient* client)
 		response->setStatusCode(405);
 	} else if (request->getContentLength() > location->getClientMaxBodySize()) {
 		response->setStatusCode(413);
-	} else if (isFileShouldBeHandleByCGI(pathToFile)) {
-		doCGI(request, response, pathToFile);
+	} else if (isShouldBeHandleByCGI(location, pathToFile)) {
+		doCGI(location, request, response, pathToFile);
 	} else if (request->getMethod() == "GET") {
 		doGet(location, request, response, pathToFile);
 	} else if (request->getMethod() == "POST" || request->getMethod() == "PUT") {
@@ -161,8 +161,8 @@ void RequestHandler::doGet(LocationContext* location, Request* request, Response
 		for (vector<string>::const_iterator it = indexes.begin(); it != indexes.end(); ++it) {
 			string pathToIndexFile = ((*it).front() == '/') ? createPath(location->getRoot(), *it) : createPath(pathToFile, *it);
 			if (isFileExists(pathToIndexFile) && !isDirectory(pathToIndexFile)) {
-				if (isFileShouldBeHandleByCGI(pathToIndexFile)) {
-					doCGI(request, response, pathToIndexFile);
+				if (isShouldBeHandleByCGI(location, pathToIndexFile)) {
+					doCGI(location, request, response, pathToIndexFile);
 					return;
 				}
 				readfile(response, pathToIndexFile);
@@ -250,11 +250,11 @@ void RequestHandler::doDelete(Response* response, string& pathToFile)
 	}
 }
 
-void RequestHandler::doCGI(Request* request, Response* response, string& pathToFile)
+void RequestHandler::doCGI(LocationContext* location, Request* request, Response* response, string& pathToFile)
 {
 	CGI cgi(*request, pathToFile, _env);
 	cout << "process CGI..." << endl;
-	CGIModel cgiResult = cgi.getPathToFileWithResult();
+	CGIModel cgiResult = cgi.getPathToFileWithResult(location);
 	if (cgiResult.isSuccess) {
 		readfile(response, cgiResult.pathToFile);
 	} else {
@@ -289,4 +289,9 @@ string RequestHandler::getPathFromUri(LocationContext* location, string uri) con
 	return createPath(location->getRoot(), uri);
 }
 
-bool RequestHandler::isFileShouldBeHandleByCGI(string& pathToFile) const { return _cgiFileFormats.find(getFileFormat(pathToFile)) != _cgiFileFormats.end(); }
+bool RequestHandler::isShouldBeHandleByCGI(LocationContext* location, string& pathToFile) const
+{
+	return !location->getCgiPath().empty() &&
+		!location->getCgiExtension().empty() &&
+		location->getCgiExtension() == getFileFormat(pathToFile);
+}
