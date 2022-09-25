@@ -4,21 +4,26 @@
 #include "../utils/usings.hpp"
 
 struct CGIModel {
-	string	pathToFile;
-	bool	isSuccess;
-	int		code;
+	string pathToFile;
+	bool isSuccess;
+	int code;
 };
 
 struct ExecveArguments {
-	char	*pathToExecutable;
-	char	**args;
-	char	**env;
+	string pathToExecutable;
+	char** args;
+	char** env;
 
-	ExecveArguments() : pathToExecutable(NULL), args(NULL), env(NULL) {}
+	ExecveArguments()
+		: args(NULL)
+		, env(NULL)
+	{
+	}
 	~ExecveArguments() { clearEverything(); }
 
 private:
-	void	clearEverything() {
+	void clearEverything()
+	{
 		if (args) {
 			for (int i = 0; args[i]; i++)
 				delete[] args[i];
@@ -28,9 +33,6 @@ private:
 			for (int i = 0; env[i]; i++)
 				delete[] env[i];
 			delete[] env;
-		}
-		if (pathToExecutable) {
-			delete[] pathToExecutable;
 		}
 	}
 };

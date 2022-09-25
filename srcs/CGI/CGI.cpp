@@ -29,7 +29,6 @@ CGIModel CGI::getPathToFileWithResult(LocationContext* location)
 
 void CGI::initCgiEnv(Request& request, string path)
 {
-	(void)path;
 	_cgiEnv["REDIRECT_STATUS"] = "200";
 	_cgiEnv["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_cgiEnv["SERVER_PROTOCOL"] = "HTTP/1.1";
@@ -142,7 +141,7 @@ ExecveArguments* CGI::constructExecveArguments(LocationContext* location)
 	}
 	arguments->args = args;
 	arguments->env = getEnvAsCstrArray();
-	arguments->pathToExecutable = strdup(pathToExecutable.c_str());
+	arguments->pathToExecutable = pathToExecutable;
 	return arguments;
 }
 
@@ -160,7 +159,7 @@ CGIModel CGI::executeCgi(const ExecveArguments& execArguments)
 		return constructCGIResult(500, false, "");
 	} else if (!pid) {
 		dup2(_outputFileFd, STDOUT_FILENO);
-		if (execve(execArguments.pathToExecutable, execArguments.args, execArguments.env) == -1) {
+		if (execve(execArguments.pathToExecutable.c_str(), execArguments.args, execArguments.env) == -1) {
 			_sharedMemory[0] = 0;
 			exit(1);
 		}
