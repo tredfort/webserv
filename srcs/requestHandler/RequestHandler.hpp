@@ -41,7 +41,7 @@ private:
 
 	void setStatusLine(Response* response);
 
-	void fillHeaders(Response*, LocationContext*);
+	void fillHeaders(Request*, Response*, LocationContext*);
 
 	string getPathFromUri(LocationContext* location, string uri) const;
 

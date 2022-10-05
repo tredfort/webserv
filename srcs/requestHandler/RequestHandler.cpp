@@ -70,7 +70,7 @@ void RequestHandler::formResponse(WebClient* client)
 	if (response->getStatusCode() < 200 || response->getStatusCode() >= 400) {
 		setBodyForStatusCode(response, location);
 	}
-	fillHeaders(response, location);
+	fillHeaders(request, response, location);
 }
 
 void RequestHandler::setStatusLine(Response* response)
@@ -266,23 +266,24 @@ void RequestHandler::doCGI(LocationContext* location, Request* request, Response
 	response->setContentType(mimeType(".html"));
 }
 
-void RequestHandler::fillHeaders(Response* response, LocationContext* location)
+void RequestHandler::fillHeaders(Request* request, Response* response, LocationContext* location)
 {
 	time_t currentTime = time(0);
 	char* time = ctime(&currentTime);
 	pair<int, string> redirect = location->getRedirect();
 	response->pushHeader(response->getProtocol() + " " + response->getStatusLine() + "\r\n");
-	response->pushHeader("Server: " + defaults::SERVER_NAME + "\r\n");
-	response->pushHeader("Date: " + string(time, strlen(time) - 1) + "\r\n");
+	response->pushHeader("Server:" + defaults::SERVER_NAME + "\r\n");
+	response->pushHeader("Date:" + string(time, strlen(time) - 1) + "\r\n");
 	if (!response->getContentType().empty()) {
-		response->pushHeader("Content-Type: " + response->getContentType() + "\r\n");
+		response->pushHeader("Content-Type:" + response->getContentType() + "\r\n");
 	}
-	response->pushHeader("Content-Length: " + std::to_string(response->getBody().size()) + "\r\n");
+	response->pushHeader("Content-Length:" + std::to_string(response->getBody().size()) + "\r\n");
 	if (redirect.first != 0) {
-		response->pushHeader("Location: " + redirect.second + "\r\n");
+		response->pushHeader("Location:" + redirect.second + "\r\n");
 	}
-	if (response->getStatusCode() >= 200 || response->getStatusCode() < 400) {
-		response->pushHeader("Connection: keep-alive\r\n");
+	string connection = request->getHeader("Connection");
+	if (!connection.empty()) {
+		response->pushHeader("Connection:" + connection + "\r\n");
 	}
 	response->setBuffer(response->getHeaders() + "\r\n" + response->getBody());
 }
