@@ -1,11 +1,8 @@
 #include "RequestHandler.hpp"
 
-RequestHandler::RequestHandler(Config* config, Env& env)
+RequestHandler::RequestHandler(Config* config)
 	: config(config)
-	, _env(env)
 {
-	_cgiFileFormats["py"] = "python3";
-	_cgiFileFormats["php"] = "php";
 	fillTypes(_types);
 }
 
@@ -142,8 +139,13 @@ void RequestHandler::setBodyForStatusCode(Response* response, LocationContext* l
 
 void RequestHandler::doPost(LocationContext* location, Request* request, Response* response, string& pathToFile)
 {
-	(void)location;
-	if (!createFile(pathToFile, request->getBody())) {
+	string fullPathToFile;
+	if (!location->getUploadPath().empty()) {
+		fullPathToFile = replace(pathToFile, location->getRoot(), location->getUploadPath());
+	} else {
+		fullPathToFile = pathToFile;
+	}
+	if (!createFile(fullPathToFile, request->getBody())) {
 		response->setStatusCode(500);
 	} else {
 		readfile(response, pathToFile);
@@ -188,7 +190,9 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 	string title = "Index of " + uri;
 	body.append("<html>\n"
 				"<head>"
-				"<title>" + title + "</title>"
+				"<title>"
+		+ title
+		+ "</title>"
 		  "    <style>\n"
 		  "        td {\n"
 		  "            padding-left: 15px;\n"
@@ -197,9 +201,11 @@ void RequestHandler::folderContents(Response* response, const std::string& path,
 		  "    </style>"
 		  "</head>\n"
 		  "<body>\n"
-		  "<h1>" + title + "</h1>"
-				  "<table style=\"width:80%\">"
-				  "<tr><td><a href=\"../\">../</a></td></tr>\n");
+		  "<h1>"
+		+ title
+		+ "</h1>"
+		  "<table style=\"width:80%\">"
+		  "<tr><td><a href=\"../\">../</a></td></tr>\n");
 	if ((dp = opendir(path.c_str())) != nullptr) {
 		while ((di_struct = readdir(dp)) != nullptr) {
 			if (strcmp(di_struct->d_name, ".") && strcmp(di_struct->d_name, "..")) {
@@ -252,14 +258,12 @@ void RequestHandler::doDelete(Response* response, string& pathToFile)
 
 void RequestHandler::doCGI(LocationContext* location, Request* request, Response* response, string& pathToFile)
 {
-	CGI cgi(*request, pathToFile, _env);
-	cout << "process CGI..." << endl;
-	CGIModel cgiResult = cgi.getPathToFileWithResult(location);
-	if (cgiResult.isSuccess) {
-		readfile(response, cgiResult.pathToFile);
-	} else {
-		response->setStatusCode(500);
-	}
+	CGIHandler cgiHandler;
+	int statusCode = cgiHandler.handle(location->getCgiPath(), pathToFile, request);
+	string body = cgiHandler.getBody();
+	response->setStatusCode(statusCode);
+	response->setBody(body);
+	response->setContentType(mimeType(".html"));
 }
 
 void RequestHandler::fillHeaders(Response* response, LocationContext* location)
@@ -291,7 +295,5 @@ string RequestHandler::getPathFromUri(LocationContext* location, string uri) con
 
 bool RequestHandler::isShouldBeHandleByCGI(LocationContext* location, string& pathToFile) const
 {
-	return !location->getCgiPath().empty() &&
-		!location->getCgiExtension().empty() &&
-		location->getCgiExtension() == getFileFormat(pathToFile);
+	return !location->getCgiPath().empty() && !location->getCgiExtension().empty() && location->getCgiExtension() == getFileFormat(pathToFile);
 }

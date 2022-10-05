@@ -9,7 +9,7 @@
 #include <sys/socket.h>
 #include <vector>
 
-#include "../CGI/CGI.hpp"
+#include "../CGI/CGIHandler.hpp"
 #include "../config/Config.hpp"
 #include "../model/Request.hpp"
 #include "../model/Response.hpp"
@@ -21,10 +21,8 @@ class RequestHandler {
 public:
 	Config* config;
 	map<string, string> _types;
-	map<string, string> _cgiFileFormats;
-	Env& _env;
 
-	RequestHandler(Config* config, Env& env);
+	RequestHandler(Config* config);
 
 	~RequestHandler();
 

@@ -20,9 +20,7 @@ SRC = srcs/main.cpp \
 	srcs/requestParser/RequestParser.cpp \
 	srcs/requestHandler/RequestHandler.cpp \
 	srcs/requestHandler/FileReader.cpp \
-	srcs/CGI/CGI.cpp \
-	srcs/server/Env.cpp \
-	srcs/model/PostVariable.cpp \
+	srcs/CGI/CGIHandler.cpp \
 
 OBJ=$(SRC:.cpp=.o)
 
@@ -39,10 +37,7 @@ HEADERS = \
 	srcs/requestParser/RequestParser.hpp \
 	srcs/requestHandler/RequestHandler.hpp \
 	srcs/requestHandler/FileReader.hpp \
-	srcs/CGI/CGI.hpp \
-	srcs/CGI/CGIModel.hpp \
-	srcs/server/Env.hpp \
-	srcs/model/PostVariable.hpp \
+	srcs/CGI/CGIHandler.hpp \
 
 
 srcs/%.o: srcs/%.cpp $(HEADERS)

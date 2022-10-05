@@ -5,7 +5,7 @@
  * Parse args, if they are okay to execute server
  * @return
  */
-int main(int argc, char** argv, char** env)
+int main(int argc, char** argv)
 {
 	string configPath = "config.conf";
 
@@ -16,9 +16,7 @@ int main(int argc, char** argv, char** env)
 		configPath = argv[1];
 
 	Config* config = new Config(configPath);
-	//	config->printConfig();
-	Env enviroment(env);
-	Server* app = new Server(config, enviroment);
+	Server* app = new Server(config);
 
 	app->start();
 	delete app;

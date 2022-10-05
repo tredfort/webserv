@@ -1,9 +1,8 @@
 #include "Server.hpp"
 
-Server::Server(Config* config, Env& env)
+Server::Server(Config* config)
 	: _config(config)
-	, _handler(RequestHandler(config, env))
-	, _env(env)
+	, _handler(RequestHandler(config))
 {
 }
 

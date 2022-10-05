@@ -249,12 +249,10 @@ string replace(string input, const string& target, const string& replacement)
 	return input;
 }
 
-string removeTrailingSlashes(string s)
-{
-	return replace(s, "//", "/");
-}
+string removeTrailingSlashes(string s) { return replace(s, "//", "/"); }
 
-string createPath(const string& path1, const string& path2) {
+string createPath(const string& path1, const string& path2)
+{
 	if (path1.back() == '/' && path2.front() == '/') {
 		return path1 + path2.substr(1);
 	} else if (path1.back() != '/' && path2.front() != '/') {
@@ -263,7 +261,8 @@ string createPath(const string& path1, const string& path2) {
 	return path1 + path2;
 }
 
-string createPath(const string& path1, const string& path2, const string& path3) {
+string createPath(const string& path1, const string& path2, const string& path3)
+{
 	string path = createPath(path1, path2);
 	return createPath(path, path3);
 }
