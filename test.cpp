@@ -42,10 +42,23 @@ string createPath(const string& path1, const string& path2) {
 	return path1 + path2;
 }
 
+int toUnderscore(int c){
+	if (c == '-')
+		return '_';
+	return c;
+}
+
+std::string generateNewEnv(const std::string & key, const std::string & value){
+	std::string buf(key);
+	transform(buf.begin(), buf.end(), buf.begin(), ::toupper);
+	transform(buf.begin(), buf.end(), buf.begin(), ::toUnderscore);
+	buf = "HTTP_" + buf + "=" + value;
+	return buf;
+}
+
 int main() {
-	cout << createPath("html/", "/1.html") << endl;
-	cout << createPath("html", "/1.html") << endl;
-	cout << createPath("html/", "1.html") << endl;
-	cout << createPath("html", "1.html") << endl;
+
+	cout << "env: " << generateNewEnv("key", "value") << endl;
+
 	return 0;
 }

@@ -10,13 +10,14 @@ struct CGIModel {
 };
 
 struct ExecveArguments {
-	string pathToExecutable;
 	char** args;
 	char** env;
+	char* pathToExecutable;
 
 	ExecveArguments()
 		: args(NULL)
 		, env(NULL)
+		, pathToExecutable(NULL)
 	{
 	}
 	~ExecveArguments() { clearEverything(); }
@@ -33,6 +34,9 @@ private:
 			for (int i = 0; env[i]; i++)
 				delete[] env[i];
 			delete[] env;
+		}
+		if (pathToExecutable) {
+			free(pathToExecutable);
 		}
 	}
 };
