@@ -133,7 +133,7 @@ string getErrorPageBody(string errorMessage)
 		+ errorMessage
 		+ "</title>\n"
 		  "    <link href=\"https://fonts.googleapis.com/css2?family=Lato:wght@300&display=swap\" rel=\"stylesheet\">\n"
-		  "    <link rel=\"stylesheet\" href=\"html/errorPages/style.css\">\n"
+		  "    <link rel=\"stylesheet\" href=\"errorPages/style.css\">\n"
 		  "</head>\n"
 		  "<body>\n"
 		  "<div id=\"main\">\n"
@@ -243,8 +243,9 @@ void printResponse(Response* response)
 
 string replace(string input, const string& target, const string& replacement)
 {
-	for (size_t pos = input.find(target); pos < input.length() && pos != string::npos; pos = input.find(target)) {
+	for (size_t pos = input.find(target); pos < input.length() && pos != string::npos; pos = input.find(target, pos)) {
 		input.replace(pos, target.size(), replacement);
+		pos = pos - target.length() + replacement.length();
 	}
 	return input;
 }

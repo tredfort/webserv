@@ -103,14 +103,14 @@ void RequestParser::parseChunked(Request* request)
 		}
 		while (chunkEnd < chunkedRequestEnd) {
 			size_t chunkStart = chunks.find(newLine, chunkEnd);
-			size_t chunkLength = stringToInt(chunks.substr(chunkEnd, chunkStart - chunkEnd), 16);
+//			size_t chunkLength = stringToInt(chunks.substr(chunkEnd, chunkStart - chunkEnd), 16);
 			chunkStart += newLineLen;
 			chunkEnd = chunks.find(newLine, chunkStart);
 			string chunk = chunks.substr(chunkStart, chunkEnd - chunkStart);
 			chunkEnd += newLineLen;
-			if (chunk.length() != chunkLength) {
-				throw BadChunkedRequestException();
-			}
+//			if (chunk.length() != chunkLength) {
+//				throw BadChunkedRequestException();
+//			}
 			request->setBody(request->getBody() + chunk);
 		}
 		request->setBuffer("");

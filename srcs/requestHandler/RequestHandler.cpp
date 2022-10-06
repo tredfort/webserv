@@ -148,7 +148,7 @@ void RequestHandler::doPost(LocationContext* location, Request* request, Respons
 	if (!createFile(fullPathToFile, request->getBody())) {
 		response->setStatusCode(500);
 	} else {
-		readfile(response, pathToFile);
+		readfile(response, fullPathToFile);
 	}
 }
 
